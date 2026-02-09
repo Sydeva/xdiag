@@ -18,7 +18,7 @@ BitVector<bit_t>::BitVector(int64_t size, int64_t nbits) try
   if (size < 0) {
     XDIAG_THROW("Size must be non-negative");
   }
-  if (nbits > storage_.nchunkbits()) {
+  if (nbits > Bitset<bit_t>::nchunkbits) {
     XDIAG_THROW("Number of bits requested larger than maximal number of bits "
                 "for chunk type");
   }
@@ -26,11 +26,11 @@ BitVector<bit_t>::BitVector(int64_t size, int64_t nbits) try
 XDIAG_CATCH
 
 // Element access with bounds checking
-template <typename bit_t>
-bit_t BitVector<bit_t>::at(int64_t index) const try {
+template <typename bit_t> bit_t BitVector<bit_t>::at(int64_t index) const try {
   if (index < 0 || index >= size_) {
     std::ostringstream msg;
-    msg << "BitVector::at: index " << index << " out of range [0, " << size_ << ")";
+    msg << "BitVector::at: index " << index << " out of range [0, " << size_
+        << ")";
     XDIAG_THROW(msg.str());
   }
   return operator[](index);
@@ -41,7 +41,8 @@ template <typename bit_t>
 BitVectorReference<bit_t> BitVector<bit_t>::at(int64_t index) try {
   if (index < 0 || index >= size_) {
     std::ostringstream msg;
-    msg << "BitVector::at: index " << index << " out of range [0, " << size_ << ")";
+    msg << "BitVector::at: index " << index << " out of range [0, " << size_
+        << ")";
     XDIAG_THROW(msg.str());
   }
   return operator[](index);

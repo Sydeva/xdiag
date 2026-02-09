@@ -25,6 +25,10 @@ public:
       typename std::conditional<(bool)nchunks, std::array<chunk_t, nchunks>,
                                 std::vector<chunk_t>>::type;
 
+  static constexpr size_t nchunkbits = std::numeric_limits<chunk_t>::digits;
+  static constexpr size_t chunkshift = floorlog2(nchunkbits);
+  static constexpr chunk_t chunkmask = bitmask<chunk_t>(chunkshift);
+
   Bitset() = default;
   explicit Bitset(int64_t nbits);
 
@@ -64,12 +68,8 @@ public:
   bool operator!=(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
 
   storage_t const &chunks() const noexcept;
-  static constexpr size_t nchunkbits() noexcept { return nchunkbits_; }
 
 private:
-  static constexpr size_t nchunkbits_ = std::numeric_limits<chunk_t>::digits;
-  static constexpr size_t chunkshift_ = floorlog2(nchunkbits_);
-  static constexpr chunk_t chunkmask_ = bitmask<chunk_t>(chunkshift_);
   storage_t chunks_;
 };
 

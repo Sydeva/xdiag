@@ -49,22 +49,22 @@ Bitset<chunk_t, nchunks>::chunks() const noexcept {
 // Bit-level access
 template <typename chunk_t, int64_t nchunks>
 bool Bitset<chunk_t, nchunks>::test(int64_t pos) const noexcept {
-  int64_t chunk_idx = pos >> chunkshift_;
-  int64_t bit_idx = pos & chunkmask_;
+  int64_t chunk_idx = pos >> chunkshift;
+  int64_t bit_idx = pos & chunkmask;
   return gbit(chunks_[chunk_idx], bit_idx);
 }
 
 template <typename chunk_t, int64_t nchunks>
 void Bitset<chunk_t, nchunks>::set(int64_t pos) noexcept {
-  int64_t chunk_idx = pos >> chunkshift_;
-  int64_t bit_idx = pos & chunkmask_;
+  int64_t chunk_idx = pos >> chunkshift;
+  int64_t bit_idx = pos & chunkmask;
   chunks_[chunk_idx] |= ((chunk_t)1 << bit_idx);
 }
 
 template <typename chunk_t, int64_t nchunks>
 void Bitset<chunk_t, nchunks>::set(int64_t pos, bool value) noexcept {
-  int64_t chunk_idx = pos >> chunkshift_;
-  int64_t bit_idx = pos & chunkmask_;
+  int64_t chunk_idx = pos >> chunkshift;
+  int64_t bit_idx = pos & chunkmask;
   if (value) {
     chunks_[chunk_idx] |= ((chunk_t)1 << bit_idx);
   } else {
@@ -74,15 +74,15 @@ void Bitset<chunk_t, nchunks>::set(int64_t pos, bool value) noexcept {
 
 template <typename chunk_t, int64_t nchunks>
 void Bitset<chunk_t, nchunks>::reset(int64_t pos) noexcept {
-  int64_t chunk_idx = pos >> chunkshift_;
-  int64_t bit_idx = pos & chunkmask_;
+  int64_t chunk_idx = pos >> chunkshift;
+  int64_t bit_idx = pos & chunkmask;
   chunks_[chunk_idx] &= ~((chunk_t)1 << bit_idx);
 }
 
 template <typename chunk_t, int64_t nchunks>
 void Bitset<chunk_t, nchunks>::flip(int64_t pos) noexcept {
-  int64_t chunk_idx = pos >> chunkshift_;
-  int64_t bit_idx = pos & chunkmask_;
+  int64_t chunk_idx = pos >> chunkshift;
+  int64_t bit_idx = pos & chunkmask;
   chunks_[chunk_idx] ^= ((chunk_t)1 << bit_idx);
 }
 
@@ -90,15 +90,15 @@ void Bitset<chunk_t, nchunks>::flip(int64_t pos) noexcept {
 template <typename chunk_t, int64_t nchunks>
 void Bitset<chunk_t, nchunks>::set_range(int64_t start, int64_t length,
                                          chunk_t bits) noexcept {
-  assert(length <= nchunkbits_);
+  assert(length <= nchunkbits);
   if (!length) {
     return;
   }
   int64_t end = start + length;
-  int64_t startchunk = start >> chunkshift_; // divide by nchunkbits
-  int64_t startbit = start & chunkmask_;     // modulo    nchunkbits
-  int64_t endchunk = end >> chunkshift_;
-  int64_t endbit = end & chunkmask_;
+  int64_t startchunk = start >> chunkshift; // divide by nchunkbits
+  int64_t startbit = start & chunkmask;     // modulo    nchunkbits
+  int64_t endchunk = end >> chunkshift;
+  int64_t endbit = end & chunkmask;
   if ((endchunk == startchunk) || (endbit == 0)) {
     chunk_t mask = bitmask<chunk_t>(length) << startbit;
     chunks_[startchunk] &= ~mask;
@@ -109,27 +109,27 @@ void Bitset<chunk_t, nchunks>::set_range(int64_t start, int64_t length,
     chunks_[startchunk] |= bits << startbit;
     chunk_t mask2 = bitmask<chunk_t>(endbit);
     chunks_[endchunk] &= ~mask2;
-    chunks_[endchunk] |= bits >> (nchunkbits_ - startbit);
+    chunks_[endchunk] |= bits >> (nchunkbits - startbit);
   }
 }
 
 template <typename chunk_t, int64_t nchunks>
 chunk_t Bitset<chunk_t, nchunks>::get_range(int64_t start,
                                             int64_t length) const noexcept {
-  assert(length <= nchunkbits_);
+  assert(length <= nchunkbits);
   if (!length) {
     return (chunk_t)0;
   }
   int64_t end = start + length;
-  int64_t startchunk = start >> chunkshift_; // divide by nchunkbits
-  int64_t startbit = start & chunkmask_;     // modulo    nchunkbits
-  int64_t endchunk = end >> chunkshift_;
-  int64_t endbit = end & chunkmask_;
+  int64_t startchunk = start >> chunkshift; // divide by nchunkbits
+  int64_t startbit = start & chunkmask;     // modulo    nchunkbits
+  int64_t endchunk = end >> chunkshift;
+  int64_t endbit = end & chunkmask;
   if ((endchunk == startchunk) || (endbit == 0)) {
     return (chunks_[startchunk] >> startbit) & bitmask<chunk_t>(length);
   } else {
     return ((chunks_[endchunk] & bitmask<chunk_t>(endbit))
-            << (nchunkbits_ - startbit)) |
+            << (nchunkbits - startbit)) |
            (chunks_[startchunk] >> startbit);
   }
 }
@@ -222,8 +222,8 @@ Bitset<chunk_t, nchunks>::operator<<=(int64_t shift) noexcept {
     return *this;
 
   int64_t size = std::size(chunks_);
-  int64_t chunk_shift = shift >> chunkshift_;
-  int64_t bit_shift = shift & chunkmask_;
+  int64_t chunk_shift = shift >> chunkshift;
+  int64_t bit_shift = shift & chunkmask;
 
   if (chunk_shift >= size) {
     for (auto &chunk : chunks_) {
@@ -242,7 +242,7 @@ Bitset<chunk_t, nchunks>::operator<<=(int64_t shift) noexcept {
     }
   } else {
     // Shift with bit offset
-    int64_t complement_shift = nchunkbits_ - bit_shift;
+    int64_t complement_shift = nchunkbits - bit_shift;
     for (int64_t i = size - 1; i > chunk_shift; --i) {
       chunks_[i] = (chunks_[i - chunk_shift] << bit_shift) |
                    (chunks_[i - chunk_shift - 1] >> complement_shift);
@@ -262,8 +262,8 @@ Bitset<chunk_t, nchunks>::operator>>=(int64_t shift) noexcept {
     return *this;
 
   int64_t size = std::size(chunks_);
-  int64_t chunk_shift = shift >> chunkshift_;
-  int64_t bit_shift = shift & chunkmask_;
+  int64_t chunk_shift = shift >> chunkshift;
+  int64_t bit_shift = shift & chunkmask;
 
   if (chunk_shift >= size) {
     for (auto &chunk : chunks_) {
@@ -282,7 +282,7 @@ Bitset<chunk_t, nchunks>::operator>>=(int64_t shift) noexcept {
     }
   } else {
     // Shift with bit offset
-    int64_t complement_shift = nchunkbits_ - bit_shift;
+    int64_t complement_shift = nchunkbits - bit_shift;
     for (int64_t i = 0; i < size - chunk_shift - 1; ++i) {
       chunks_[i] = (chunks_[i + chunk_shift] >> bit_shift) |
                    (chunks_[i + chunk_shift + 1] << complement_shift);
@@ -346,7 +346,8 @@ template <typename chunk_t, int64_t nchunks>
 std::string to_string(Bitset<chunk_t, nchunks> const &bits) {
   std::string str;
   for (auto const &chunk : bits.chunks()) {
-    str = std::bitset<bits.nchunkbits()>(chunk).to_string() + str;
+    str = std::bitset<Bitset<chunk_t, nchunks>::nchunkbits>(chunk).to_string() +
+          str;
   }
   return str;
 }

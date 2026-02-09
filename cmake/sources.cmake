@@ -15,14 +15,18 @@ set(XDIAG_SOURCES
   bits/bitset.cpp
   bits/bitvector.cpp
 
-  # combinatorics/binomial.cpp
-  # combinatorics/bit_patterns.cpp
-  # combinatorics/combinations/combinations.cpp
-  # combinatorics/combinations/combinations_table.cpp
-  # combinatorics/combinations/lin_table.cpp
-  # combinatorics/subsets/subsets.cpp
-  # combinatorics/subsets/subsets_table.cpp
-    
+  combinatorics/binomial.cpp
+  combinatorics/bit_patterns.cpp
+  combinatorics/combinations/combinations.cpp
+  combinatorics/combinations/combinations_table.cpp
+  combinatorics/combinations/lin_table.cpp
+  combinatorics/subsets/subsets.cpp
+  combinatorics/subsets/subsets_table.cpp
+
+  symmetries/group_action/group_action.cpp
+  symmetries/fermi_sign.cpp
+  symmetries/tables/representative_table.cpp
+  
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp
   # algebra/matrix.cpp
@@ -86,10 +90,10 @@ set(XDIAG_SOURCES
   # basis/electron/basis_symmetric_np.cpp
   # basis/electron/basis_symmetric_no_np.cpp
   
-  blocks/blocks.cpp
-  blocks/spinhalf.cpp
-  blocks/electron.cpp
-  blocks/tj.cpp
+  # blocks/blocks.cpp
+  # blocks/spinhalf.cpp
+  # blocks/electron.cpp
+  # blocks/tj.cpp
 
   # symmetries/permutation.cpp
   # symmetries/permutation_group.cpp
