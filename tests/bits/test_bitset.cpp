@@ -13,30 +13,6 @@
 using namespace xdiag;
 using namespace xdiag::bits;
 
-// Helper function to convert uint64_t to bitset
-template <typename chunk_t, int64_t nchunks>
-static Bitset<chunk_t, nchunks> make_bitset(uint64_t value) {
-  Bitset<chunk_t, nchunks> bits(64);
-  for (int i = 0; i < 64; ++i) {
-    if (value & (1ULL << i)) {
-      bits.set(i);
-    }
-  }
-  return bits;
-}
-
-// Helper function to convert bitset to uint64_t
-template <typename chunk_t, int64_t nchunks>
-static uint64_t to_uint64(Bitset<chunk_t, nchunks> const &bits) {
-  uint64_t result = 0;
-  for (int i = 0; i < 64; ++i) {
-    if (bits.test(i)) {
-      result |= (1ULL << i);
-    }
-  }
-  return result;
-}
-
 template <typename chunk_t> void test_bitset_constructor() {
   constexpr int chunkdigits = std::numeric_limits<chunk_t>::digits;
   constexpr int nchunks = 64 / chunkdigits;
@@ -400,6 +376,295 @@ template <typename chunk_t> void test_bitset_set_range() {
   }
 }
 
+template <typename chunk_t> void test_bitset_arithmetic_ops() {
+  constexpr int chunkdigits = std::numeric_limits<chunk_t>::digits;
+  constexpr int nchunks = 64 / chunkdigits;
+
+  std::mt19937 rng(42);
+  std::uniform_int_distribution<uint64_t> dist(
+      std::numeric_limits<uint64_t>::min(),
+      std::numeric_limits<uint64_t>::max());
+
+  // Test with random values
+  for (int trial = 0; trial < 100; ++trial) {
+    uint64_t a = dist(rng);
+    uint64_t b = dist(rng);
+
+    auto bits_a = make_bitset<chunk_t, 0>(a);
+    auto bits_b = make_bitset<chunk_t, 0>(b);
+
+    // Test addition
+    auto bits_add = bits_a + bits_b;
+    REQUIRE(to_uint64(bits_add) == (a + b));
+
+    // Test subtraction
+    auto bits_sub = bits_a - bits_b;
+    REQUIRE(to_uint64(bits_sub) == (a - b));
+
+    // Test unary negation
+    auto bits_neg = -bits_a;
+    REQUIRE(to_uint64(bits_neg) == -a);
+
+    // Test multiplication (only with smaller values to avoid overflow issues)
+    if (trial < 20) {
+      uint64_t small_a = a & 0xFFFFFFFF;  // 32-bit values
+      uint64_t small_b = b & 0xFFFFFFFF;
+      auto bits_small_a = make_bitset<chunk_t, 0>(small_a);
+      auto bits_small_b = make_bitset<chunk_t, 0>(small_b);
+
+      auto bits_mul = bits_small_a * bits_small_b;
+      REQUIRE(to_uint64(bits_mul) == (small_a * small_b));
+    }
+
+    // Test division (avoid division by zero)
+    if (b != 0) {
+      auto bits_div = bits_a / bits_b;
+      REQUIRE(to_uint64(bits_div) == (a / b));
+    }
+
+    // Test compound assignments
+    auto bits_temp = bits_a;
+    bits_temp += bits_b;
+    REQUIRE(to_uint64(bits_temp) == (a + b));
+
+    bits_temp = bits_a;
+    bits_temp -= bits_b;
+    REQUIRE(to_uint64(bits_temp) == (a - b));
+
+    if (b != 0) {
+      bits_temp = bits_a;
+      bits_temp /= bits_b;
+      REQUIRE(to_uint64(bits_temp) == (a / b));
+    }
+
+    // Test static bitset
+    if constexpr (chunkdigits > 8) {
+      auto bits_a_s = make_bitset<chunk_t, nchunks>(a);
+      auto bits_b_s = make_bitset<chunk_t, nchunks>(b);
+
+      REQUIRE(to_uint64(bits_a_s + bits_b_s) == (a + b));
+      REQUIRE(to_uint64(bits_a_s - bits_b_s) == (a - b));
+      REQUIRE(to_uint64(-bits_a_s) == -a);
+
+      if (b != 0) {
+        REQUIRE(to_uint64(bits_a_s / bits_b_s) == (a / b));
+      }
+    }
+  }
+
+  // Test extremal cases
+  {
+    uint64_t zero = 0;
+    uint64_t one = 1;
+    uint64_t max = std::numeric_limits<uint64_t>::max();
+
+    auto bits_zero = make_bitset<chunk_t, 0>(zero);
+    auto bits_one = make_bitset<chunk_t, 0>(one);
+    auto bits_max = make_bitset<chunk_t, 0>(max);
+
+    // Addition with zero
+    REQUIRE(to_uint64(bits_zero + bits_one) == (zero + one));
+    REQUIRE(to_uint64(bits_max + bits_zero) == (max + zero));
+
+    // Addition overflow
+    REQUIRE(to_uint64(bits_max + bits_one) == (max + one));  // wraps to 0
+
+    // Subtraction with zero
+    REQUIRE(to_uint64(bits_one - bits_zero) == (one - zero));
+    REQUIRE(to_uint64(bits_max - bits_zero) == (max - zero));
+
+    // Subtraction underflow
+    REQUIRE(to_uint64(bits_zero - bits_one) == (zero - one));  // wraps to max
+
+    // Unary negation of zero
+    REQUIRE(to_uint64(-bits_zero) == -zero);
+
+    // Unary negation of one
+    REQUIRE(to_uint64(-bits_one) == -one);
+
+    // Unary negation of max
+    REQUIRE(to_uint64(-bits_max) == -max);
+
+    // Multiplication by zero
+    REQUIRE(to_uint64(bits_max * bits_zero) == (max * zero));
+
+    // Multiplication by one
+    REQUIRE(to_uint64(bits_max * bits_one) == (max * one));
+
+    // Division by max
+    REQUIRE(to_uint64(bits_max / bits_max) == (max / max));
+
+    // Division of zero
+    REQUIRE(to_uint64(bits_zero / bits_max) == (zero / max));
+
+    // Division by one
+    REQUIRE(to_uint64(bits_max / bits_one) == (max / one));
+  }
+}
+
+template <typename chunk_t> void test_bitset_relational_ops() {
+  constexpr int chunkdigits = std::numeric_limits<chunk_t>::digits;
+  constexpr int nchunks = 64 / chunkdigits;
+
+  std::mt19937 rng(42);
+  std::uniform_int_distribution<uint64_t> dist(
+      std::numeric_limits<uint64_t>::min(),
+      std::numeric_limits<uint64_t>::max());
+
+  // Test with random values
+  for (int trial = 0; trial < 100; ++trial) {
+    uint64_t a = dist(rng);
+    uint64_t b = dist(rng);
+
+    auto bits_a = make_bitset<chunk_t, 0>(a);
+    auto bits_b = make_bitset<chunk_t, 0>(b);
+
+    // Test less than
+    REQUIRE((bits_a < bits_b) == (a < b));
+
+    // Test less than or equal
+    REQUIRE((bits_a <= bits_b) == (a <= b));
+
+    // Test greater than
+    REQUIRE((bits_a > bits_b) == (a > b));
+
+    // Test greater than or equal
+    REQUIRE((bits_a >= bits_b) == (a >= b));
+
+    // Test static bitset
+    if constexpr (chunkdigits > 8) {
+      auto bits_a_s = make_bitset<chunk_t, nchunks>(a);
+      auto bits_b_s = make_bitset<chunk_t, nchunks>(b);
+
+      REQUIRE((bits_a_s < bits_b_s) == (a < b));
+      REQUIRE((bits_a_s <= bits_b_s) == (a <= b));
+      REQUIRE((bits_a_s > bits_b_s) == (a > b));
+      REQUIRE((bits_a_s >= bits_b_s) == (a >= b));
+    }
+  }
+
+  // Test extremal cases
+  {
+    uint64_t zero = 0;
+    uint64_t one = 1;
+    uint64_t max = std::numeric_limits<uint64_t>::max();
+
+    auto bits_zero = make_bitset<chunk_t, 0>(zero);
+    auto bits_one = make_bitset<chunk_t, 0>(one);
+    auto bits_max = make_bitset<chunk_t, 0>(max);
+
+    // Zero comparisons
+    REQUIRE((bits_zero < bits_one) == (zero < one));
+    REQUIRE((bits_zero <= bits_zero) == (zero <= zero));
+    REQUIRE((bits_zero > bits_one) == (zero > one));
+    REQUIRE((bits_zero >= bits_zero) == (zero >= zero));
+
+    // Max comparisons
+    REQUIRE((bits_max > bits_one) == (max > one));
+    REQUIRE((bits_max >= bits_max) == (max >= max));
+    REQUIRE((bits_max < bits_one) == (max < one));
+    REQUIRE((bits_max <= bits_max) == (max <= max));
+
+    // One comparisons
+    REQUIRE((bits_one > bits_zero) == (one > zero));
+    REQUIRE((bits_one < bits_max) == (one < max));
+    REQUIRE((bits_one >= bits_one) == (one >= one));
+    REQUIRE((bits_one <= bits_one) == (one <= one));
+  }
+}
+
+template <typename chunk_t> void test_make_bitset() {
+  constexpr int chunkdigits = std::numeric_limits<chunk_t>::digits;
+  constexpr int nchunks = 64 / chunkdigits;
+
+  std::mt19937 rng(42);
+  std::uniform_int_distribution<uint64_t> dist(
+      std::numeric_limits<uint64_t>::min(),
+      std::numeric_limits<uint64_t>::max());
+
+  // Test with random values
+  for (int trial = 0; trial < 100; ++trial) {
+    uint64_t value = dist(rng);
+
+    auto bits_dynamic = make_bitset<chunk_t, 0>(value);
+    auto bits_static = make_bitset<chunk_t, nchunks>(value);
+
+    // Verify round-trip conversion
+    REQUIRE(to_uint64(bits_dynamic) == value);
+    if constexpr (chunkdigits > 8) {
+      REQUIRE(to_uint64(bits_static) == value);
+    }
+
+    // Check individual bits
+    for (int i = 0; i < 64; ++i) {
+      bool expected = (value & (1ULL << i)) != 0;
+      REQUIRE(bits_dynamic.test(i) == expected);
+      if constexpr (chunkdigits > 8) {
+        REQUIRE(bits_static.test(i) == expected);
+      }
+    }
+  }
+
+  // Test extremal cases
+  {
+    uint64_t zero = 0;
+    uint64_t one = 1;
+    uint64_t max = std::numeric_limits<uint64_t>::max();
+
+    auto bits_zero_d = make_bitset<chunk_t, 0>(zero);
+    auto bits_one_d = make_bitset<chunk_t, 0>(one);
+    auto bits_max_d = make_bitset<chunk_t, 0>(max);
+
+    // Zero
+    REQUIRE(to_uint64(bits_zero_d) == zero);
+    REQUIRE(bits_zero_d.none() == true);
+    REQUIRE(bits_zero_d.count() == 0);
+
+    // One
+    REQUIRE(to_uint64(bits_one_d) == one);
+    REQUIRE(bits_one_d.count() == 1);
+    REQUIRE(bits_one_d.test(0) == true);
+    for (int i = 1; i < 64; ++i) {
+      REQUIRE(bits_one_d.test(i) == false);
+    }
+
+    // Max
+    REQUIRE(to_uint64(bits_max_d) == max);
+    REQUIRE(bits_max_d.all() == true);
+    REQUIRE(bits_max_d.count() == 64);
+    for (int i = 0; i < 64; ++i) {
+      REQUIRE(bits_max_d.test(i) == true);
+    }
+
+    // Test static bitsets
+    if constexpr (chunkdigits > 8) {
+      auto bits_zero_s = make_bitset<chunk_t, nchunks>(zero);
+      auto bits_one_s = make_bitset<chunk_t, nchunks>(one);
+      auto bits_max_s = make_bitset<chunk_t, nchunks>(max);
+
+      REQUIRE(to_uint64(bits_zero_s) == zero);
+      REQUIRE(to_uint64(bits_one_s) == one);
+      REQUIRE(to_uint64(bits_max_s) == max);
+    }
+  }
+
+  // Test powers of 2
+  for (int i = 0; i < 64; ++i) {
+    uint64_t pow2 = 1ULL << i;
+    auto bits = make_bitset<chunk_t, 0>(pow2);
+
+    REQUIRE(to_uint64(bits) == pow2);
+    REQUIRE(bits.count() == 1);
+    REQUIRE(bits.test(i) == true);
+
+    for (int j = 0; j < 64; ++j) {
+      if (i != j) {
+        REQUIRE(bits.test(j) == false);
+      }
+    }
+  }
+}
+
 TEST_CASE("bitset", "[bits]") {
   Log.out("Testing bitset");
 
@@ -457,5 +722,26 @@ TEST_CASE("bitset", "[bits]") {
     test_bitset_comparison<uint16_t>();
     test_bitset_comparison<uint32_t>();
     test_bitset_comparison<uint64_t>();
+  }
+
+  SECTION("make_bitset") {
+    test_make_bitset<uint8_t>();
+    test_make_bitset<uint16_t>();
+    test_make_bitset<uint32_t>();
+    test_make_bitset<uint64_t>();
+  }
+
+  SECTION("arithmetic_ops") {
+    test_bitset_arithmetic_ops<uint8_t>();
+    test_bitset_arithmetic_ops<uint16_t>();
+    test_bitset_arithmetic_ops<uint32_t>();
+    test_bitset_arithmetic_ops<uint64_t>();
+  }
+
+  SECTION("relational_ops") {
+    test_bitset_relational_ops<uint8_t>();
+    test_bitset_relational_ops<uint16_t>();
+    test_bitset_relational_ops<uint32_t>();
+    test_bitset_relational_ops<uint64_t>();
   }
 }

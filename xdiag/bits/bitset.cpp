@@ -198,6 +198,18 @@ Bitset<chunk_t, nchunks>::operator^=(Bitset const &rhs) noexcept {
   return *this;
 }
 
+// Optimized shift-by-1 for division algorithm (private helper)
+template <typename chunk_t, int64_t nchunks>
+void Bitset<chunk_t, nchunks>::shift_left_by_1() noexcept {
+  int64_t size = std::size(chunks_);
+  chunk_t carry = 0;
+  for (int64_t i = 0; i < size; ++i) {
+    chunk_t next_carry = chunks_[i] >> (nchunkbits_ - 1);
+    chunks_[i] = (chunks_[i] << 1) | carry;
+    carry = next_carry;
+  }
+}
+
 // Shift operations
 template <typename chunk_t, int64_t nchunks>
 Bitset<chunk_t, nchunks>
@@ -295,6 +307,180 @@ Bitset<chunk_t, nchunks>::operator>>=(int64_t shift) noexcept {
   return *this;
 }
 
+// Arithmetic operations
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks>
+Bitset<chunk_t, nchunks>::operator+(Bitset const &rhs) const {
+  Bitset result = *this;
+  result += rhs;
+  return result;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks>
+Bitset<chunk_t, nchunks>::operator-(Bitset const &rhs) const {
+  Bitset result = *this;
+  result -= rhs;
+  return result;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks> Bitset<chunk_t, nchunks>::operator-() const {
+  Bitset result = *this;
+  // Two's complement: flip all bits and add 1 (correct for unsigned modular
+  // arithmetic)
+  for (int64_t i = 0; i < std::size(result.chunks_); ++i) {
+    result.chunks_[i] = ~result.chunks_[i];
+  }
+  // Add 1
+  chunk_t carry = 1;
+  for (int64_t i = 0; i < std::size(result.chunks_) && carry; ++i) {
+    chunk_t old_val = result.chunks_[i];
+    result.chunks_[i] = old_val + carry;
+    carry = (result.chunks_[i] < old_val) ? 1 : 0;
+  }
+  return result;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks>
+Bitset<chunk_t, nchunks>::operator*(Bitset const &rhs) const {
+  Bitset result = *this;
+  result *= rhs;
+  return result;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks>
+Bitset<chunk_t, nchunks>::operator/(Bitset const &rhs) const {
+  Bitset result = *this;
+  result /= rhs;
+  return result;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks> &
+Bitset<chunk_t, nchunks>::operator+=(Bitset const &rhs) noexcept {
+  assert(std::size(chunks_) == std::size(rhs.chunks_));
+  chunk_t carry = 0;
+  for (int64_t i = 0; i < std::size(chunks_); ++i) {
+    chunk_t old_chunk = chunks_[i];
+    chunks_[i] += rhs.chunks_[i] + carry;
+    // Detect overflow: if result is less than either operand, we had overflow
+    carry =
+        (chunks_[i] < old_chunk || (carry && chunks_[i] == old_chunk)) ? 1 : 0;
+  }
+  return *this;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks> &
+Bitset<chunk_t, nchunks>::operator-=(Bitset const &rhs) noexcept {
+  assert(std::size(chunks_) == std::size(rhs.chunks_));
+  chunk_t borrow = 0;
+  for (int64_t i = 0; i < std::size(chunks_); ++i) {
+    chunk_t old_chunk = chunks_[i];
+    chunks_[i] -= rhs.chunks_[i] + borrow;
+    // Detect underflow: if result is greater than original, we had underflow
+    borrow =
+        (chunks_[i] > old_chunk || (borrow && chunks_[i] == old_chunk)) ? 1 : 0;
+  }
+  return *this;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks> &
+Bitset<chunk_t, nchunks>::operator*=(Bitset const &rhs) noexcept {
+  assert(std::size(chunks_) == std::size(rhs.chunks_));
+  Bitset<chunk_t, nchunks> result(std::size(chunks_) * nchunkbits_);
+
+  // Grade-school multiplication without extended types
+  // Split each chunk multiplication into high and low parts
+  constexpr int half_bits = nchunkbits_ / 2;
+  constexpr chunk_t low_mask = (static_cast<chunk_t>(1) << half_bits) - 1;
+
+  for (int64_t i = 0; i < std::size(chunks_); ++i) {
+    if (rhs.chunks_[i] == 0)
+      continue;
+
+    chunk_t a_lo = rhs.chunks_[i] & low_mask;
+    chunk_t a_hi = rhs.chunks_[i] >> half_bits;
+
+    chunk_t carry = 0;
+    for (int64_t j = 0; j < std::size(chunks_) - i; ++j) {
+      chunk_t b_lo = chunks_[j] & low_mask;
+      chunk_t b_hi = chunks_[j] >> half_bits;
+
+      // Compute a * b as (a_hi * 2^k + a_lo) * (b_hi * 2^k + b_lo)
+      chunk_t p_ll = a_lo * b_lo;
+      chunk_t p_lh = a_lo * b_hi;
+      chunk_t p_hl = a_hi * b_lo;
+      chunk_t p_hh = a_hi * b_hi;
+
+      // Combine: p_ll + (p_lh + p_hl) * 2^k + p_hh * 2^(2k)
+      chunk_t mid = p_lh + p_hl;
+      chunk_t mid_carry = (mid < p_lh) ? 1 : 0;
+
+      chunk_t low = p_ll + ((mid & low_mask) << half_bits);
+      chunk_t low_carry = (low < p_ll) ? 1 : 0;
+
+      chunk_t high =
+          p_hh + (mid >> half_bits) + (mid_carry << half_bits) + low_carry;
+
+      // Add to result with carry
+      chunk_t old_val = result.chunks_[i + j];
+      chunk_t temp = old_val + low;
+      chunk_t add_carry1 = (temp < old_val) ? 1 : 0;
+      result.chunks_[i + j] = temp + carry;
+      chunk_t add_carry2 = (result.chunks_[i + j] < temp) ? 1 : 0;
+      carry = high + add_carry1 + add_carry2;
+    }
+  }
+
+  *this = result;
+  return *this;
+}
+
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks> &
+Bitset<chunk_t, nchunks>::operator/=(Bitset const &rhs) noexcept {
+  assert(std::size(chunks_) == std::size(rhs.chunks_));
+
+  // Division by zero check
+  if (rhs.none()) {
+    // Division by zero - return 0
+    for (auto &chunk : chunks_) {
+      chunk = 0;
+    }
+    return *this;
+  }
+
+  // Long division algorithm for multi-precision integers
+  Bitset<chunk_t, nchunks> quotient(std::size(chunks_) * nchunkbits_);
+  Bitset<chunk_t, nchunks> remainder(std::size(chunks_) * nchunkbits_);
+
+  // Find the most significant bit position
+  int64_t nbits = std::size(chunks_) * nchunkbits_;
+
+  for (int64_t i = nbits - 1; i >= 0; --i) {
+    // Shift remainder left by 1 (optimized)
+    remainder.shift_left_by_1();
+    // Set the least significant bit of remainder to bit i of dividend
+    if (test(i)) {
+      remainder.set(0);
+    }
+
+    // If remainder >= divisor, subtract divisor and set quotient bit
+    if (remainder >= rhs) {
+      remainder -= rhs;
+      quotient.set(i);
+    }
+  }
+
+  *this = quotient;
+  return *this;
+}
+
 // Predicates
 template <typename chunk_t, int64_t nchunks>
 bool Bitset<chunk_t, nchunks>::all() const noexcept {
@@ -343,6 +529,40 @@ bool Bitset<chunk_t, nchunks>::operator!=(
 }
 
 template <typename chunk_t, int64_t nchunks>
+bool Bitset<chunk_t, nchunks>::operator<(
+    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+  assert(std::size(chunks_) == std::size(rhs.chunks_));
+  // Compare from most significant chunk to least significant
+  for (int64_t i = std::size(chunks_) - 1; i >= 0; --i) {
+    if (chunks_[i] < rhs.chunks_[i]) {
+      return true;
+    }
+    if (chunks_[i] > rhs.chunks_[i]) {
+      return false;
+    }
+  }
+  return false; // equal
+}
+
+template <typename chunk_t, int64_t nchunks>
+bool Bitset<chunk_t, nchunks>::operator<=(
+    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+  return !operator>(rhs);
+}
+
+template <typename chunk_t, int64_t nchunks>
+bool Bitset<chunk_t, nchunks>::operator>(
+    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+  return rhs.operator<(*this);
+}
+
+template <typename chunk_t, int64_t nchunks>
+bool Bitset<chunk_t, nchunks>::operator>=(
+    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+  return !operator<(rhs);
+}
+
+template <typename chunk_t, int64_t nchunks>
 std::string to_string(Bitset<chunk_t, nchunks> const &bits) {
   std::string str;
   for (auto const &chunk : bits.chunks()) {
@@ -358,12 +578,50 @@ std::ostream &operator<<(std::ostream &out,
   return out;
 }
 
+template <typename chunk_t, int64_t nchunks>
+Bitset<chunk_t, nchunks> make_bitset(uint64_t value) {
+  Bitset<chunk_t, nchunks> bits(64);
+  for (int i = 0; i < 64; ++i) {
+    if (value & (1ULL << i)) {
+      bits.set(i);
+    }
+  }
+  return bits;
+}
+
+template <typename chunk_t, int64_t nchunks>
+uint64_t to_uint64(Bitset<chunk_t, nchunks> const &bits) {
+  uint64_t result = 0;
+  constexpr int64_t chunk_bits = std::numeric_limits<chunk_t>::digits;
+
+  int64_t max_bits;
+  if constexpr (nchunks == 0) {
+    // Dynamic: runtime calculation
+    max_bits =
+        std::min(int64_t(64), int64_t(std::size(bits.chunks()) * chunk_bits));
+  } else {
+    // Static: compile-time calculation
+    constexpr int64_t max_bits_static =
+        std::min(int64_t(64), nchunks * chunk_bits);
+    max_bits = max_bits_static;
+  }
+
+  for (int i = 0; i < max_bits; ++i) {
+    if (bits.test(i)) {
+      result |= (1ULL << i);
+    }
+  }
+  return result;
+}
+
 // Explicit template instantiations
 #define INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, NCHUNKS)                        \
   template class Bitset<CHUNK_T, NCHUNKS>;                                     \
   template std::string to_string(Bitset<CHUNK_T, NCHUNKS> const &);            \
   template std::ostream &operator<<(std::ostream &,                            \
-                                    Bitset<CHUNK_T, NCHUNKS> const &);
+                                    Bitset<CHUNK_T, NCHUNKS> const &);         \
+  template Bitset<CHUNK_T, NCHUNKS> make_bitset(uint64_t);                     \
+  template uint64_t to_uint64(Bitset<CHUNK_T, NCHUNKS> const &);
 
 #define INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS(CHUNK_T)                     \
   INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, 0)                                    \

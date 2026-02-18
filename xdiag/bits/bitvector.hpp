@@ -14,6 +14,20 @@ template <typename bit_t> class BitVectorReference;
 template <typename bit_t> class BitVectorIterator;
 template <typename bit_t> class BitVectorConstIterator;
 
+// Dynamic vector of bit-packed integers.
+//
+// BitVector stores a variable number of small integers (each taking nbits bits)
+// in a dynamically allocated Bitset. Provides a std::vector-like interface with
+// random access, iterators, and bounds checking.
+//
+// Template parameter:
+//   bit_t: Chunk type for underlying Bitset (uint8_t, uint16_t, uint32_t, uint64_t)
+//
+// Example:
+//   BitVector<uint64_t> vec(100, 3);  // 100 elements, 3 bits each (values 0-7)
+//   vec[0] = 5;                       // Set first element to 5
+//   int64_t val = vec[0];             // Get first element (returns 5)
+//   for (auto x : vec) { ... }        // Iterate over elements
 template <typename bit_t> class BitVector {
 public:
   using value_type = bit_t;

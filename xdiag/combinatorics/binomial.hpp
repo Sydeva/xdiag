@@ -11,11 +11,17 @@ namespace xdiag::combinatorics {
 int64_t binomial(int64_t n, int64_t k);
 
 constexpr int64_t binom(int64_t n, int64_t k) {
-  if (k > n || k < 0)
+  if (k > n || k < 0) {
     return 0;
+  }
+  // Use symmetry to avoid overflow: C(n,k) = C(n,n-k)
+  if (k > n - k) {
+    k = n - k;
+  }
   int64_t res = 1;
-  for (int64_t i = 1; i <= k; i++)
+  for (int64_t i = 1; i <= k; i++) {
     res = (res * (n - i + 1)) / i;
+  }
   return res;
 }
 
