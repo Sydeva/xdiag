@@ -5,6 +5,7 @@
 #pragma once
 #include <cstdint>
 #include <limits>
+#include <string>
 
 namespace xdiag::bits {
 
@@ -27,10 +28,14 @@ namespace xdiag::bits {
 //   maximum_size = total_bits / nbits
 //   For uint64_t with nbits=3: 64/3 = 21 elements
 //   For Bitset<uint64_t, 2> with nbits=3: 128/3 = 42 elements
-template <typename bit_t, int nbits> class BitArray {
+template <typename bit_tt, int nbitss> class BitArray {
 public:
+  using bit_t = bit_tt;
+  static constexpr int nbits = nbitss;
+
   // Maximum number of elements that fit in the storage
-  static constexpr int64_t maximum_size = std::numeric_limits<bit_t>::digits / nbits;
+  static constexpr int64_t maximum_size =
+      std::numeric_limits<bit_t>::digits / nbits;
 
   // Default constructor, initializes all bits to 0
   BitArray() = default;
@@ -47,5 +52,12 @@ public:
 private:
   bit_t bits_{};
 };
+
+template <typename bit_t, int nbits>
+std::string to_string(BitArray<bit_t, nbits> const &bits,
+                      int64_t size = BitArray<bit_t, nbits>::maximum_size);
+
+template <typename bit_t, int nbits>
+std::ostream &operator<<(std::ostream &out, BitArray<bit_t, nbits> const &bits);
 
 } // namespace xdiag::bits

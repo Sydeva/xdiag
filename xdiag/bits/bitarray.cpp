@@ -43,9 +43,28 @@ bool BitArray<bit_t, nbits>::operator!=(
   return !operator==(rhs);
 }
 
+template <typename bit_t, int nbits>
+std::string to_string(BitArray<bit_t, nbits> const &bits, int64_t size) {
+  std::string str;
+  for (int64_t i = 0; i < size; ++i) {
+    str += std::to_string(bits.get(i)) + std::string(" ");
+  }
+  return str;
+}
+
+template <typename bit_t, int nbits>
+std::ostream &operator<<(std::ostream &out,
+                         BitArray<bit_t, nbits> const &bits) {
+  out << to_string(bits);
+  return out;
+}
+
 // Template instantiations
 #define INSTANTIATE_BITARRAY(BIT_T, NBITS)                                     \
-  template class BitArray<BIT_T, NBITS>;
+  template class BitArray<BIT_T, NBITS>;                                       \
+  template std::string to_string(BitArray<BIT_T, NBITS> const &, int64_t);     \
+  template std::ostream &operator<<(std::ostream &,                            \
+                                    BitArray<BIT_T, NBITS> const &);
 
 #define INSTANTIATE_BITARRAY_FOR_NBITS(BIT_T)                                  \
   INSTANTIATE_BITARRAY(BIT_T, 1)                                               \

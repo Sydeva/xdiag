@@ -9,7 +9,7 @@ set(XDIAG_TEST_SOURCES
   bits/test_bitarray.cpp
 
   combinatorics/test_combinations.cpp
-
+  combinatorics/test_bounded_multisets.cpp
   
   # io/test_file_toml.cpp
   # io/test_file_h5.cpp

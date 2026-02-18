@@ -1,0 +1,136 @@
+// SPDX-FileCopyrightText: 2025 Alexander Wietek <awietek@pks.mpg.de>
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#include "bounded_multisets.hpp"
+
+#include <xdiag/bits/bitarray.hpp>
+#include <xdiag/bits/bitset.hpp>
+#include <xdiag/bits/log2.hpp>
+#include <xdiag/bits/unpack.hpp>
+#include <xdiag/utils/error.hpp>
+
+namespace xdiag::combinatorics {
+
+template <typename bitarray_t>
+BoundedMultisets<bitarray_t>::BoundedMultisets(int64_t n, int64_t bound) try
+    : n_(n), bound_(bound), size_(pow((int64_t)bound, n)) {
+  if (n < 0) {
+    XDIAG_THROW("Error constructing BoundedMultisets: n<0");
+  }
+  if (bound < 2) {
+    XDIAG_THROW("Error constructing BoundedMultisets: bound < 2");
+  }
+  int64_t nbits_for_bound = bits::ceillog2(bound);
+  if (nbits_for_bound > nbits) {
+    XDIAG_THROW(fmt::format("Error constructing BoundedMultisets: bound ({}) "
+                            "is too large for BitArray type with nbits ({})",
+                            bound, nbits));
+  }
+  if (n > bitarray_t::maximum_size) {
+    XDIAG_THROW(
+        fmt::format("Error constructing BoundedMultisets: size n ({}) "
+                    "is too large for BitArray type with maximum_size ({})",
+                    n, bitarray_t::maximum_size));
+  }
+}
+XDIAG_CATCH
+
+template <typename bitarray_t>
+int64_t BoundedMultisets<bitarray_t>::n() const {
+  return n_;
+}
+
+template <typename bitarray_t>
+int64_t BoundedMultisets<bitarray_t>::bound() const {
+  return bound_;
+}
+
+template <typename bitarray_t>
+int64_t BoundedMultisets<bitarray_t>::size() const {
+  return size_;
+}
+
+template <typename bitarray_t>
+BoundedMultisetsIterator<bitarray_t>
+BoundedMultisets<bitarray_t>::begin() const {
+  return BoundedMultisetsIterator<bitarray_t>(n_, 0, bound_);
+}
+
+template <typename bitarray_t>
+BoundedMultisetsIterator<bitarray_t>
+BoundedMultisets<bitarray_t>::end() const {
+  return BoundedMultisetsIterator<bitarray_t>(n_, size_, bound_);
+}
+
+template <typename bitarray_t>
+bool BoundedMultisets<bitarray_t>::operator==(
+    BoundedMultisets<bitarray_t> const &rhs) const {
+  return (n_ == rhs.n_) && (bound_ == rhs.bound_);
+}
+
+template <typename bitarray_t>
+bool BoundedMultisets<bitarray_t>::operator!=(
+    BoundedMultisets<bitarray_t> const &rhs) const {
+  return !operator==(rhs);
+}
+
+template <typename bitarray_t>
+BoundedMultisetsIterator<bitarray_t>::BoundedMultisetsIterator(int64_t n,
+                                                               int64_t idx,
+                                                               int64_t bound)
+    : idx_(idx), bound_(bound) {}
+
+template <typename bitarray_t>
+bool BoundedMultisetsIterator<bitarray_t>::operator==(
+    BoundedMultisetsIterator<bitarray_t> const &rhs) const {
+  return idx_ == rhs.idx_;
+}
+
+template <typename bitarray_t>
+bool BoundedMultisetsIterator<bitarray_t>::operator!=(
+    BoundedMultisetsIterator<bitarray_t> const &rhs) const {
+  return idx_ != rhs.idx_;
+}
+
+template <typename bitarray_t>
+BoundedMultisetsIterator<bitarray_t> &
+BoundedMultisetsIterator<bitarray_t>::operator++() {
+  ++idx_;
+  return *this;
+}
+
+template <typename bitarray_t>
+auto BoundedMultisetsIterator<bitarray_t>::operator*() const -> bitarray_t {
+  return bits::unpack<bit_t, nbits>(idx_, bound_);
+}
+
+// clang-format off
+#define INSTANTIATE_BMS(BIT_T, NBITS)                                          \
+  template class BoundedMultisets<bits::BitArray<BIT_T, NBITS>>;              \
+  template class BoundedMultisetsIterator<bits::BitArray<BIT_T, NBITS>>;
+
+#define INSTANTIATE_BMS_ALL(BIT_T)                                             \
+  INSTANTIATE_BMS(BIT_T, 1)                                                    \
+  INSTANTIATE_BMS(BIT_T, 2)                                                    \
+  INSTANTIATE_BMS(BIT_T, 3)                                                    \
+  INSTANTIATE_BMS(BIT_T, 4)                                                    \
+  INSTANTIATE_BMS(BIT_T, 5)                                                    \
+  INSTANTIATE_BMS(BIT_T, 6)                                                    \
+  INSTANTIATE_BMS(BIT_T, 7)                                                    \
+  INSTANTIATE_BMS(BIT_T, 8)
+
+INSTANTIATE_BMS_ALL(uint16_t)
+INSTANTIATE_BMS_ALL(uint32_t)
+INSTANTIATE_BMS_ALL(uint64_t)
+INSTANTIATE_BMS_ALL(bits::BitsetDynamic)
+INSTANTIATE_BMS_ALL(bits::BitsetStatic1)
+INSTANTIATE_BMS_ALL(bits::BitsetStatic2)
+INSTANTIATE_BMS_ALL(bits::BitsetStatic4)
+INSTANTIATE_BMS_ALL(bits::BitsetStatic8)
+
+#undef INSTANTIATE_BMS_ALL
+#undef INSTANTIATE_BMS
+// clang-format on
+
+} // namespace xdiag::combinatorics

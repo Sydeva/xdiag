@@ -15,6 +15,7 @@ set(XDIAG_SOURCES
   bits/bitset.cpp
   bits/bitvector.cpp
   bits/bitarray.cpp
+  bits/unpack.cpp
 
   combinatorics/binomial.cpp
   combinatorics/bit_patterns.cpp
@@ -23,6 +24,7 @@ set(XDIAG_SOURCES
   combinatorics/combinations/lin_table.cpp
   combinatorics/subsets/subsets.cpp
   combinatorics/subsets/subsets_table.cpp
+  combinatorics/bounded_multisets/bounded_multisets.cpp
 
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp
