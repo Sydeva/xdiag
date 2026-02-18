@@ -4,9 +4,9 @@
 
 #include "group_action.hpp"
 
-#include <xdiag/symmetries/operations/fermi_sign.hpp>
-#include <xdiag/symmetries/operations/group_action_operations.hpp>
-#include <xdiag/symmetries/operations/symmetry_operations.hpp>
+// #include <xdiag/symmetries/fermi_sign.hpp>
+// #include <xdiag/symmetries/operations/group_action_operations.hpp>
+// #include <xdiag/symmetries/operations/symmetry_operations.hpp>
 
 namespace xdiag {
 

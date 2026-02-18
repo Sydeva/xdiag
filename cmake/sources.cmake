@@ -23,7 +23,7 @@ set(XDIAG_SOURCES
   combinatorics/combinations/lin_table.cpp
   combinatorics/subsets/subsets.cpp
   combinatorics/subsets/subsets_table.cpp
-    
+
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp
   # algebra/matrix.cpp

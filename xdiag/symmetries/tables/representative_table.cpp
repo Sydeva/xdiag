@@ -2,21 +2,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "representative_lookup_table.hpp"
+#include "representative_table.hpp"
 
 #include <algorithm>
 #include <cstdint>
 #include <type_traits>
 
 #include <xdiag/bits/log2.hpp>
-#include <xdiag/combinatorics/combinations_indexing.hpp>
-#include <xdiag/combinatorics/combinations_indexing.hpp>
-#include <xdiag/combinatorics/subsets_indexing.hpp>
+#include <xdiag/combinatorics/combinations/combinations.hpp>
+#include <xdiag/combinatorics/subsets/subsets.hpp>
 
 namespace xdiag::symmetries {
 
 template <typename state_indexing_t, typename coeff_t>
-static void representative_lookup_table_initialize(
+static void representative_table_initialize(
     state_indexing_t const &state_indexing, GroupAction const &group_action,
     std::vector<coeff_t> const &characters,
     bits::BitVector<typename state_indexing_t::bit_t> &representative,
@@ -125,30 +124,34 @@ static void representative_lookup_table_initialize(
 XDIAG_CATCH
 
 template <typename state_indexing_t>
-RepresentativeLookupTable<state_indexing_t>::RepresentativeLookupTable(
+RepresentativeTable<state_indexing_t>::RepresentativeTable(
     state_indexing_t const &state_indexing, GroupAction const &group_action,
     std::vector<double> const &characters) try {
-  representative_lookup_table_initialize(
-      state_indexing, group_action, characters, representative_,
-      representative_index_, representative_symmetry_,
-      representative_norm_index_, norm_);
+  representative_table_initialize(state_indexing, group_action, characters,
+                                  representative_, representative_index_,
+                                  representative_symmetry_,
+                                  representative_norm_index_, norm_);
 }
 XDIAG_CATCH
 
 template <typename state_indexing_t>
-RepresentativeLookupTable<state_indexing_t>::RepresentativeLookupTable(
+RepresentativeTable<state_indexing_t>::RepresentativeTable(
     state_indexing_t const &state_indexing, GroupAction const &group_action,
     std::vector<complex> const &characters) try {
-  representative_lookup_table_initialize(
-      state_indexing, group_action, characters, representative_,
-      representative_index_, representative_symmetry_,
-      representative_norm_index_, norm_);
+  representative_table_initialize(state_indexing, group_action, characters,
+                                  representative_, representative_index_,
+                                  representative_symmetry_,
+                                  representative_norm_index_, norm_);
 }
 XDIAG_CATCH
 
+int64_t RepresentativeTable<state_indexing_t>::size() const {
+  return representative_.size();
+}
+
 template <typename state_indexing_t>
-bool RepresentativeLookupTable<state_indexing_t>::operator==(
-    RepresentativeLookupTable<state_indexing_t> const &rhs) const {
+bool RepresentativeTable<state_indexing_t>::operator==(
+    RepresentativeTable<state_indexing_t> const &rhs) const {
   return (representative_ == rhs.representative_) &&
          (representative_index_ == rhs.representative_index_) &&
          (representative_symmetry_ == rhs.representative_symmetry_) &&
@@ -157,18 +160,15 @@ bool RepresentativeLookupTable<state_indexing_t>::operator==(
 }
 
 template <typename state_indexing_t>
-bool RepresentativeLookupTable<state_indexing_t>::operator!=(
-    RepresentativeLookupTable<state_indexing_t> const &rhs) const {
+bool RepresentativeTable<state_indexing_t>::operator!=(
+    RepresentativeTable<state_indexing_t> const &rhs) const {
   return ~operator==(rhs);
 }
 
-template class RepresentativeLookupTable<
-    combinatorics::SubsetsIndexing<uint32_t>>;
-template class RepresentativeLookupTable<
-    combinatorics::SubsetsIndexing<uint64_t>>;
-template class RepresentativeLookupTable<
-    combinatorics::CombinationsIndexing<uint32_t>>;
-template class RepresentativeLookupTable<
-    combinatorics::CombinationsIndexing<uint64_t>>;
+using namespace combinatorics;
+template class RepresentativeTable<Subsets<uint32_t>>;
+template class RepresentativeTable<Subsets<uint64_t>>;
+template class RepresentativeTable<Combinations<uint32_t>>;
+template class RepresentativeTable<Combinations<uint64_t>>;
 
 } // namespace xdiag::symmetries

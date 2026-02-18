@@ -19,12 +19,14 @@ namespace xdiag::bits {
 // Multi-precision bit storage with arithmetic operations.
 //
 // Bitset stores a sequence of bits using chunks (uint8_t/16/32/64) and supports
-// both dynamic sizing (nchunks=0) and static sizing (nchunks>0). Provides bitwise
-// operations, shifts, arithmetic (+,-,*,/), and comparisons, modeling unsigned integers.
+// both dynamic sizing (nchunks=0) and static sizing (nchunks>0). Provides
+// bitwise operations, shifts, arithmetic (+,-,*,/), and comparisons, modeling
+// unsigned integers.
 //
 // Template parameters:
 //   chunk_tt: Chunk type (uint8_t, uint16_t, uint32_t, uint64_t)
-//   nchunks: Number of chunks (0=dynamic using std::vector, >0=static using std::array)
+//   nchunks: Number of chunks (0=dynamic using std::vector, >0=static using
+//   std::array)
 //
 // Example:
 //   Bitset<uint64_t, 2> bits;      // Static: 128 bits (2 × 64)
@@ -41,6 +43,10 @@ public:
   using storage_t =
       typename std::conditional<(bool)nchunks, std::array<chunk_t, nchunks>,
                                 std::vector<chunk_t>>::type;
+
+  static constexpr size_t nchunkbits = std::numeric_limits<chunk_t>::digits;
+  static constexpr size_t chunkshift = floorlog2(nchunkbits);
+  static constexpr chunk_t chunkmask = bitmask<chunk_t>(chunkshift);
 
   Bitset() = default;
   explicit Bitset(int64_t nbits);
@@ -96,7 +102,6 @@ public:
   bool operator>=(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
 
   storage_t const &chunks() const noexcept;
-  static constexpr size_t nchunkbits() noexcept { return nchunkbits_; }
 
 private:
   // Optimized shift-by-1 for division algorithm
@@ -105,6 +110,7 @@ private:
   static constexpr size_t nchunkbits_ = std::numeric_limits<chunk_t>::digits;
   static constexpr size_t chunkshift_ = floorlog2(nchunkbits_);
   static constexpr chunk_t chunkmask_ = bitmask<chunk_t>(chunkshift_);
+
   storage_t chunks_;
 };
 
