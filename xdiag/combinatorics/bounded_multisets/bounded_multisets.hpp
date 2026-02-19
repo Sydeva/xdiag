@@ -44,7 +44,7 @@ public:
 
 private:
   int64_t n_ = 0;
-  int64_t bound_ = 2;
+  int64_t bound_ = 0;
   int64_t size_ = 0;
 };
 

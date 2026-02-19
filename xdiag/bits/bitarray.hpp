@@ -55,7 +55,8 @@ private:
 
 template <typename bit_t, int nbits>
 std::string to_string(BitArray<bit_t, nbits> const &bits,
-                      int64_t size = BitArray<bit_t, nbits>::maximum_size);
+                      int64_t size = BitArray<bit_t, nbits>::maximum_size,
+                      bool reverse = true);
 
 template <typename bit_t, int nbits>
 std::ostream &operator<<(std::ostream &out, BitArray<bit_t, nbits> const &bits);

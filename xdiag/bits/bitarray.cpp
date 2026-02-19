@@ -4,9 +4,11 @@
 
 #include "bitarray.hpp"
 
+#include <algorithm>
 #include <type_traits>
 #include <xdiag/bits/bitmask.hpp>
 #include <xdiag/bits/bitset.hpp>
+#include <xdiag/extern/fmt/format.hpp>
 
 namespace xdiag::bits {
 
@@ -44,12 +46,29 @@ bool BitArray<bit_t, nbits>::operator!=(
 }
 
 template <typename bit_t, int nbits>
-std::string to_string(BitArray<bit_t, nbits> const &bits, int64_t size) {
+std::string to_string(BitArray<bit_t, nbits> const &bits, int64_t size,
+                      bool reverse) {
   std::string str;
-  for (int64_t i = 0; i < size; ++i) {
-    str += std::to_string(bits.get(i)) + std::string(" ");
+  if (nbits <= 3) { // numbers from 0 to 7 only
+    for (int64_t i = 0; i < size; ++i) {
+      str += std::to_string(bits.get(i));
+    }
+    if (reverse) {
+      std::reverse(str.begin(), str.end());
+    }
+    return str;
+  } else { // numbers with at least two digits
+    int digits = std::to_string(bitmask<int>(nbits)).size();
+    for (int64_t i = 0; i < size; ++i) {
+      int bit = reverse ? bits.get(size - 1 - i) : bits.get(i);
+      if (i == size - 1) {
+        str += fmt::format("{:{}}", bit, digits);
+      } else {
+        str += fmt::format("{:{}} ", bit, digits);
+      }
+    }
+    return str;
   }
-  return str;
 }
 
 template <typename bit_t, int nbits>
@@ -62,7 +81,8 @@ std::ostream &operator<<(std::ostream &out,
 // Template instantiations
 #define INSTANTIATE_BITARRAY(BIT_T, NBITS)                                     \
   template class BitArray<BIT_T, NBITS>;                                       \
-  template std::string to_string(BitArray<BIT_T, NBITS> const &, int64_t);     \
+  template std::string to_string(BitArray<BIT_T, NBITS> const &, int64_t,      \
+                                 bool);                                        \
   template std::ostream &operator<<(std::ostream &,                            \
                                     BitArray<BIT_T, NBITS> const &);
 

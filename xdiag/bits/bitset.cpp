@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bitset.hpp"
+#include <algorithm>
 #include <bitset>
 #include <cassert>
-
 #include <xdiag/bits/bitmask.hpp>
 #include <xdiag/bits/gbit.hpp>
 #include <xdiag/bits/popcnt.hpp>
@@ -204,7 +204,7 @@ void Bitset<chunk_t, nchunks>::shift_left_by_1() noexcept {
   int64_t size = std::size(chunks_);
   chunk_t carry = 0;
   for (int64_t i = 0; i < size; ++i) {
-    chunk_t next_carry = chunks_[i] >> (nchunkbits_ - 1);
+    chunk_t next_carry = chunks_[i] >> (nchunkbits - 1);
     chunks_[i] = (chunks_[i] << 1) | carry;
     carry = next_carry;
   }
@@ -392,11 +392,11 @@ template <typename chunk_t, int64_t nchunks>
 Bitset<chunk_t, nchunks> &
 Bitset<chunk_t, nchunks>::operator*=(Bitset const &rhs) noexcept {
   assert(std::size(chunks_) == std::size(rhs.chunks_));
-  Bitset<chunk_t, nchunks> result(std::size(chunks_) * nchunkbits_);
+  Bitset<chunk_t, nchunks> result(std::size(chunks_) * nchunkbits);
 
   // Grade-school multiplication without extended types
   // Split each chunk multiplication into high and low parts
-  constexpr int half_bits = nchunkbits_ / 2;
+  constexpr int half_bits = nchunkbits / 2;
   constexpr chunk_t low_mask = (static_cast<chunk_t>(1) << half_bits) - 1;
 
   for (int64_t i = 0; i < std::size(chunks_); ++i) {
@@ -456,11 +456,11 @@ Bitset<chunk_t, nchunks>::operator/=(Bitset const &rhs) noexcept {
   }
 
   // Long division algorithm for multi-precision integers
-  Bitset<chunk_t, nchunks> quotient(std::size(chunks_) * nchunkbits_);
-  Bitset<chunk_t, nchunks> remainder(std::size(chunks_) * nchunkbits_);
+  Bitset<chunk_t, nchunks> quotient(std::size(chunks_) * nchunkbits);
+  Bitset<chunk_t, nchunks> remainder(std::size(chunks_) * nchunkbits);
 
   // Find the most significant bit position
-  int64_t nbits = std::size(chunks_) * nchunkbits_;
+  int64_t nbits = std::size(chunks_) * nchunkbits;
 
   for (int64_t i = nbits - 1; i >= 0; --i) {
     // Shift remainder left by 1 (optimized)
@@ -532,6 +532,9 @@ template <typename chunk_t, int64_t nchunks>
 bool Bitset<chunk_t, nchunks>::operator<(
     Bitset<chunk_t, nchunks> const &rhs) const noexcept {
   assert(std::size(chunks_) == std::size(rhs.chunks_));
+
+  // slow comparison for dynamic bitset
+  // if constexpr (nchunks == 0) {
   // Compare from most significant chunk to least significant
   for (int64_t i = std::size(chunks_) - 1; i >= 0; --i) {
     if (chunks_[i] < rhs.chunks_[i]) {
@@ -542,6 +545,10 @@ bool Bitset<chunk_t, nchunks>::operator<(
     }
   }
   return false; // equal
+  // } else {        // fast memcmp for static bitset
+  //   return std::memcmp(chunks_.data(), rhs.chunks_.data(), sizeof(chunks_)) <
+  //   0;
+  // }
 }
 
 template <typename chunk_t, int64_t nchunks>
@@ -563,11 +570,14 @@ bool Bitset<chunk_t, nchunks>::operator>=(
 }
 
 template <typename chunk_t, int64_t nchunks>
-std::string to_string(Bitset<chunk_t, nchunks> const &bits) {
+std::string to_string(Bitset<chunk_t, nchunks> const &bits, int64_t size,
+                      bool reverse) {
   std::string str;
-  for (auto const &chunk : bits.chunks()) {
-    str = std::bitset<Bitset<chunk_t, nchunks>::nchunkbits>(chunk).to_string() +
-          str;
+  for (int64_t i = 0; i < size; ++i) {
+    str += bits.test(i) ? std::string("1") : std::string("0");
+  }
+  if (reverse) {
+    std::reverse(str.begin(), str.end());
   }
   return str;
 }
@@ -618,7 +628,8 @@ uint64_t to_uint64(Bitset<chunk_t, nchunks> const &bits) {
 // Explicit template instantiations
 #define INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, NCHUNKS)                        \
   template class Bitset<CHUNK_T, NCHUNKS>;                                     \
-  template std::string to_string(Bitset<CHUNK_T, NCHUNKS> const &);            \
+  template std::string to_string(Bitset<CHUNK_T, NCHUNKS> const &, int64_t,    \
+                                 bool);                                        \
   template std::ostream &operator<<(std::ostream &,                            \
                                     Bitset<CHUNK_T, NCHUNKS> const &);         \
   template Bitset<CHUNK_T, NCHUNKS> make_bitset(uint64_t);                     \

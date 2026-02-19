@@ -45,6 +45,7 @@ public:
                                 std::vector<chunk_t>>::type;
 
   static constexpr size_t nchunkbits = std::numeric_limits<chunk_t>::digits;
+  static constexpr size_t nbits = nchunkbits * nchunks;
   static constexpr size_t chunkshift = floorlog2(nchunkbits);
   static constexpr chunk_t chunkmask = bitmask<chunk_t>(chunkshift);
 
@@ -106,23 +107,20 @@ public:
 private:
   // Optimized shift-by-1 for division algorithm
   void shift_left_by_1() noexcept;
-
-  static constexpr size_t nchunkbits_ = std::numeric_limits<chunk_t>::digits;
-  static constexpr size_t chunkshift_ = floorlog2(nchunkbits_);
-  static constexpr chunk_t chunkmask_ = bitmask<chunk_t>(chunkshift_);
-
   storage_t chunks_;
 };
 
 template <typename chunk_t, int64_t nchunks>
-std::string to_string(Bitset<chunk_t, nchunks> const &bits);
+std::string to_string(Bitset<chunk_t, nchunks> const &bits,
+                      int64_t size = Bitset<chunk_t, nchunks>::nbits,
+                      bool reverse = true);
 
 template <typename chunk_t, int64_t nchunks>
 std::ostream &operator<<(std::ostream &out,
                          Bitset<chunk_t, nchunks> const &bits);
 
 // Conversion functions between Bitset and uint64_t (for testing/interop)
-template <typename chunk_t, int64_t nchunks>
+template <typename chunk_t = uint64_t, int64_t nchunks = 1>
 Bitset<chunk_t, nchunks> make_bitset(uint64_t value);
 
 template <typename chunk_t, int64_t nchunks>
