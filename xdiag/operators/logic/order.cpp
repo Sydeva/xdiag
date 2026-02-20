@@ -8,6 +8,7 @@
 #include <set>
 #include <xdiag/operators/logic/types.hpp>
 #include <xdiag/operators/logic/valid.hpp>
+#include <xdiag/utils/ipow.hpp>
 
 namespace xdiag {
 
@@ -22,7 +23,7 @@ static int64_t permuted_index(int64_t idx, int64_t d,
   int64_t idx_permuted = 0;
   while (idx) {
     int64_t local = idx % d;
-    idx_permuted += local * pow(d, perm_inv[exp++]);
+    idx_permuted += local * utils::ipow(d, perm_inv[exp++]);
     idx /= d;
   }
 
@@ -41,11 +42,11 @@ static arma::Mat<T> permute_matrix(arma::Mat<T> const &mat,
   // Determine local dimension of matrix
   int64_t d = 0;
   int64_t nsites = perm.size();
-  while (pow(d, nsites) < m) {
+  while (utils::ipow(d, nsites) < m) {
     ++d;
   }
 
-  if (pow(d, nsites) != m) {
+  if (utils::ipow(d, nsites) != m) {
     XDIAG_THROW(fmt::format("Matrix dimensions are not of the form d^N, where "
                             "N denotes the number of sites (here {})",
                             nsites));

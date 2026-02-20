@@ -10,7 +10,8 @@ set(XDIAG_SOURCES
   utils/scalar.cpp
   utils/vector.cpp
   utils/matrix.cpp
-
+  utils/ipow.cpp
+  
   bits/bitops.cpp
   bits/bitset.cpp
   bits/bitvector.cpp
@@ -20,11 +21,9 @@ set(XDIAG_SOURCES
   combinatorics/binomial.cpp
   combinatorics/bit_patterns.cpp
   combinatorics/combinations/combinations.cpp
-  combinatorics/combinations/combinations_table.cpp
-  combinatorics/combinations/lin_table.cpp
   combinatorics/subsets/subsets.cpp
-  combinatorics/subsets/subsets_table.cpp
   combinatorics/bounded_multisets/bounded_multisets.cpp
+  combinatorics/bounded_partitions/bounded_partitions.cpp
 
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp

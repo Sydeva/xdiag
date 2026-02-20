@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <xdiag/common.hpp>
+#include <xdiag/utils/ipow.hpp>
 #include <xdiag/utils/logger.hpp>
 #include <xdiag/utils/xdiag_show.hpp>
 
@@ -313,7 +314,7 @@ void lobpcg(multiply_f multiplyA, arma::Mat<coeff_t> &X, double tol,
       bestIterationNumber = iterationNumber;
       bestBlockVectorX = blockVectorX;
     } else if (residualNorm >
-               std::pow(2, restartControl) * smallestResidualNorm) {
+               utils::ipow(2, restartControl) * smallestResidualNorm) {
       forcedRestart = true;
 
       // MVM

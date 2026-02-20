@@ -8,8 +8,11 @@ set(XDIAG_TEST_SOURCES
   bits/test_bitvector.cpp
   bits/test_bitarray.cpp
 
+  combinatorics/test_binomial.cpp
+  combinatorics/test_subsets.cpp
   combinatorics/test_combinations.cpp
   combinatorics/test_bounded_multisets.cpp
+  combinatorics/test_bounded_partitions.cpp
   
   # io/test_file_toml.cpp
   # io/test_file_h5.cpp
@@ -18,7 +21,6 @@ set(XDIAG_TEST_SOURCES
   # algebra/test_sparse_matrix.cpp
   # algebra/test_apply.cpp
   
-  # combinatorics/test_binomial.cpp
   # combinatorics/test_subsets.cpp
   # combinatorics/test_bit_patterns.cpp
   # combinatorics/test_combinations_index.cpp

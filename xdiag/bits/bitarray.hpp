@@ -48,6 +48,10 @@ public:
 
   bool operator==(BitArray<bit_t, nbits> const &rhs) const noexcept;
   bool operator!=(BitArray<bit_t, nbits> const &rhs) const noexcept;
+  bool operator<(BitArray<bit_t, nbits> const &rhs) const noexcept;
+  bool operator<=(BitArray<bit_t, nbits> const &rhs) const noexcept;
+  bool operator>(BitArray<bit_t, nbits> const &rhs) const noexcept;
+  bool operator>=(BitArray<bit_t, nbits> const &rhs) const noexcept;
 
 private:
   bit_t bits_{};

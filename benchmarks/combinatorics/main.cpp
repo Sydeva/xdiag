@@ -1,6 +1,7 @@
-#include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/bitarray.hpp>
+#include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/bounded_multisets/bounded_multisets.hpp>
+#include <xdiag/combinatorics/bounded_partitions/bounded_partitions.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
 #include <xdiag/utils/timing.hpp>
@@ -12,9 +13,9 @@ int main() try {
   using namespace xdiag::combinatorics;
 
   // Combinations
-  int n = 24;
-  int k = 12;
-  int64_t cnt = 0;
+  // int n = 24;
+  // int k = 12;
+  // int64_t cnt = 0;
   // tic();
   // for (auto s : Combinations<uint64_t>(n, k)) {
   //   ++cnt;
@@ -33,17 +34,35 @@ int main() try {
   // }
   // Log("Combinations long:  {} ", cnt);
   // toc();
+  // {
+  //   int64_t n = 12;
+  //   int64_t q = 4;
+  //   int64_t cnt = 0;
+  //   tic();
+  //   using A = BitArray<uint64_t, 2>;
+  //   for (auto s : BoundedMultisets<A>(n, q)) {
+  //     ++cnt;
+  //     // Log("{}", to_string(s, n));
+  //   }
+  //   toc();
+  //   Log("BoundedMultisets: {} {}", cnt, BoundedMultisets<A>(n, q).size());
+  // }
 
-  n = 10;
-  int64_t q = 5;
-  cnt = 0;
-  tic();
-  for (auto s : BoundedMultisets<BitArray<uint64_t, 3>>(n, q)) {
-    ++cnt;
-    // Log("{}", to_string(s, n));
+  {
+    int64_t n = 15;
+    int64_t total = 15;
+    int64_t q = 4;
+    int64_t cnt = 0;
+    tic();
+    using A = BitArray<uint64_t, 2>;
+    for (auto s : BoundedPartitions<A>(n, total, q)) {
+      ++cnt;
+      // Log("{}", to_string(s, n));
+    }
+    toc();
+    Log("BoundedPartitions: {} {}", cnt,
+        BoundedPartitions<A>(n, total, q).size());
   }
-  toc();
-  Log("BoundedMultisets: {} {}", cnt, BoundedMultisets<BitArray<uint64_t, 3>>(n, q).size());
 
 } catch (Error e) {
   error_trace(e);

@@ -10,6 +10,7 @@
 
 #include <xdiag/extern/armadillo/armadillo>
 #include <xdiag/common.hpp>
+#include <xdiag/combinatorics/ipow.hpp>
 
 namespace xdiag {
 

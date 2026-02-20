@@ -8,21 +8,16 @@
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/bounded_multisets/bounded_multisets.hpp>
+#include <xdiag/utils/ipow.hpp>
 #include <xdiag/utils/logger.hpp>
 
 using namespace xdiag::combinatorics;
 using namespace xdiag::bits;
+using namespace xdiag::utils;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-static int64_t ipow(int64_t base, int64_t exp) {
-  int64_t result = 1;
-  for (int64_t i = 0; i < exp; ++i)
-    result *= base;
-  return result;
-}
 
 // Decode the i-th digit of idx in base bound
 static int64_t digit(int64_t idx, int64_t bound, int i) {
@@ -118,6 +113,22 @@ template <typename bitarray_t> void test_distinct(int n, int64_t bound) {
 }
 
 // ---------------------------------------------------------------------------
+// Test: the sequences are growing in size
+// ---------------------------------------------------------------------------
+template <typename bitarray_t> void test_growing(int n, int64_t bound) {
+  BoundedMultisets<bitarray_t> ms(n, bound);
+  bitarray_t prev;
+  int64_t ctr = 0;
+  for (auto seq : ms) {
+    if (ctr > 0) {
+      REQUIRE(seq > prev);
+    }
+    prev = seq;
+    ++ctr;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Test: equality operator
 // ---------------------------------------------------------------------------
 template <typename bitarray_t> void test_equality() {
@@ -189,6 +200,12 @@ TEST_CASE("BoundedMultisets", "[combinatorics/bounded_multisets]") {
     test_distinct<BitArray<uint32_t, 2>>(4, 4);
   }
 
+  SECTION("all sequences are growing in size") {
+    test_growing<BitArray<uint64_t, 2>>(3, 3);
+    test_growing<BitArray<uint64_t, 3>>(3, 5);
+    test_growing<BitArray<uint32_t, 2>>(4, 4);
+  }
+  
   SECTION("equality operator") {
     test_equality<BitArray<uint64_t, 2>>();
     test_equality<BitArray<uint32_t, 2>>();

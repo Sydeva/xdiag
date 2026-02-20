@@ -9,12 +9,13 @@
 #include <xdiag/bits/log2.hpp>
 #include <xdiag/bits/unpack.hpp>
 #include <xdiag/utils/error.hpp>
+#include <xdiag/utils/ipow.hpp>
 
 namespace xdiag::combinatorics {
 
 template <typename bitarray_t>
 BoundedMultisets<bitarray_t>::BoundedMultisets(int64_t n, int64_t bound) try
-    : n_(n), bound_(bound), size_(pow((int64_t)bound, n)) {
+    : n_(n), bound_(bound), size_(utils::ipow((int64_t)bound, n)) {
   if (n < 0) {
     XDIAG_THROW("Error constructing BoundedMultisets: n<0");
   }
@@ -36,8 +37,7 @@ BoundedMultisets<bitarray_t>::BoundedMultisets(int64_t n, int64_t bound) try
 }
 XDIAG_CATCH
 
-template <typename bitarray_t>
-int64_t BoundedMultisets<bitarray_t>::n() const {
+template <typename bitarray_t> int64_t BoundedMultisets<bitarray_t>::n() const {
   return n_;
 }
 
@@ -58,8 +58,7 @@ BoundedMultisets<bitarray_t>::begin() const {
 }
 
 template <typename bitarray_t>
-BoundedMultisetsIterator<bitarray_t>
-BoundedMultisets<bitarray_t>::end() const {
+BoundedMultisetsIterator<bitarray_t> BoundedMultisets<bitarray_t>::end() const {
   return BoundedMultisetsIterator<bitarray_t>(n_, size_, bound_);
 }
 

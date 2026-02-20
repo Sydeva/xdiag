@@ -5,7 +5,8 @@
 #include "../catch.hpp"
 
 #include <iostream>
-#include <xdiag/combinatorics/subsets.hpp>
+#include <xdiag/combinatorics/subsets/subsets.hpp>
+#include <xdiag/utils/logger.hpp>
 
 template <class bit_t>
 void test_subsets(){
@@ -30,7 +31,8 @@ void test_subsets(){
       }
 }
 
-TEST_CASE( "subsets", "[combinatorics/subsets]" ) {
+TEST_CASE( "subsets", "[combinatorics]" ) {
+  xdiag::Log("Testing Subsets");
   test_subsets<uint16_t>();
   test_subsets<uint32_t>();
   test_subsets<uint64_t>();

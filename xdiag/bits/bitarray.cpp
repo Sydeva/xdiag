@@ -46,6 +46,30 @@ bool BitArray<bit_t, nbits>::operator!=(
 }
 
 template <typename bit_t, int nbits>
+bool BitArray<bit_t, nbits>::operator<(
+    BitArray<bit_t, nbits> const &rhs) const noexcept {
+  return bits_ < rhs.bits_;
+}
+template <typename bit_t, int nbits>
+
+bool BitArray<bit_t, nbits>::operator<=(
+    BitArray<bit_t, nbits> const &rhs) const noexcept {
+  return !operator>(rhs);
+}
+template <typename bit_t, int nbits>
+
+bool BitArray<bit_t, nbits>::operator>(
+    BitArray<bit_t, nbits> const &rhs) const noexcept {
+  return rhs.operator<(*this);
+}
+template <typename bit_t, int nbits>
+
+bool BitArray<bit_t, nbits>::operator>=(
+    BitArray<bit_t, nbits> const &rhs) const noexcept {
+  return !operator<(rhs);
+}
+
+template <typename bit_t, int nbits>
 std::string to_string(BitArray<bit_t, nbits> const &bits, int64_t size,
                       bool reverse) {
   std::string str;

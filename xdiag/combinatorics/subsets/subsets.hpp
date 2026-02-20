@@ -10,7 +10,20 @@ namespace xdiag::combinatorics {
 
 template <typename bit_t> class SubsetsIterator;
 
-// Subsets
+// Represents all subsets of n elements (all n-bit integers from 0 to 2^n-1).
+//
+// This class provides iteration over all 2^n bit patterns of n bit positions,
+// i.e., all subsets of an n-element set, in ascending order.
+//
+// Template parameter bit_t: uint16_t, uint32_t, uint64_t
+//
+// Example usage:
+//   Subsets<uint64_t> subs(3);  // All 8 subsets of a 3-element set
+//   for (auto pattern : subs) {
+//     // pattern will be: 0b000, 0b001, 0b010, 0b011, ...
+//   }
+//
+// Note: For Bitset types, ensure n does not exceed the bit capacity.
 template <typename bit_tt> class Subsets {
 public:
   using bit_t = bit_tt;
@@ -19,31 +32,31 @@ public:
   Subsets() = default;
   explicit Subsets(int64_t n);
 
-  int64_t n() const;
-  int64_t size() const;
-  iterator_t begin() const;
-  iterator_t end() const;
+  int64_t n() const;        // Total number of bit positions
+  int64_t size() const;     // Total number of subsets (2^n)
+  iterator_t begin() const; // Iterator to first subset
+  iterator_t end() const;   // Iterator past last subset
+
+  bool operator==(Subsets<bit_t> const &rhs) const;
+  bool operator!=(Subsets<bit_t> const &rhs) const;
 
 private:
-  int64_t n_;
-  int64_t size_;
-  iterator_t begin_, end_;
+  int64_t n_ = 0;
+  int64_t size_ = 0;
 };
 
-// SubsetsIterator
+// Forward iterator over subset bit patterns.
+//
+// Iterates through all bit patterns from 0 to 2^n-1 in ascending order.
 template <typename bit_t> class SubsetsIterator {
 public:
   SubsetsIterator() = default;
   SubsetsIterator(int64_t idx);
 
-  inline bool operator!=(const SubsetsIterator<bit_t> &rhs) const {
-    return current_ != rhs.current_;
-  }
-  inline SubsetsIterator &operator++() {
-    ++current_;
-    return *this;
-  }
-  inline bit_t operator*() const { return current_; }
+  bool operator==(const SubsetsIterator<bit_t> &rhs) const;
+  bool operator!=(const SubsetsIterator<bit_t> &rhs) const;
+  SubsetsIterator &operator++();
+  bit_t operator*() const;
 
 private:
   bit_t current_;
