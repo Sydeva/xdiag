@@ -8,6 +8,7 @@
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/popcount.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
+#include <xdiag/combinatorics/combinations/enumerate_combinations.hpp>
 #include <xdiag/utils/logger.hpp>
 
 template <typename bit_t> void test_combinations() {
@@ -244,6 +245,61 @@ template <typename bit_t> void test_combinations_iterator_advance() {
   }
 }
 
+// Verify next_combination(v, n) produces the same sequence as Combinations,
+// and for integral bit_t also agrees with the one-arg next_combination(v).
+template <typename bit_t> void test_next_combination_overload() {
+  using namespace xdiag;
+  using namespace xdiag::combinatorics;
+  using namespace xdiag::bits;
+
+  for (int n = 1; n < 8; ++n) {
+    for (int k = 1; k <= n; ++k) {
+      // Collect reference sequence from Combinations
+      std::vector<bit_t> elems;
+      for (auto c : Combinations<bit_t>(n, k))
+        elems.push_back(c);
+
+      // Walk using next_combination(v, n) and compare
+      bit_t v = elems[0];
+      for (int64_t i = 0; i < (int64_t)elems.size() - 1; ++i) {
+        bit_t got = next_combination(v, n);
+        REQUIRE(got == elems[i + 1]);
+        v = got;
+      }
+
+      // For integral types: two-arg must agree with one-arg on all elements
+      // except the last (calling next_combination on the last pattern is UB
+      // for the algorithm so we skip it)
+      if constexpr (std::is_integral_v<bit_t>) {
+        for (int64_t i = 0; i < (int64_t)elems.size() - 1; ++i)
+          REQUIRE(next_combination(elems[i], n) == next_combination(elems[i]));
+      }
+    }
+  }
+}
+
+template <typename chunk_t, int64_t nchunks>
+void test_next_combination_overload_bitset() {
+  using namespace xdiag;
+  using namespace xdiag::combinatorics;
+  using namespace xdiag::bits;
+
+  for (int n = 1; n < 8; ++n) {
+    for (int k = 1; k <= n; ++k) {
+      std::vector<Bitset<chunk_t, nchunks>> elems;
+      for (auto c : Combinations<Bitset<chunk_t, nchunks>>(n, k))
+        elems.push_back(c);
+
+      Bitset<chunk_t, nchunks> v = elems[0];
+      for (int64_t i = 0; i < (int64_t)elems.size() - 1; ++i) {
+        Bitset<chunk_t, nchunks> got = next_combination(v, (int64_t)n);
+        REQUIRE(got == elems[i + 1]);
+        v = got;
+      }
+    }
+  }
+}
+
 TEST_CASE("Combinations", "[combinatorics]") {
   using namespace xdiag::bits;
 
@@ -265,6 +321,19 @@ TEST_CASE("Combinations", "[combinatorics]") {
     test_combinations_iterator_advance<uint16_t>();
     test_combinations_iterator_advance<uint32_t>();
     test_combinations_iterator_advance<uint64_t>();
+  }
+
+  SECTION("next_combination(v, n) - integers") {
+    test_next_combination_overload<uint16_t>();
+    test_next_combination_overload<uint32_t>();
+    test_next_combination_overload<uint64_t>();
+  }
+
+  SECTION("next_combination(v, n) - bitset") {
+    test_next_combination_overload_bitset<uint8_t, 0>();
+    test_next_combination_overload_bitset<uint8_t, 1>();
+    test_next_combination_overload_bitset<uint64_t, 1>();
+    test_next_combination_overload_bitset<uint64_t, 2>();
   }
 
   SECTION("random access and index (bitset)") {
