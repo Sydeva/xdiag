@@ -13,4 +13,9 @@ namespace xdiag::bits {
 template <typename bit_t, int nbits>
 BitArray<bit_t, nbits> unpack(int64_t number, int64_t q);
 
+// inverse of unpack: returns the integer whose q-ary representation is the
+// first n slots of array
+template <typename bit_t, int nbits>
+int64_t pack(BitArray<bit_t, nbits> array, int64_t q, int64_t n);
+
 } // namespace xdiag::bits

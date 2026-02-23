@@ -4,7 +4,7 @@
 
 #include "lin_table.hpp"
 
-#include <xdiag/bits/bitops.hpp>
+#include <xdiag/bits/popcount.hpp>
 #include <xdiag/combinatorics/binomial.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/utils/error.hpp>
@@ -13,12 +13,10 @@ namespace xdiag::combinatorics {
 
 template <class bit_t>
 LinTable<bit_t>::LinTable(int64_t n, int64_t k) try
-    : n_(n), k_(k), n_left_(ceil(n / 2.0)), n_right_(n - n_left_),
+    : combinations_(n, k), n_left_(ceil(n / 2.0)), n_right_(n - n_left_),
       left_table_size_((int64_t)1 << n_left_),
       right_table_size_((int64_t)1 << n_right_),
-      left_indices_(left_table_size_, 0), right_indices_(right_table_size_, 0),
-      size_(binomial(n, k)) {
-  using bits::popcnt;
+      left_indices_(left_table_size_, 0), right_indices_(right_table_size_, 0) {
 
   // Fill offsets on left indices
   for (bit_t left = 0; left < (bit_t)left_table_size_; ++left) {
@@ -26,8 +24,9 @@ LinTable<bit_t>::LinTable(int64_t n, int64_t k) try
     if (left == 0) {
       left_indices_[left] = 0;
     } else {
-      left_indices_[left] = left_indices_[left - 1] +
-                            binomial(n_right_, k - popcnt(bit_t(left - 1)));
+      left_indices_[left] =
+          left_indices_[left - 1] +
+          binomial(n_right_, k - bits::popcount(bit_t(left - 1)));
     }
   }
 
@@ -41,9 +40,36 @@ LinTable<bit_t>::LinTable(int64_t n, int64_t k) try
 }
 XDIAG_CATCH
 
+template <class bit_t> int64_t LinTable<bit_t>::n() const {
+  return combinations_.n();
+}
+
+template <class bit_t> int64_t LinTable<bit_t>::k() const {
+  return combinations_.k();
+}
+
+template <class bit_t> int64_t LinTable<bit_t>::size() const {
+  return combinations_.size();
+}
+
+template <class bit_t> bit_t LinTable<bit_t>::operator[](int64_t idx) const {
+  return combinations_[idx];
+}
+
+template <class bit_t>
+CombinationsIterator<bit_t> LinTable<bit_t>::begin() const {
+  return CombinationsIterator<bit_t>(combinations_.n(), combinations_.k(), 0);
+}
+
+template <class bit_t>
+CombinationsIterator<bit_t> LinTable<bit_t>::end() const {
+  return CombinationsIterator<bit_t>(combinations_.n(), combinations_.k(),
+                                     combinations_.size());
+}
+
 template <class bit_t>
 bool LinTable<bit_t>::operator==(LinTable<bit_t> const &rhs) const {
-  return (n_ == rhs.n_) && (k_ == rhs.k_);
+  return combinations_ == rhs.combinations_;
 }
 
 template <class bit_t>

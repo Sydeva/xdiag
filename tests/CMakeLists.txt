@@ -11,6 +11,7 @@ set(XDIAG_TEST_SOURCES
   combinatorics/test_binomial.cpp
   combinatorics/test_subsets.cpp
   combinatorics/test_combinations.cpp
+  combinatorics/test_lin_table.cpp
   combinatorics/test_bounded_multisets.cpp
   combinatorics/test_bounded_partitions.cpp
   

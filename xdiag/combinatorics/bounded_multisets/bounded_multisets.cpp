@@ -7,7 +7,7 @@
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/log2.hpp>
-#include <xdiag/bits/unpack.hpp>
+#include <xdiag/bits/pack_unpack.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/ipow.hpp>
 
@@ -52,6 +52,16 @@ int64_t BoundedMultisets<bitarray_t>::size() const {
 }
 
 template <typename bitarray_t>
+auto BoundedMultisets<bitarray_t>::operator[](int64_t idx) const -> bitarray_t {
+  return bits::unpack<bit_t, nbits>(idx, bound_);
+}
+
+template <typename bitarray_t>
+int64_t BoundedMultisets<bitarray_t>::index(bitarray_t seq) const {
+  return bits::pack<bit_t, nbits>(seq, bound_, n_);
+}
+
+template <typename bitarray_t>
 BoundedMultisetsIterator<bitarray_t>
 BoundedMultisets<bitarray_t>::begin() const {
   return BoundedMultisetsIterator<bitarray_t>(n_, 0, bound_);
@@ -78,7 +88,8 @@ template <typename bitarray_t>
 BoundedMultisetsIterator<bitarray_t>::BoundedMultisetsIterator(int64_t n,
                                                                int64_t idx,
                                                                int64_t bound)
-    : idx_(idx), bound_(bound) {}
+    : n_(n), idx_(idx), bound_(bound),
+      current_(bits::unpack<bit_t, nbits>(idx, bound)) {}
 
 template <typename bitarray_t>
 bool BoundedMultisetsIterator<bitarray_t>::operator==(
@@ -96,12 +107,36 @@ template <typename bitarray_t>
 BoundedMultisetsIterator<bitarray_t> &
 BoundedMultisetsIterator<bitarray_t>::operator++() {
   ++idx_;
+  for (int64_t i = 0; i < n_; ++i) {
+    int64_t val = current_.get(i) + 1;
+    if (val < bound_) {
+      current_.set(i, val);
+      return *this;
+    }
+    current_.set(i, 0);
+  }
   return *this;
 }
 
 template <typename bitarray_t>
+BoundedMultisetsIterator<bitarray_t> &
+BoundedMultisetsIterator<bitarray_t>::operator+=(int64_t n) {
+  idx_ += n;
+  current_ = bits::unpack<bit_t, nbits>(idx_, bound_);
+  return *this;
+}
+
+template <typename bitarray_t>
+BoundedMultisetsIterator<bitarray_t>
+BoundedMultisetsIterator<bitarray_t>::operator+(int64_t n) const {
+  BoundedMultisetsIterator copy = *this;
+  copy += n;
+  return copy;
+}
+
+template <typename bitarray_t>
 auto BoundedMultisetsIterator<bitarray_t>::operator*() const -> bitarray_t {
-  return bits::unpack<bit_t, nbits>(idx_, bound_);
+  return current_;
 }
 
 // clang-format off

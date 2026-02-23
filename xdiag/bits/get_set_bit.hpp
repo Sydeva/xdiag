@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <xdiag/bits/bitset.hpp>
 
 // (un)comment to use intrinsic BMI1 bextr instruction
 // #define USE_BEXTR
@@ -27,9 +28,9 @@ constexpr uint64_t bextr(uint64_t src, uint32_t start, uint32_t len) noexcept {
 }
 #endif
 
-// gbit
+// get_bit
 template <class bit_t>
-constexpr inline bit_t gbit(bit_t x, uint32_t n) noexcept {
+constexpr inline bit_t get_bit(bit_t x, uint32_t n) noexcept {
 #if defined(__BMI__) && defined(USE_BEXTR)
   return bextr(x, n, 1);
 #else
@@ -37,14 +38,29 @@ constexpr inline bit_t gbit(bit_t x, uint32_t n) noexcept {
 #endif
 }
 
-// gbits
+template <class chunk_t, int64_t nchunks>
+inline bool get_bit(Bitset<chunk_t, nchunks> const &bits, int64_t n) {
+  return bits.test(n);
+}
+
+// get_bits
 template <class bit_t>
-constexpr inline bit_t gbits(bit_t src, uint32_t start, uint32_t len) noexcept {
+constexpr inline bit_t get_bits(bit_t src, uint32_t start,
+                                uint32_t len) noexcept {
 #if defined(__BMI__) && defined(USE_BEXTR)
   return bextr(src, start, len);
 #else
   return (src >> start) & (((bit_t)1 << len) - 1);
 #endif
+}
+
+// set_bit
+template <class bit_t> constexpr void set_bit(bit_t &x, int64_t b) {
+  x |= bit_t(1) << b;
+}
+template <class chunk_t, int64_t nchunks>
+inline void set_bit(Bitset<chunk_t, nchunks> &bits, int64_t n) {
+  return bits.set(n);
 }
 
 } // namespace xdiag::bits

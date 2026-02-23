@@ -205,6 +205,58 @@ template <typename bitarray_t> void test_growing(int n, int total, int64_t bound
 
 
 // ---------------------------------------------------------------------------
+// Test: operator[] and index() — random access and round-trip
+// ---------------------------------------------------------------------------
+template <typename bitarray_t>
+void test_random_access(int n, int64_t total, int64_t bound) {
+  BoundedPartitions<bitarray_t> bp(n, total, bound);
+
+  std::vector<bitarray_t> elems;
+  for (auto seq : bp)
+    elems.push_back(seq);
+
+  // operator[]: bp[i] matches sequential order
+  for (int64_t i = 0; i < bp.size(); ++i)
+    REQUIRE(bp[i] == elems[i]);
+
+  // index: round-trip index(bp[i]) == i
+  for (int64_t i = 0; i < bp.size(); ++i)
+    REQUIRE(bp.index(elems[i]) == i);
+}
+
+// ---------------------------------------------------------------------------
+// Test: iterator operator+ and operator+=
+// ---------------------------------------------------------------------------
+template <typename bitarray_t>
+void test_iterator_advance(int n, int64_t total, int64_t bound) {
+  BoundedPartitions<bitarray_t> bp(n, total, bound);
+  if (bp.size() == 0)
+    return;
+
+  std::vector<bitarray_t> elems;
+  for (auto seq : bp)
+    elems.push_back(seq);
+
+  // operator+: begin() + i matches elems[i]
+  for (int64_t i = 0; i < bp.size(); ++i)
+    REQUIRE(*(bp.begin() + i) == elems[i]);
+
+  // operator+=: step-by-step advance
+  auto it = bp.begin();
+  for (int64_t i = 0; i < bp.size() - 1; ++i) {
+    it += 1;
+    REQUIRE(*it == elems[i + 1]);
+  }
+
+  // operator+=: larger jump
+  if (bp.size() >= 4) {
+    auto it2 = bp.begin();
+    it2 += 3;
+    REQUIRE(*it2 == elems[3]);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Test: equality operator
 // ---------------------------------------------------------------------------
 void test_equality() {
@@ -272,4 +324,20 @@ TEST_CASE("BoundedPartitions", "[combinatorics/bounded_partitions]") {
   
   
   SECTION("equality operator") { test_equality(); }
+
+  SECTION("random access and index") {
+    test_random_access<BitArray<uint64_t, 2>>(3, 4, 3);
+    test_random_access<BitArray<uint64_t, 2>>(4, 5, 4);
+    test_random_access<BitArray<uint64_t, 3>>(5, 7, 5);
+    test_random_access<BitArray<uint64_t, 1>>(6, 3, 2);
+    test_random_access<BitArray<uint32_t, 2>>(3, 3, 3);
+    test_random_access<BitArray<BitsetStatic1, 2>>(3, 4, 3);
+  }
+
+  SECTION("iterator advance (+ and +=)") {
+    test_iterator_advance<BitArray<uint64_t, 2>>(3, 4, 3);
+    test_iterator_advance<BitArray<uint64_t, 2>>(4, 5, 4);
+    test_iterator_advance<BitArray<uint64_t, 3>>(5, 7, 5);
+    test_iterator_advance<BitArray<uint32_t, 2>>(3, 3, 3);
+  }
 }

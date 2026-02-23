@@ -32,11 +32,14 @@ public:
   Subsets() = default;
   explicit Subsets(int64_t n);
 
-  int64_t n() const;        // Total number of bit positions
-  int64_t size() const;     // Total number of subsets (2^n)
-  iterator_t begin() const; // Iterator to first subset
-  iterator_t end() const;   // Iterator past last subset
+  int64_t n() const;                   // Total number of bit positions
+  int64_t size() const;                // Total number of subsets (2^n)
+  bit_t operator[](int64_t idx) const; // Bit pattern at index idx
+  iterator_t begin() const;            // Iterator to first subset
+  iterator_t end() const;              // Iterator past last subset
 
+  int64_t index(bit_t bits) const;     // returns the index of given bits
+  
   bool operator==(Subsets<bit_t> const &rhs) const;
   bool operator!=(Subsets<bit_t> const &rhs) const;
 
@@ -56,6 +59,8 @@ public:
   bool operator==(const SubsetsIterator<bit_t> &rhs) const;
   bool operator!=(const SubsetsIterator<bit_t> &rhs) const;
   SubsetsIterator &operator++();
+  SubsetsIterator &operator+=(int64_t n);
+  SubsetsIterator operator+(int64_t n) const;
   bit_t operator*() const;
 
 private:

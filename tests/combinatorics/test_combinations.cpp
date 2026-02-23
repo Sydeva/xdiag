@@ -4,7 +4,9 @@
 
 #include "../catch.hpp"
 
+#include <vector>
 #include <xdiag/bits/bitset.hpp>
+#include <xdiag/bits/popcount.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/utils/logger.hpp>
 
@@ -26,7 +28,7 @@ template <typename bit_t> void test_combinations() {
           REQUIRE(comb > current);
         current = comb;
         ++ctr;
-        REQUIRE(popcnt(comb) == k);
+        REQUIRE(popcount(comb) == k);
         REQUIRE(comb < ((bit_t)1 << n));
       }
       REQUIRE(ctr == combs.size());
@@ -71,7 +73,7 @@ template <typename chunk_t, int64_t nchunks> void test_combinations_bitset() {
 
         // Verify bit count
         REQUIRE(pattern_bitset.count() == k);
-        REQUIRE(popcnt(pattern_uint64) == k);
+        REQUIRE(popcount(pattern_uint64) == k);
 
         ++it_bitset;
         ++it_uint64;
@@ -126,6 +128,122 @@ void test_combinations_bitset_large() {
   }
 }
 
+template <typename chunk_t, int64_t nchunks>
+void test_combinations_random_access_bitset() {
+  using namespace xdiag;
+  using namespace xdiag::combinatorics;
+  using namespace xdiag::bits;
+
+  for (int n = 0; n < 7; ++n) {
+    for (int k = 0; k <= n; ++k) {
+      Combinations<Bitset<chunk_t, nchunks>> combs(n, k);
+
+      std::vector<Bitset<chunk_t, nchunks>> elems;
+      for (auto c : combs)
+        elems.push_back(c);
+
+      for (int64_t i = 0; i < combs.size(); ++i)
+        REQUIRE(combs[i] == elems[i]);
+
+      for (int64_t i = 0; i < combs.size(); ++i)
+        REQUIRE(combs.index(elems[i]) == i);
+    }
+  }
+}
+
+template <typename chunk_t, int64_t nchunks>
+void test_combinations_iterator_advance_bitset() {
+  using namespace xdiag;
+  using namespace xdiag::combinatorics;
+  using namespace xdiag::bits;
+
+  for (int n = 1; n < 7; ++n) {
+    for (int k = 0; k <= n; ++k) {
+      Combinations<Bitset<chunk_t, nchunks>> combs(n, k);
+      if (combs.size() == 0)
+        continue;
+
+      std::vector<Bitset<chunk_t, nchunks>> elems;
+      for (auto c : combs)
+        elems.push_back(c);
+
+      for (int64_t i = 0; i < combs.size(); ++i)
+        REQUIRE(*(combs.begin() + i) == elems[i]);
+
+      auto it = combs.begin();
+      for (int64_t i = 0; i < combs.size() - 1; ++i) {
+        it += 1;
+        REQUIRE(*it == elems[i + 1]);
+      }
+
+      if (combs.size() >= 3) {
+        auto it2 = combs.begin();
+        it2 += 2;
+        REQUIRE(*it2 == elems[2]);
+      }
+    }
+  }
+}
+
+template <typename bit_t> void test_combinations_random_access() {
+  using namespace xdiag;
+  using namespace xdiag::combinatorics;
+
+  for (int n = 0; n < 7; ++n) {
+    for (int k = 0; k <= n; ++k) {
+      Combinations<bit_t> combs(n, k);
+
+      // Collect elements sequentially
+      std::vector<bit_t> elems;
+      for (auto c : combs)
+        elems.push_back(c);
+
+      // operator[]: combs[i] must match sequential order
+      for (int64_t i = 0; i < combs.size(); ++i)
+        REQUIRE(combs[i] == elems[i]);
+
+      // index: round-trip index(combs[i]) == i
+      for (int64_t i = 0; i < combs.size(); ++i)
+        REQUIRE(combs.index(elems[i]) == i);
+    }
+  }
+}
+
+template <typename bit_t> void test_combinations_iterator_advance() {
+  using namespace xdiag;
+  using namespace xdiag::combinatorics;
+
+  for (int n = 1; n < 7; ++n) {
+    for (int k = 0; k <= n; ++k) {
+      Combinations<bit_t> combs(n, k);
+      if (combs.size() == 0)
+        continue;
+
+      std::vector<bit_t> elems;
+      for (auto c : combs)
+        elems.push_back(c);
+
+      // operator+: begin() + i matches elems[i]
+      for (int64_t i = 0; i < combs.size(); ++i)
+        REQUIRE(*(combs.begin() + i) == elems[i]);
+
+      // operator+=: step-by-step advance
+      auto it = combs.begin();
+      for (int64_t i = 0; i < combs.size() - 1; ++i) {
+        it += 1;
+        REQUIRE(*it == elems[i + 1]);
+      }
+
+      // operator+=: larger jump
+      if (combs.size() >= 3) {
+        auto it2 = combs.begin();
+        it2 += 2;
+        REQUIRE(*it2 == elems[2]);
+      }
+    }
+  }
+}
+
 TEST_CASE("Combinations", "[combinatorics]") {
   using namespace xdiag::bits;
 
@@ -135,6 +253,32 @@ TEST_CASE("Combinations", "[combinatorics]") {
     test_combinations<uint16_t>();
     test_combinations<uint32_t>();
     test_combinations<uint64_t>();
+  }
+
+  SECTION("random access and index") {
+    test_combinations_random_access<uint16_t>();
+    test_combinations_random_access<uint32_t>();
+    test_combinations_random_access<uint64_t>();
+  }
+
+  SECTION("iterator advance (+ and +=)") {
+    test_combinations_iterator_advance<uint16_t>();
+    test_combinations_iterator_advance<uint32_t>();
+    test_combinations_iterator_advance<uint64_t>();
+  }
+
+  SECTION("random access and index (bitset)") {
+    test_combinations_random_access_bitset<uint8_t, 0>();
+    test_combinations_random_access_bitset<uint8_t, 1>();
+    test_combinations_random_access_bitset<uint64_t, 1>();
+    test_combinations_random_access_bitset<uint64_t, 2>();
+  }
+
+  SECTION("iterator advance (+ and +=) (bitset)") {
+    test_combinations_iterator_advance_bitset<uint8_t, 0>();
+    test_combinations_iterator_advance_bitset<uint8_t, 1>();
+    test_combinations_iterator_advance_bitset<uint64_t, 1>();
+    test_combinations_iterator_advance_bitset<uint64_t, 2>();
   }
 
   SECTION("bitset vs uint64_t") {

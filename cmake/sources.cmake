@@ -12,18 +12,20 @@ set(XDIAG_SOURCES
   utils/matrix.cpp
   utils/ipow.cpp
   
-  bits/bitops.cpp
   bits/bitset.cpp
   bits/bitvector.cpp
   bits/bitarray.cpp
-  bits/unpack.cpp
+  bits/pack_unpack.cpp
+  bits/to_string.cpp
 
   combinatorics/binomial.cpp
-  combinatorics/bit_patterns.cpp
+  combinatorics/combinations/enumerate_combinations.cpp
   combinatorics/combinations/combinations.cpp
+  combinatorics/combinations/lin_table.cpp
   combinatorics/subsets/subsets.cpp
   combinatorics/bounded_multisets/bounded_multisets.cpp
   combinatorics/bounded_partitions/bounded_partitions.cpp
+  combinatorics/bounded_partitions/count_bounded_partitions.cpp
 
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp

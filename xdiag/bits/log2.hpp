@@ -5,6 +5,7 @@
 #pragma once
 
 namespace xdiag::bits {
+
 constexpr size_t floorlog2(size_t x) {
   return x == 1 ? 0 : 1 + floorlog2(x >> 1);
 }

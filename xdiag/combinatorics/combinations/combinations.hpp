@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include <xdiag/combinatorics/binomial.hpp>
-#include <xdiag/combinatorics/bit_patterns.hpp>
+#include <cstdint>
 
 namespace xdiag::combinatorics {
 
@@ -37,11 +36,13 @@ public:
   // Throws if k > n, k < 0, or n < 0.
   Combinations(int64_t n, int64_t k);
 
-  int64_t n() const;                 // Total number of bit positions
-  int64_t k() const;                 // Number of bits set in each pattern
-  int64_t size() const;              // Total number of combinations C(n,k)
-  iterator_t begin() const;          // Iterator to first combination
-  iterator_t end() const;            // Iterator past last combination
+  int64_t n() const;                   // Total number of bit positions
+  int64_t k() const;                   // Number of bits set in each pattern
+  int64_t size() const;                // Total number of combinations C(n,k)
+  bit_t operator[](int64_t idx) const; // Bit pattern at index idx
+  int64_t index(bit_t bits) const;     // Index of given bit pattern
+  iterator_t begin() const;            // Iterator to first combination
+  iterator_t end() const;              // Iterator past last combination
 
   bool operator==(Combinations<bit_t> const &rhs) const;
   bool operator!=(Combinations<bit_t> const &rhs) const;
@@ -65,11 +66,14 @@ public:
   bool operator==(CombinationsIterator<bit_t> const &rhs) const;
   bool operator!=(CombinationsIterator<bit_t> const &rhs) const;
   CombinationsIterator &operator++();
+  CombinationsIterator &operator+=(int64_t n);
+  CombinationsIterator operator+(int64_t n) const;
   bit_t operator*() const;
 
 private:
   bit_t current_;
   int64_t idx_;
+  int64_t n_;
 };
 
 } // namespace xdiag::combinatorics

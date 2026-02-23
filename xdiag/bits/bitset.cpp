@@ -7,8 +7,8 @@
 #include <bitset>
 #include <cassert>
 #include <xdiag/bits/bitmask.hpp>
-#include <xdiag/bits/gbit.hpp>
-#include <xdiag/bits/popcnt.hpp>
+#include <xdiag/bits/get_set_bit.hpp>
+#include <xdiag/bits/popcount.hpp>
 #include <xdiag/utils/logger.hpp>
 
 #include <xdiag/bits/log2.hpp>
@@ -51,7 +51,7 @@ template <typename chunk_t, int64_t nchunks>
 bool Bitset<chunk_t, nchunks>::test(int64_t pos) const noexcept {
   int64_t chunk_idx = pos >> chunkshift;
   int64_t bit_idx = pos & chunkmask;
-  return gbit(chunks_[chunk_idx], bit_idx);
+  return get_bit(chunks_[chunk_idx], bit_idx);
 }
 
 template <typename chunk_t, int64_t nchunks>
@@ -511,7 +511,7 @@ template <typename chunk_t, int64_t nchunks>
 int64_t Bitset<chunk_t, nchunks>::count() const noexcept {
   int64_t total = 0;
   for (auto chunk : chunks_) {
-    total += popcnt(chunk);
+    total += popcount(chunk);
   }
   return total;
 }

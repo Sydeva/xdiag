@@ -39,6 +39,8 @@ public:
   int64_t total() const;
   int64_t bound() const;
   int64_t size() const;
+  bitarray_t operator[](int64_t idx) const; // Sequence at index idx
+  int64_t index(bitarray_t seq) const;      // Index of given sequence
   iterator_t begin() const;
   iterator_t end() const;
 
@@ -58,16 +60,19 @@ public:
   static constexpr int nbits = bitarray_t::nbits;
 
   BoundedPartitionsIterator() = default;
-  BoundedPartitionsIterator(int64_t n, int64_t bound, int64_t idx,
-                            bitarray_t current);
+  BoundedPartitionsIterator(int64_t n, int64_t total, int64_t bound,
+                            int64_t idx, bitarray_t current);
 
   bool operator==(BoundedPartitionsIterator<bitarray_t> const &rhs) const;
   bool operator!=(BoundedPartitionsIterator<bitarray_t> const &rhs) const;
   BoundedPartitionsIterator &operator++();
+  BoundedPartitionsIterator &operator+=(int64_t n);
+  BoundedPartitionsIterator operator+(int64_t n) const;
   bitarray_t operator*() const;
 
 private:
   int64_t n_ = 0;
+  int64_t total_ = 0;
   int64_t bound_ = 0;
   int64_t idx_ = 0;
   bitarray_t current_;

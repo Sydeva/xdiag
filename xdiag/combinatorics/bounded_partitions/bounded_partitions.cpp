@@ -8,32 +8,10 @@
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/log2.hpp>
-#include <xdiag/combinatorics/binomial.hpp>
+#include <xdiag/combinatorics/bounded_partitions/count_bounded_partitions.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag::combinatorics {
-
-// ---------------------------------------------------------------------------
-// Count weak compositions of total into n parts each in {0, ..., bound-1}.
-// Inclusion-exclusion: sum_{k=0}^{K} (-1)^k C(n,k) C(total-k*bound+n-1, n-1)
-// ---------------------------------------------------------------------------
-static int64_t count_bounded_partitions(int64_t n, int64_t total,
-                                         int64_t bound) {
-  if (n == 0)
-    return (total == 0) ? 1 : 0;
-  if (total < 0 || total > n * (bound - 1))
-    return 0;
-  int64_t result = 0;
-  for (int64_t k = 0; k * bound <= total; ++k) {
-    int64_t b1 = binom(n, k);
-    int64_t b2 = binom(total - k * bound + n - 1, n - 1);
-    if (k % 2 == 0)
-      result += b1 * b2;
-    else
-      result -= b1 * b2;
-  }
-  return result;
-}
 
 // ---------------------------------------------------------------------------
 // Fill slots lo..hi with the rlex-first valid configuration summing to S.
@@ -100,6 +78,17 @@ template <typename bitarray_t>
 int64_t BoundedPartitions<bitarray_t>::size() const { return size_; }
 
 template <typename bitarray_t>
+auto BoundedPartitions<bitarray_t>::operator[](int64_t idx) const
+    -> bitarray_t {
+  return nth_bounded_partition<bitarray_t>(n_, total_, bound_, idx);
+}
+
+template <typename bitarray_t>
+int64_t BoundedPartitions<bitarray_t>::index(bitarray_t seq) const {
+  return rank_bounded_partition<bitarray_t>(n_, total_, bound_, seq);
+}
+
+template <typename bitarray_t>
 BoundedPartitionsIterator<bitarray_t>
 BoundedPartitions<bitarray_t>::begin() const {
   if (size_ == 0)
@@ -107,13 +96,14 @@ BoundedPartitions<bitarray_t>::begin() const {
   bitarray_t first{};
   if (n_ > 0)
     fill_rlex_first(first, 0, n_ - 1, total_, bound_);
-  return BoundedPartitionsIterator<bitarray_t>(n_, bound_, 0, first);
+  return BoundedPartitionsIterator<bitarray_t>(n_, total_, bound_, 0, first);
 }
 
 template <typename bitarray_t>
 BoundedPartitionsIterator<bitarray_t>
 BoundedPartitions<bitarray_t>::end() const {
-  return BoundedPartitionsIterator<bitarray_t>(n_, bound_, size_, bitarray_t{});
+  return BoundedPartitionsIterator<bitarray_t>(n_, total_, bound_, size_,
+                                               bitarray_t{});
 }
 
 template <typename bitarray_t>
@@ -134,8 +124,8 @@ bool BoundedPartitions<bitarray_t>::operator!=(
 
 template <typename bitarray_t>
 BoundedPartitionsIterator<bitarray_t>::BoundedPartitionsIterator(
-    int64_t n, int64_t bound, int64_t idx, bitarray_t current)
-    : n_(n), bound_(bound), idx_(idx), current_(current) {}
+    int64_t n, int64_t total, int64_t bound, int64_t idx, bitarray_t current)
+    : n_(n), total_(total), bound_(bound), idx_(idx), current_(current) {}
 
 template <typename bitarray_t>
 bool BoundedPartitionsIterator<bitarray_t>::operator==(
@@ -154,28 +144,41 @@ bool BoundedPartitionsIterator<bitarray_t>::operator!=(
 // Scan from i = 1 up to n-1: at the leftmost position where a[i] can be
 // incremented and the left-side sum a[0..i-1] reduced by 1 is achievable,
 // do so and fill a[0..i-1] with the rlex-first config for the new left-sum.
+// si_left is maintained as a running sum to avoid an O(i) inner loop.
 template <typename bitarray_t>
 BoundedPartitionsIterator<bitarray_t> &
 BoundedPartitionsIterator<bitarray_t>::operator++() {
+  int64_t si_left = current_.get(0);
   for (int64_t i = 1; i < n_; ++i) {
     int64_t ai = current_.get(i);
-    if (ai >= bound_ - 1)
-      continue;
-    // Sum of a[0..i-1]
-    int64_t si_left = 0;
-    for (int64_t j = 0; j < i; ++j)
-      si_left += current_.get(j);
     // After incrementing a[i], left slots a[0..i-1] must sum to si_left - 1
     int64_t new_left = si_left - 1;
-    if (new_left < 0 || new_left > i * (bound_ - 1))
-      continue;
-    current_.set(i, ai + 1);
-    fill_rlex_first(current_, 0, i - 1, new_left, bound_);
-    ++idx_;
-    return *this;
+    if (ai < bound_ - 1 && new_left >= 0 && new_left <= i * (bound_ - 1)) {
+      current_.set(i, ai + 1);
+      fill_rlex_first(current_, 0, i - 1, new_left, bound_);
+      ++idx_;
+      return *this;
+    }
+    si_left += ai;
   }
   ++idx_; // move to end
   return *this;
+}
+
+template <typename bitarray_t>
+BoundedPartitionsIterator<bitarray_t> &
+BoundedPartitionsIterator<bitarray_t>::operator+=(int64_t n) {
+  idx_ += n;
+  current_ = nth_bounded_partition<bitarray_t>(n_, total_, bound_, idx_);
+  return *this;
+}
+
+template <typename bitarray_t>
+BoundedPartitionsIterator<bitarray_t>
+BoundedPartitionsIterator<bitarray_t>::operator+(int64_t n) const {
+  BoundedPartitionsIterator copy = *this;
+  copy += n;
+  return copy;
 }
 
 template <typename bitarray_t>

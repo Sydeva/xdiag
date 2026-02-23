@@ -36,6 +36,8 @@ public:
   int64_t n() const;
   int64_t bound() const;
   int64_t size() const;
+  bitarray_t operator[](int64_t idx) const; // Sequence at index idx
+  int64_t index(bitarray_t seq) const;      // Index of given sequence
   iterator_t begin() const;
   iterator_t end() const;
 
@@ -59,11 +61,15 @@ public:
   bool operator==(BoundedMultisetsIterator<bitarray_t> const &rhs) const;
   bool operator!=(BoundedMultisetsIterator<bitarray_t> const &rhs) const;
   BoundedMultisetsIterator &operator++();
+  BoundedMultisetsIterator &operator+=(int64_t n);
+  BoundedMultisetsIterator operator+(int64_t n) const;
   bitarray_t operator*() const;
 
 private:
-  int64_t idx_;
-  int64_t bound_;
+  int64_t n_ = 0;
+  int64_t idx_ = 0;
+  int64_t bound_ = 0;
+  bitarray_t current_;
 };
 
 } // namespace xdiag::combinatorics

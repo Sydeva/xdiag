@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "unpack.hpp"
+#include "pack_unpack.hpp"
 
 #include <xdiag/bits/bitset.hpp>
 
@@ -20,8 +20,20 @@ BitArray<bit_t, nbits> unpack(int64_t number, int64_t q) {
   return array;
 }
 
+template <typename bit_t, int nbits>
+int64_t pack(BitArray<bit_t, nbits> array, int64_t q, int64_t n) {
+  int64_t result = 0;
+  int64_t base = 1;
+  for (int64_t i = 0; i < n; ++i) {
+    result += array.get(i) * base;
+    base *= q;
+  }
+  return result;
+}
+
 #define INSTANTIATE_UNPACK(bit_t, n)                                           \
-  template BitArray<bit_t, n> unpack<bit_t, n>(int64_t, int64_t);
+  template BitArray<bit_t, n> unpack<bit_t, n>(int64_t, int64_t);              \
+  template int64_t pack<bit_t, n>(BitArray<bit_t, n>, int64_t, int64_t);
 #define INSTANTIATE_UNPACK_ALL(bit_t)                                          \
   INSTANTIATE_UNPACK(bit_t, 1)                                                 \
   INSTANTIATE_UNPACK(bit_t, 2)                                                 \

@@ -129,6 +129,58 @@ template <typename bitarray_t> void test_growing(int n, int64_t bound) {
 }
 
 // ---------------------------------------------------------------------------
+// Test: operator[] and index() — random access and round-trip
+// ---------------------------------------------------------------------------
+template <typename bitarray_t> void test_random_access(int n, int64_t bound) {
+  BoundedMultisets<bitarray_t> ms(n, bound);
+
+  // Collect elements sequentially
+  std::vector<bitarray_t> elems;
+  for (auto seq : ms)
+    elems.push_back(seq);
+
+  // operator[]: ms[i] matches sequential order
+  for (int64_t i = 0; i < ms.size(); ++i)
+    REQUIRE(ms[i] == elems[i]);
+
+  // index: round-trip index(ms[i]) == i
+  for (int64_t i = 0; i < ms.size(); ++i)
+    REQUIRE(ms.index(elems[i]) == i);
+}
+
+// ---------------------------------------------------------------------------
+// Test: iterator operator+ and operator+=
+// ---------------------------------------------------------------------------
+template <typename bitarray_t>
+void test_iterator_advance(int n, int64_t bound) {
+  BoundedMultisets<bitarray_t> ms(n, bound);
+  if (ms.size() == 0)
+    return;
+
+  std::vector<bitarray_t> elems;
+  for (auto seq : ms)
+    elems.push_back(seq);
+
+  // operator+: begin() + i matches elems[i]
+  for (int64_t i = 0; i < ms.size(); ++i)
+    REQUIRE(*(ms.begin() + i) == elems[i]);
+
+  // operator+=: step-by-step advance
+  auto it = ms.begin();
+  for (int64_t i = 0; i < ms.size() - 1; ++i) {
+    it += 1;
+    REQUIRE(*it == elems[i + 1]);
+  }
+
+  // operator+=: larger jump
+  if (ms.size() >= 4) {
+    auto it2 = ms.begin();
+    it2 += 3;
+    REQUIRE(*it2 == elems[3]);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Test: equality operator
 // ---------------------------------------------------------------------------
 template <typename bitarray_t> void test_equality() {
@@ -210,5 +262,20 @@ TEST_CASE("BoundedMultisets", "[combinatorics/bounded_multisets]") {
     test_equality<BitArray<uint64_t, 2>>();
     test_equality<BitArray<uint32_t, 2>>();
     test_equality<BitArray<BitsetStatic2, 2>>();
+  }
+
+  SECTION("random access and index") {
+    test_random_access<BitArray<uint64_t, 2>>(3, 3);
+    test_random_access<BitArray<uint64_t, 3>>(4, 5);
+    test_random_access<BitArray<uint64_t, 1>>(6, 2);
+    test_random_access<BitArray<uint32_t, 2>>(3, 4);
+    test_random_access<BitArray<BitsetStatic2, 2>>(3, 3);
+  }
+
+  SECTION("iterator advance (+ and +=)") {
+    test_iterator_advance<BitArray<uint64_t, 2>>(3, 3);
+    test_iterator_advance<BitArray<uint64_t, 3>>(4, 5);
+    test_iterator_advance<BitArray<uint64_t, 1>>(6, 2);
+    test_iterator_advance<BitArray<uint32_t, 2>>(3, 4);
   }
 }
