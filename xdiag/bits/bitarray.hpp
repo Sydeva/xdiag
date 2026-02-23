@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <type_traits>
+
+#include <xdiag/bits/bitmask.hpp>
 
 namespace xdiag::bits {
 
@@ -40,11 +43,32 @@ public:
   // Default constructor, initializes all bits to 0
   BitArray() = default;
 
-  // Get element at index (returns nbits-bit value)
-  int64_t get(int64_t idx) const noexcept;
+  // Get element at index (returns nbits-bit value).
+  // Inlined so the compiler sees the compile-time constants nbits and
+  // slot_mask and can eliminate the multiply idx*nbits via strength reduction.
+  inline int64_t get(int64_t idx) const noexcept {
+    if constexpr (std::is_integral_v<bit_t>) {
+      constexpr bit_t slot_mask = bitmask<bit_t>(nbits);
+      return (bits_ >> (static_cast<int>(idx) * nbits)) & slot_mask;
+    } else {
+      return bits_.get_range(idx * nbits, nbits);
+    }
+  }
 
-  // Set element at index to value (stores lower nbits of value)
-  void set(int64_t idx, int64_t value) noexcept;
+  // Set element at index to value (stores lower nbits of value).
+  // Inlined for the same reason as get(). Masks value before shifting to
+  // avoid a second mask after the shift, and uses bit_t arithmetic throughout
+  // to stay within the storage type's width.
+  inline void set(int64_t idx, int64_t value) noexcept {
+    if constexpr (std::is_integral_v<bit_t>) {
+      constexpr bit_t slot_mask = bitmask<bit_t>(nbits);
+      const int shift = static_cast<int>(idx) * nbits;
+      bits_ &= ~(slot_mask << shift);               // clear slot
+      bits_ |= (bit_t(value) & slot_mask) << shift; // write value
+    } else {
+      bits_.set_range(idx * nbits, nbits, (typename bit_t::chunk_t)value);
+    }
+  }
 
   bool operator==(BitArray<bit_t, nbits> const &rhs) const noexcept;
   bool operator!=(BitArray<bit_t, nbits> const &rhs) const noexcept;

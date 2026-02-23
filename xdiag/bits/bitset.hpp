@@ -4,6 +4,7 @@
 
 #pragma once
 #include <array>
+#include <cassert>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -52,25 +53,105 @@ public:
   Bitset() = default;
   explicit Bitset(int64_t nbits);
 
-  // Bit-level access
-  bool test(int64_t pos) const noexcept;
-  void set(int64_t pos) noexcept;             // fast: always sets to 1
-  void set(int64_t pos, bool value) noexcept; // conditional set
-  void reset(int64_t pos) noexcept;
-  void flip(int64_t pos) noexcept;
+  // Bit-level access — inlined so the compiler sees compile-time constants
+  // chunkshift and chunkmask and can strength-reduce the index arithmetic.
+  inline bool test(int64_t pos) const noexcept {
+    return (chunks_[pos >> chunkshift] >> (pos & chunkmask)) & 1;
+  }
+  inline void set(int64_t pos) noexcept {
+    chunks_[pos >> chunkshift] |= (chunk_t(1) << (pos & chunkmask));
+  }
+  inline void set(int64_t pos, bool value) noexcept {
+    int64_t chunk_idx = pos >> chunkshift;
+    int64_t bit_idx = pos & chunkmask;
+    if (value) {
+      chunks_[chunk_idx] |= (chunk_t(1) << bit_idx);
+    } else {
+      chunks_[chunk_idx] &= ~(chunk_t(1) << bit_idx);
+    }
+  }
+  inline void reset(int64_t pos) noexcept {
+    chunks_[pos >> chunkshift] &= ~(chunk_t(1) << (pos & chunkmask));
+  }
+  inline void flip(int64_t pos) noexcept {
+    chunks_[pos >> chunkshift] ^= (chunk_t(1) << (pos & chunkmask));
+  }
 
-  // Bit-level access (ranged), assuming length <= nchunkbits_
-  void set_range(int64_t start, int64_t length, chunk_t bits) noexcept;
-  chunk_t get_range(int64_t start, int64_t length) const noexcept;
+  // Bit-level access (ranged) — inlined so the compiler can constant-fold
+  // nchunkbits, chunkshift, chunkmask and eliminate branches for typical cases.
+  inline void set_range(int64_t start, int64_t length,
+                        chunk_t bits) noexcept {
+    assert(length <= (int64_t)nchunkbits);
+    if (!length) {
+      return;
+    }
+    int64_t end = start + length;
+    int64_t startchunk = start >> chunkshift;
+    int64_t startbit = start & chunkmask;
+    int64_t endchunk = end >> chunkshift;
+    int64_t endbit = end & chunkmask;
+    if ((endchunk == startchunk) || (endbit == 0)) {
+      chunk_t mask = bitmask<chunk_t>(length) << startbit;
+      chunks_[startchunk] &= ~mask;
+      chunks_[startchunk] |= bits << startbit;
+    } else {
+      chunk_t negmask1 = bitmask<chunk_t>(startbit);
+      chunks_[startchunk] &= negmask1;
+      chunks_[startchunk] |= bits << startbit;
+      chunk_t mask2 = bitmask<chunk_t>(endbit);
+      chunks_[endchunk] &= ~mask2;
+      chunks_[endchunk] |= bits >> (nchunkbits - startbit);
+    }
+  }
+
+  inline chunk_t get_range(int64_t start, int64_t length) const noexcept {
+    assert(length <= (int64_t)nchunkbits);
+    if (!length) {
+      return chunk_t(0);
+    }
+    int64_t end = start + length;
+    int64_t startchunk = start >> chunkshift;
+    int64_t startbit = start & chunkmask;
+    int64_t endchunk = end >> chunkshift;
+    int64_t endbit = end & chunkmask;
+    if ((endchunk == startchunk) || (endbit == 0)) {
+      return (chunks_[startchunk] >> startbit) & bitmask<chunk_t>(length);
+    } else {
+      return ((chunks_[endchunk] & bitmask<chunk_t>(endbit))
+              << (nchunkbits - startbit)) |
+             (chunks_[startchunk] >> startbit);
+    }
+  }
 
   // Bitwise operations
   Bitset operator&(Bitset const &rhs) const;
   Bitset operator|(Bitset const &rhs) const;
   Bitset operator^(Bitset const &rhs) const;
   Bitset operator~() const;
-  Bitset &operator&=(Bitset const &rhs) noexcept;
-  Bitset &operator|=(Bitset const &rhs) noexcept;
-  Bitset &operator^=(Bitset const &rhs) noexcept;
+
+  // Inlined so the compiler sees std::size(chunks_) as a compile-time constant
+  // for static arrays (nchunks>0) and can fully unroll the chunk loops.
+  inline Bitset &operator&=(Bitset const &rhs) noexcept {
+    assert(std::size(chunks_) == std::size(rhs.chunks_));
+    for (int64_t i = 0; i < (int64_t)std::size(chunks_); ++i) {
+      chunks_[i] &= rhs.chunks_[i];
+    }
+    return *this;
+  }
+  inline Bitset &operator|=(Bitset const &rhs) noexcept {
+    assert(std::size(chunks_) == std::size(rhs.chunks_));
+    for (int64_t i = 0; i < (int64_t)std::size(chunks_); ++i) {
+      chunks_[i] |= rhs.chunks_[i];
+    }
+    return *this;
+  }
+  inline Bitset &operator^=(Bitset const &rhs) noexcept {
+    assert(std::size(chunks_) == std::size(rhs.chunks_));
+    for (int64_t i = 0; i < (int64_t)std::size(chunks_); ++i) {
+      chunks_[i] ^= rhs.chunks_[i];
+    }
+    return *this;
+  }
 
   // Shift operations
   Bitset operator<<(int64_t shift) const;
@@ -89,18 +170,54 @@ public:
   Bitset &operator*=(Bitset const &rhs) noexcept;
   Bitset &operator/=(Bitset const &rhs) noexcept;
 
-  // Predicates
-  bool all() const noexcept;
-  bool any() const noexcept;
-  bool none() const noexcept;
+  // Predicates — inlined for the same reason as operator&=.
+  inline bool all() const noexcept {
+    for (auto chunk : chunks_) {
+      if (chunk != std::numeric_limits<chunk_t>::max()) {
+        return false;
+      }
+    }
+    return true;
+  }
+  inline bool any() const noexcept {
+    for (auto chunk : chunks_) {
+      if (chunk != 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+  inline bool none() const noexcept { return !any(); }
   int64_t count() const noexcept;
 
-  bool operator==(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
-  bool operator!=(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
-  bool operator<(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
-  bool operator<=(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
-  bool operator>(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
-  bool operator>=(Bitset<chunk_t, nchunks> const &rhs) const noexcept;
+  // Comparisons — inlined so loops over chunks_ unroll for static arrays.
+  inline bool operator==(Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+    return chunks_ == rhs.chunks_;
+  }
+  inline bool operator!=(Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+    return !operator==(rhs);
+  }
+  inline bool operator<(Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+    assert(std::size(chunks_) == std::size(rhs.chunks_));
+    for (int64_t i = (int64_t)std::size(chunks_) - 1; i >= 0; --i) {
+      if (chunks_[i] < rhs.chunks_[i]) {
+        return true;
+      }
+      if (chunks_[i] > rhs.chunks_[i]) {
+        return false;
+      }
+    }
+    return false; // equal
+  }
+  inline bool operator<=(Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+    return !operator>(rhs);
+  }
+  inline bool operator>(Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+    return rhs.operator<(*this);
+  }
+  inline bool operator>=(Bitset<chunk_t, nchunks> const &rhs) const noexcept {
+    return !operator<(rhs);
+  }
 
   storage_t const &chunks() const noexcept;
 

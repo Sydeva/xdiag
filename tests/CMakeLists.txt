@@ -14,6 +14,7 @@ set(XDIAG_TEST_SOURCES
   combinatorics/test_lin_table.cpp
   combinatorics/test_bounded_multisets.cpp
   combinatorics/test_bounded_partitions.cpp
+  combinatorics/test_schaefer_table.cpp
   
   # io/test_file_toml.cpp
   # io/test_file_h5.cpp

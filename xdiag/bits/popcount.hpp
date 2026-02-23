@@ -51,15 +51,17 @@ constexpr int popcount(uint16_t x) noexcept { return __builtin_popcount(x); }
 constexpr int popcount(uint32_t x) noexcept { return __builtin_popcount(x); }
 constexpr int popcount(uint64_t x) noexcept { return __builtin_popcountll(x); }
 #else
-constexpr int popcount(int x) { return swar_popcount_32((uint32_t)x); }
-constexpr int popcount(uint16_t x) { return swar_popcount_32((uint32_t)x); }
-constexpr int popcount(uint32_t x) { return swar_popcount_32(x); }
-constexpr int popcount(uint64_t x) { return swar_popcount_64(x); }
+constexpr int popcount(int x) noexcept { return swar_popcount_32((uint32_t)x); }
+constexpr int popcount(uint16_t x) noexcept {
+  return swar_popcount_32((uint32_t)x);
+}
+constexpr int popcount(uint32_t x) noexcept { return swar_popcount_32(x); }
+constexpr int popcount(uint64_t x) noexcept { return swar_popcount_64(x); }
 #endif
 
 // Popcounts for Bitsets
 template <typename chunk_t, int64_t nchunks>
-inline int popcount(Bitset<chunk_t, nchunks> const &bits) {
+constexpr int popcount(Bitset<chunk_t, nchunks> const &bits) noexcept {
   return (int)bits.count();
 }
 

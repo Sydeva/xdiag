@@ -5,33 +5,12 @@
 #include "bitarray.hpp"
 
 #include <algorithm>
-#include <type_traits>
-#include <xdiag/bits/bitmask.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/extern/fmt/format.hpp>
 
 namespace xdiag::bits {
 
-template <typename bit_t, int nbits>
-int64_t BitArray<bit_t, nbits>::get(int64_t idx) const noexcept {
-  if constexpr (std::is_integral<bit_t>::value) {
-    return (bits_ >> (idx * nbits)) & bitmask<bit_t>(nbits);
-  } else {
-    return bits_.get_range(idx * nbits, nbits);
-  }
-}
-
-template <typename bit_t, int nbits>
-void BitArray<bit_t, nbits>::set(int64_t idx, int64_t value) noexcept {
-  if constexpr (std::is_integral<bit_t>::value) {
-    int64_t shift = idx * nbits;
-    bit_t mask = bitmask<bit_t>(nbits) << shift;
-    bits_ &= ~mask;                     // clear bits
-    bits_ |= ((value << shift) & mask); // set bits
-  } else {
-    bits_.set_range(idx * nbits, nbits, (typename bit_t::chunk_t)value);
-  }
-}
+// get() and set() are defined inline in bitarray.hpp.
 
 template <typename bit_t, int nbits>
 bool BitArray<bit_t, nbits>::operator==(

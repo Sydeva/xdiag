@@ -4,14 +4,12 @@
 
 #include "bitset.hpp"
 #include <algorithm>
-#include <bitset>
 #include <cassert>
-#include <xdiag/bits/bitmask.hpp>
-#include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/popcount.hpp>
-#include <xdiag/utils/logger.hpp>
 
-#include <xdiag/bits/log2.hpp>
+// test, set, reset, flip, get_range, set_range,
+// operator&=, |=, ^=, all, any, none,
+// operator==, !=, <, <=, >, >= are defined inline in bitset.hpp.
 
 namespace xdiag::bits {
 
@@ -46,92 +44,13 @@ Bitset<chunk_t, nchunks>::chunks() const noexcept {
   return chunks_;
 }
 
-// Bit-level access
 template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::test(int64_t pos) const noexcept {
-  int64_t chunk_idx = pos >> chunkshift;
-  int64_t bit_idx = pos & chunkmask;
-  return get_bit(chunks_[chunk_idx], bit_idx);
-}
-
-template <typename chunk_t, int64_t nchunks>
-void Bitset<chunk_t, nchunks>::set(int64_t pos) noexcept {
-  int64_t chunk_idx = pos >> chunkshift;
-  int64_t bit_idx = pos & chunkmask;
-  chunks_[chunk_idx] |= ((chunk_t)1 << bit_idx);
-}
-
-template <typename chunk_t, int64_t nchunks>
-void Bitset<chunk_t, nchunks>::set(int64_t pos, bool value) noexcept {
-  int64_t chunk_idx = pos >> chunkshift;
-  int64_t bit_idx = pos & chunkmask;
-  if (value) {
-    chunks_[chunk_idx] |= ((chunk_t)1 << bit_idx);
-  } else {
-    chunks_[chunk_idx] &= ~((chunk_t)1 << bit_idx);
+int64_t Bitset<chunk_t, nchunks>::count() const noexcept {
+  int64_t total = 0;
+  for (auto chunk : chunks_) {
+    total += popcount(chunk);
   }
-}
-
-template <typename chunk_t, int64_t nchunks>
-void Bitset<chunk_t, nchunks>::reset(int64_t pos) noexcept {
-  int64_t chunk_idx = pos >> chunkshift;
-  int64_t bit_idx = pos & chunkmask;
-  chunks_[chunk_idx] &= ~((chunk_t)1 << bit_idx);
-}
-
-template <typename chunk_t, int64_t nchunks>
-void Bitset<chunk_t, nchunks>::flip(int64_t pos) noexcept {
-  int64_t chunk_idx = pos >> chunkshift;
-  int64_t bit_idx = pos & chunkmask;
-  chunks_[chunk_idx] ^= ((chunk_t)1 << bit_idx);
-}
-
-// Bit-level access (ranged)
-template <typename chunk_t, int64_t nchunks>
-void Bitset<chunk_t, nchunks>::set_range(int64_t start, int64_t length,
-                                         chunk_t bits) noexcept {
-  assert(length <= nchunkbits);
-  if (!length) {
-    return;
-  }
-  int64_t end = start + length;
-  int64_t startchunk = start >> chunkshift; // divide by nchunkbits
-  int64_t startbit = start & chunkmask;     // modulo    nchunkbits
-  int64_t endchunk = end >> chunkshift;
-  int64_t endbit = end & chunkmask;
-  if ((endchunk == startchunk) || (endbit == 0)) {
-    chunk_t mask = bitmask<chunk_t>(length) << startbit;
-    chunks_[startchunk] &= ~mask;
-    chunks_[startchunk] |= bits << startbit;
-  } else {
-    chunk_t negmask1 = bitmask<chunk_t>(startbit);
-    chunks_[startchunk] &= negmask1;
-    chunks_[startchunk] |= bits << startbit;
-    chunk_t mask2 = bitmask<chunk_t>(endbit);
-    chunks_[endchunk] &= ~mask2;
-    chunks_[endchunk] |= bits >> (nchunkbits - startbit);
-  }
-}
-
-template <typename chunk_t, int64_t nchunks>
-chunk_t Bitset<chunk_t, nchunks>::get_range(int64_t start,
-                                            int64_t length) const noexcept {
-  assert(length <= nchunkbits);
-  if (!length) {
-    return (chunk_t)0;
-  }
-  int64_t end = start + length;
-  int64_t startchunk = start >> chunkshift; // divide by nchunkbits
-  int64_t startbit = start & chunkmask;     // modulo    nchunkbits
-  int64_t endchunk = end >> chunkshift;
-  int64_t endbit = end & chunkmask;
-  if ((endchunk == startchunk) || (endbit == 0)) {
-    return (chunks_[startchunk] >> startbit) & bitmask<chunk_t>(length);
-  } else {
-    return ((chunks_[endchunk] & bitmask<chunk_t>(endbit))
-            << (nchunkbits - startbit)) |
-           (chunks_[startchunk] >> startbit);
-  }
+  return total;
 }
 
 // Bitwise operations
@@ -166,36 +85,6 @@ Bitset<chunk_t, nchunks> Bitset<chunk_t, nchunks>::operator~() const {
     result.chunks_[i] = ~result.chunks_[i];
   }
   return result;
-}
-
-template <typename chunk_t, int64_t nchunks>
-Bitset<chunk_t, nchunks> &
-Bitset<chunk_t, nchunks>::operator&=(Bitset const &rhs) noexcept {
-  assert(std::size(chunks_) == std::size(rhs.chunks_));
-  for (int64_t i = 0; i < std::size(chunks_); ++i) {
-    chunks_[i] &= rhs.chunks_[i];
-  }
-  return *this;
-}
-
-template <typename chunk_t, int64_t nchunks>
-Bitset<chunk_t, nchunks> &
-Bitset<chunk_t, nchunks>::operator|=(Bitset const &rhs) noexcept {
-  assert(std::size(chunks_) == std::size(rhs.chunks_));
-  for (int64_t i = 0; i < std::size(chunks_); ++i) {
-    chunks_[i] |= rhs.chunks_[i];
-  }
-  return *this;
-}
-
-template <typename chunk_t, int64_t nchunks>
-Bitset<chunk_t, nchunks> &
-Bitset<chunk_t, nchunks>::operator^=(Bitset const &rhs) noexcept {
-  assert(std::size(chunks_) == std::size(rhs.chunks_));
-  for (int64_t i = 0; i < std::size(chunks_); ++i) {
-    chunks_[i] ^= rhs.chunks_[i];
-  }
-  return *this;
 }
 
 // Optimized shift-by-1 for division algorithm (private helper)
@@ -479,94 +368,6 @@ Bitset<chunk_t, nchunks>::operator/=(Bitset const &rhs) noexcept {
 
   *this = quotient;
   return *this;
-}
-
-// Predicates
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::all() const noexcept {
-  for (auto chunk : chunks_) {
-    if (chunk != std::numeric_limits<chunk_t>::max()) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::any() const noexcept {
-  for (auto chunk : chunks_) {
-    if (chunk != 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::none() const noexcept {
-  return !any();
-}
-
-template <typename chunk_t, int64_t nchunks>
-int64_t Bitset<chunk_t, nchunks>::count() const noexcept {
-  int64_t total = 0;
-  for (auto chunk : chunks_) {
-    total += popcount(chunk);
-  }
-  return total;
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::operator==(
-    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
-  return chunks_ == rhs.chunks_;
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::operator!=(
-    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
-  return !operator==(rhs);
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::operator<(
-    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
-  assert(std::size(chunks_) == std::size(rhs.chunks_));
-
-  // slow comparison for dynamic bitset
-  // if constexpr (nchunks == 0) {
-  // Compare from most significant chunk to least significant
-  for (int64_t i = std::size(chunks_) - 1; i >= 0; --i) {
-    if (chunks_[i] < rhs.chunks_[i]) {
-      return true;
-    }
-    if (chunks_[i] > rhs.chunks_[i]) {
-      return false;
-    }
-  }
-  return false; // equal
-  // } else {        // fast memcmp for static bitset
-  //   return std::memcmp(chunks_.data(), rhs.chunks_.data(), sizeof(chunks_)) <
-  //   0;
-  // }
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::operator<=(
-    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
-  return !operator>(rhs);
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::operator>(
-    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
-  return rhs.operator<(*this);
-}
-
-template <typename chunk_t, int64_t nchunks>
-bool Bitset<chunk_t, nchunks>::operator>=(
-    Bitset<chunk_t, nchunks> const &rhs) const noexcept {
-  return !operator<(rhs);
 }
 
 template <typename chunk_t, int64_t nchunks>

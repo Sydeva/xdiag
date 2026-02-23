@@ -26,6 +26,7 @@ set(XDIAG_SOURCES
   combinatorics/bounded_multisets/bounded_multisets.cpp
   combinatorics/bounded_partitions/bounded_partitions.cpp
   combinatorics/bounded_partitions/count_bounded_partitions.cpp
+  combinatorics/bounded_partitions/schaefer_table.cpp
 
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp

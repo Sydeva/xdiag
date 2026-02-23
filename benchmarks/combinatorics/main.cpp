@@ -3,6 +3,7 @@
 #include <xdiag/bits/to_string.hpp>
 #include <xdiag/combinatorics/bounded_multisets/bounded_multisets.hpp>
 #include <xdiag/combinatorics/bounded_partitions/bounded_partitions.hpp>
+#include <xdiag/combinatorics/bounded_partitions/schaefer_table.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
@@ -14,7 +15,7 @@ int main() try {
   using namespace xdiag::bits;
   using namespace xdiag::combinatorics;
 
-  constexpr bool time_index = false;
+  constexpr bool time_index = true;
 
   // Subsets
   {
@@ -164,6 +165,28 @@ int main() try {
     auto td = duration_cast<microseconds>(t1 - t0).count();
     double t = (double)td;
     Log("BoundedPartitions (long): {} {} {} ", cnt, t, t / cnt);
+  }
+
+
+  {
+    int64_t n = 12;
+    int64_t total = 12;
+    int64_t q = 4;
+    int64_t cnt = 0;
+    using A = BitArray<uint64_t, 2>;
+    auto bps = SchaeferTable<A>(n, total, q);
+    auto t0 = rightnow();
+    for (auto s : bps) {
+      if constexpr (time_index)
+        if (bps.index(s) != cnt) {
+          Log("{} {}", to_string(s, n), bps.index(s));
+        }
+      ++cnt;
+    }
+    auto t1 = rightnow();
+    auto td = duration_cast<microseconds>(t1 - t0).count();
+    double t = (double)td;
+    Log("SchaeferTable: {} {} {} ", cnt, t, t / cnt);
   }
   
 } catch (Error e) {
