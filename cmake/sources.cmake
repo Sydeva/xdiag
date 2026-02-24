@@ -4,12 +4,11 @@ set(XDIAG_SOURCES
   utils/logger.cpp
   utils/say_hello.cpp
   utils/read_vectors.cpp
-  utils/type_string.cpp
   utils/split.cpp
   utils/arma_to_cx.cpp
-  utils/scalar.cpp
-  utils/vector.cpp
-  utils/matrix.cpp
+  # utils/scalar.cpp
+  # utils/vector.cpp
+  # utils/matrix.cpp
   utils/ipow.cpp
   
   bits/bitset.cpp
@@ -28,6 +27,12 @@ set(XDIAG_SOURCES
   combinatorics/bounded_partitions/count_bounded_partitions.cpp
   combinatorics/bounded_partitions/schaefer_table.cpp
 
+  basis/basis.cpp
+  basis/dispatcher.cpp
+  basis/apply.cpp
+  basis/plain/basis_onthefly.cpp
+  basis/plain/apply.cpp
+  
   # parallel/omp/omp_utils.cpp  
   # algebra/algebra.cpp
   # algebra/matrix.cpp

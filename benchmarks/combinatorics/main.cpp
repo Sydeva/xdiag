@@ -15,7 +15,7 @@ int main() try {
   using namespace xdiag::bits;
   using namespace xdiag::combinatorics;
 
-  constexpr bool time_index = true;
+  constexpr bool time_index = false;
 
   // Subsets
   {
