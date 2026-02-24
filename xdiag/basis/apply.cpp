@@ -13,7 +13,8 @@
 
 namespace xdiag::basis {
 
-void apply(OpSum const &ops, Basis *in, Basis *out) try {
+void apply(OpSum const &ops, std::shared_ptr<Basis> const &in,
+           std::shared_ptr<Basis> const &out) try {
   using namespace combinatorics;
 
   Dispatcher d;

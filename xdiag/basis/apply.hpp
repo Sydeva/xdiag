@@ -4,11 +4,13 @@
 
 #pragma once
 
+#include <memory>
 #include <xdiag/basis/basis.hpp>
 #include <xdiag/operators/opsum.hpp>
 
 namespace xdiag::basis {
 
-void apply(OpSum const &ops, Basis *in, Basis *out);
+void apply(OpSum const &ops, std::shared_ptr<Basis> const &in,
+           std::shared_ptr<Basis> const &out);
 
 } // namespace xdiag::basis
