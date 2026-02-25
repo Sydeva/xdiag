@@ -5,7 +5,7 @@
 #pragma once
 
 #include <xdiag/bits/bitops.hpp>
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/parallel/mpi/buffer.hpp>
 namespace xdiag::basis::spinhalf_distributed {

@@ -9,14 +9,12 @@
 
 #include <cmath>
 #include <tuple>
-#include <xdiag/extern/armadillo/armadillo>
 
 #include <xdiag/algorithms/norm_estimate.hpp>
 #include <xdiag/algorithms/time_evolution/expm.hpp>
-#include <xdiag/common.hpp>
-#include <xdiag/utils/logger.hpp>
-
+#include <xdiag/armadillo.hpp>
 #include <xdiag/parallel/mpi/allreduce.hpp>
+#include <xdiag/utils/logger.hpp>
 
 namespace xdiag {
 

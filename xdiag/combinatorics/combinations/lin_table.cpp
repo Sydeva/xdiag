@@ -4,6 +4,8 @@
 
 #include "lin_table.hpp"
 
+#include <cmath>
+
 #include <xdiag/bits/popcount.hpp>
 #include <xdiag/combinatorics/binomial.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>

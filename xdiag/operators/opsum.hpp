@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Alexander Wietek <awietek@pks.mpg.de>
+// SPDX-FileCopyrightText: 2026 Alexander Wietek <awietek@pks.mpg.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,99 +7,125 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <xdiag/operators/coupling.hpp>
+
+#include <xdiag/complex/scalar.hpp>
+#include <xdiag/operators/coeff.hpp>
+#include <xdiag/operators/monomial.hpp>
 #include <xdiag/operators/op.hpp>
-#include <xdiag/utils/scalar.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
+// OpSum represents a linear combination of Monomials (ordered products of Ops)
+// with Coeff coefficients. This is the algebra structure:
+//   OpSum = sum_i { coeff_i * (A_{i,1} * A_{i,2} * ... * A_{i,n_i}) }
+//
+// Vector space operations (+, -, scalar*) combine terms additively.
+// Algebra product (*) forms the non-commutative product distributively:
+//   (sum_i c_i M_i) * (sum_j d_j N_j) = sum_{i,j} (c_i * d_j) (M_i ++ N_j)
+//
+// Named string coefficients can be resolved to scalars via plain().
 class OpSum {
 public:
-  using iterator_t = std::vector<std::pair<Coupling, Op>>::const_iterator;
+  using iterator_t = std::vector<Term>::const_iterator;
 
   XDIAG_API OpSum() = default;
-  XDIAG_API explicit OpSum(Op const &op);
-  XDIAG_API OpSum(std::string coupling, Op const &op);
-  XDIAG_API OpSum(int64_t coupling, Op const &op);
-  XDIAG_API OpSum(double coupling, Op const &op);
-  XDIAG_API OpSum(complex coupling, Op const &op);
-  OpSum(Coupling const &coupling, Op const &op);
+  XDIAG_API OpSum(Op const &op);
+  XDIAG_API OpSum(Monomial const &mono);
+  XDIAG_API OpSum(Coeff const &coeff, Op const &op);
+  XDIAG_API OpSum(Coeff const &coeff, Monomial const &mono);
+  XDIAG_API OpSum(std::string const &coeff, Op const &op);
+  XDIAG_API OpSum(double coeff, Op const &op);
+  XDIAG_API OpSum(complex coeff, Op const &op);
+  XDIAG_API OpSum(std::string const &coeff, Monomial const &mono);
+  XDIAG_API OpSum(double coeff, Monomial const &mono);
+  XDIAG_API OpSum(complex coeff, Monomial const &mono);
 
-  XDIAG_API OpSum &operator=(Op const &op);
-
-  XDIAG_API OpSum &operator*=(int64_t scalar);
-  XDIAG_API OpSum &operator*=(double scalar);
-  XDIAG_API OpSum &operator*=(complex scalar);
-  OpSum &operator*=(Scalar const &scalar);
-
-  XDIAG_API OpSum &operator/=(int64_t scalar);
-  XDIAG_API OpSum &operator/=(double scalar);
-  XDIAG_API OpSum &operator/=(complex scalar);
-  OpSum &operator/=(Scalar const &scalar);
-
+  // Vector space: addition and subtraction
   XDIAG_API OpSum &operator+=(OpSum const &ops);
   XDIAG_API OpSum &operator+=(Op const &op);
-
   XDIAG_API OpSum operator+(OpSum const &ops) const;
   XDIAG_API OpSum operator+(Op const &op) const;
-
   XDIAG_API OpSum &operator-=(OpSum const &ops);
   XDIAG_API OpSum &operator-=(Op const &op);
-
   XDIAG_API OpSum operator-(OpSum const &ops) const;
   XDIAG_API OpSum operator-(Op const &op) const;
+  XDIAG_API OpSum operator-() const;
 
-  XDIAG_API Scalar &operator[](std::string name);
-  XDIAG_API Scalar const &operator[](std::string name) const;
+  // Scalar scaling (multiplies each coefficient by the scalar)
+  XDIAG_API OpSum &operator*=(double scalar);
+  XDIAG_API OpSum &operator*=(complex scalar);
+  XDIAG_API OpSum &operator/=(double scalar);
+  XDIAG_API OpSum &operator/=(complex scalar);
+  OpSum &operator*=(Scalar const &scalar);
+  OpSum &operator/=(Scalar const &scalar);
+
+  // Algebra product (non-commutative, distributes over addition)
+  XDIAG_API OpSum operator*(OpSum const &rhs) const;
+  XDIAG_API OpSum &operator*=(OpSum const &rhs);
+  XDIAG_API OpSum operator*(Op const &rhs) const;
+  XDIAG_API OpSum &operator*=(Op const &rhs);
+  XDIAG_API OpSum operator*(Monomial const &rhs) const;
+  XDIAG_API OpSum &operator*=(Monomial const &rhs);
+
+  // Named parameters: ops["J"] = 1.5; ops.plain() resolves them
+  XDIAG_API Scalar &operator[](std::string const &name);
+  XDIAG_API Scalar const &operator[](std::string const &name) const;
+  XDIAG_API OpSum plain() const;
+
+  // Access
+  XDIAG_API std::vector<Term> const &terms() const noexcept;
+  XDIAG_API std::map<std::string, Scalar> const &params() const noexcept;
+  XDIAG_API int64_t size() const noexcept;
+  XDIAG_API iterator_t begin() const noexcept;
+  XDIAG_API iterator_t end() const noexcept;
 
   XDIAG_API bool operator==(OpSum const &rhs) const;
   XDIAG_API bool operator!=(OpSum const &rhs) const;
 
-  std::vector<std::pair<Coupling, Op>> const &terms() const;
-  std::vector<std::string> constants() const;
-  XDIAG_API OpSum plain() const;
-  XDIAG_API int64_t size() const;
-  iterator_t begin() const;
-  iterator_t end() const;
-
 private:
-  std::vector<std::pair<Coupling, Op>> terms_;
-  std::map<std::string, Scalar> constants_;
+  std::vector<Term> terms_;
+  std::map<std::string, Scalar> params_;
+
+  void merge_params(std::map<std::string, Scalar> const &other);
 };
 
-XDIAG_API std::vector<std::string> constants(OpSum const &ops);
+// --- Free operators ---
 
-// Creation
-XDIAG_API OpSum operator*(int64_t coupling, Op const &op);
-XDIAG_API OpSum operator*(double coupling, Op const &op);
-XDIAG_API OpSum operator*(complex coupling, Op const &op);
-XDIAG_API OpSum operator*(std::string coupling, Op const &op);
+// Coeff/scalar * Op, Op * Coeff/scalar  →  single-term OpSum
+XDIAG_API OpSum operator*(double coeff, Op const &op);
+XDIAG_API OpSum operator*(complex coeff, Op const &op);
+XDIAG_API OpSum operator*(std::string const &coeff, Op const &op);
+XDIAG_API OpSum operator*(Coeff const &coeff, Op const &op);
+XDIAG_API OpSum operator*(Op const &op, double coeff);
+XDIAG_API OpSum operator*(Op const &op, complex coeff);
+XDIAG_API OpSum operator*(Op const &op, std::string const &coeff);
+XDIAG_API OpSum operator*(Op const &op, Coeff const &coeff);
 
-XDIAG_API OpSum operator*(Op const &op, int64_t coupling);
-XDIAG_API OpSum operator*(Op const &op, double coupling);
-XDIAG_API OpSum operator*(Op const &op, complex coupling);
-XDIAG_API OpSum operator*(Op const &op, std::string coupling);
+// Coeff/scalar * Monomial, Monomial * Coeff/scalar  →  single-term OpSum
+XDIAG_API OpSum operator*(double coeff, Monomial const &mono);
+XDIAG_API OpSum operator*(complex coeff, Monomial const &mono);
+XDIAG_API OpSum operator*(std::string const &coeff, Monomial const &mono);
+XDIAG_API OpSum operator*(Coeff const &coeff, Monomial const &mono);
+XDIAG_API OpSum operator*(Monomial const &mono, double coeff);
+XDIAG_API OpSum operator*(Monomial const &mono, complex coeff);
+XDIAG_API OpSum operator*(Monomial const &mono, std::string const &coeff);
+XDIAG_API OpSum operator*(Monomial const &mono, Coeff const &coeff);
 
-OpSum operator*(Scalar const &coupling, Op const &op);
-OpSum operator*(Coupling const &coupling, Op const &op);
-OpSum operator*(Op const &op, Scalar const &coupling);
-OpSum operator*(Op const &op, Coupling const &coupling);
+// scalar * OpSum, OpSum * scalar  →  scaled copy
+XDIAG_API OpSum operator*(double scalar, OpSum const &ops);
+XDIAG_API OpSum operator*(complex scalar, OpSum const &ops);
+XDIAG_API OpSum operator*(Scalar const &scalar, OpSum const &ops);
+XDIAG_API OpSum operator*(OpSum const &ops, double scalar);
+XDIAG_API OpSum operator*(OpSum const &ops, complex scalar);
+XDIAG_API OpSum operator*(OpSum const &ops, Scalar const &scalar);
+XDIAG_API OpSum operator/(OpSum const &ops, double scalar);
+XDIAG_API OpSum operator/(OpSum const &ops, complex scalar);
+XDIAG_API OpSum operator/(OpSum const &ops, Scalar const &scalar);
 
-// scalar Multiplication
-XDIAG_API OpSum operator*(int64_t scalar, OpSum const &op);
-XDIAG_API OpSum operator*(double scalar, OpSum const &op);
-XDIAG_API OpSum operator*(complex scalar, OpSum const &op);
-OpSum operator*(Scalar const &coupling, OpSum const &op);
-
-XDIAG_API OpSum operator*(OpSum const &op, int64_t scalar);
-XDIAG_API OpSum operator*(OpSum const &op, double scalar);
-XDIAG_API OpSum operator*(OpSum const &op, complex scalar);
-OpSum operator*(OpSum const &op, Scalar const &coupling);
-
-XDIAG_API OpSum operator/(OpSum const &op, int64_t scalar);
-XDIAG_API OpSum operator/(OpSum const &op, double scalar);
-XDIAG_API OpSum operator/(OpSum const &op, complex scalar);
-OpSum operator/(OpSum const &op, Scalar const &coupling);
+// Algebra products: Op * OpSum, Monomial * OpSum
+XDIAG_API OpSum operator*(Op const &lhs, OpSum const &rhs);
+XDIAG_API OpSum operator*(Monomial const &lhs, OpSum const &rhs);
 
 XDIAG_API std::ostream &operator<<(std::ostream &out, OpSum const &ops);
 XDIAG_API std::string to_string(OpSum const &ops);

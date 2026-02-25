@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/extern/toml++/toml.hpp>
 
 namespace xdiag::io {

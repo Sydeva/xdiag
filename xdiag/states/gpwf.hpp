@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/states/product_state.hpp>
 
 namespace xdiag {

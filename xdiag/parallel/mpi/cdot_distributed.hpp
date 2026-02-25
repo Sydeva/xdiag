@@ -7,14 +7,13 @@
 
 #include <mpi.h>
 
-#include <xdiag/extern/armadillo/armadillo>
-#include <xdiag/common.hpp>
+#include <xdiag/armadillo.hpp>
 
 namespace xdiag {
 
 template <class coeff_t>
 coeff_t cdot_distributed(arma::Col<coeff_t> const &v,
-			 arma::Col<coeff_t> const &w);
+                         arma::Col<coeff_t> const &w);
 
 template <class coeff_t> double norm_distributed(arma::Col<coeff_t> const &v);
 

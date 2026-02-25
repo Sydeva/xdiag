@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/symmetries/permutation.hpp>
 
 namespace xdiag {

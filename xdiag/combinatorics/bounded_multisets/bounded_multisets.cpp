@@ -9,6 +9,7 @@
 #include <xdiag/bits/log2.hpp>
 #include <xdiag/bits/pack_unpack.hpp>
 #include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 #include <xdiag/utils/ipow.hpp>
 
 namespace xdiag::combinatorics {

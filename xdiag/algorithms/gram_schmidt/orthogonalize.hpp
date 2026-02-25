@@ -7,8 +7,7 @@
 //
 #pragma once
 
-#include <xdiag/extern/armadillo/armadillo>
-#include <xdiag/common.hpp>
+#include <xdiag/armadillo.hpp>
 
 namespace xdiag {
 

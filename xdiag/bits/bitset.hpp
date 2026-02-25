@@ -13,7 +13,6 @@
 
 #include <xdiag/bits/bitmask.hpp>
 #include <xdiag/bits/log2.hpp>
-#include <xdiag/common.hpp>
 
 namespace xdiag::bits {
 
@@ -79,8 +78,7 @@ public:
 
   // Bit-level access (ranged) — inlined so the compiler can constant-fold
   // nchunkbits, chunkshift, chunkmask and eliminate branches for typical cases.
-  inline void set_range(int64_t start, int64_t length,
-                        chunk_t bits) noexcept {
+  inline void set_range(int64_t start, int64_t length, chunk_t bits) noexcept {
     assert(length <= (int64_t)nchunkbits);
     if (!length) {
       return;

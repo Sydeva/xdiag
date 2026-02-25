@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 set(XDIAG_TEST_SOURCES
+  complex/test_scalar.cpp
+  complex/test_vector.cpp
+  complex/test_matrix.cpp
+
   bits/test_bitops.cpp
   bits/test_bitset.cpp
   bits/test_bitvector.cpp

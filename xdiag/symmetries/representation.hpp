@@ -8,11 +8,9 @@
 #include <string>
 #include <vector>
 
-#include <xdiag/common.hpp>
-
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
+#include <xdiag/complex/vector.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>
-#include <xdiag/utils/vector.hpp>
 
 namespace xdiag {
 

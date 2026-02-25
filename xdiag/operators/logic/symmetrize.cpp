@@ -4,9 +4,10 @@
 
 #include "symmetrize.hpp"
 
+#include <xdiag/complex/scalar.hpp>
 #include <xdiag/operators/logic/permute.hpp>
 #include <xdiag/operators/logic/real.hpp>
-#include <xdiag/utils/scalar.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag {
 
@@ -32,14 +33,16 @@ static OpSum symmetrize(OpSum const &ops, PermutationGroup const &group,
                         arma::Col<T> const &characters) try {
   OpSum ops_sym;
   int64_t N_group = group.size();
-  for (auto [cpl, op] : ops.plain()) {
-    // Create all symmetrized ops
+  for (auto const &[coeff, mono] : ops.plain()) {
     for (int64_t i = 0; i < N_group; ++i) {
-      Scalar cpls = cpl.scalar();
+      Scalar cpls = coeff.scalar();
       T bloch = characters(i);
-      Op op_perm = permute(op, group[i]);
+      Monomial mono_perm;
+      for (auto const &op : mono) {
+        mono_perm *= permute(op, group[i]);
+      }
       Scalar cpl_sym = cpls * bloch / (T)N_group;
-      ops_sym += cpl_sym * op_perm;
+      ops_sym += cpl_sym * mono_perm;
     }
   }
   return ops_sym;

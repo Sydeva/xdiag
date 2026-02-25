@@ -4,11 +4,12 @@
 
 #include "real.hpp"
 
-#include <xdiag/operators/logic/types.hpp>
-#include <xdiag/operators/logic/valid.hpp>
-
 #include <string>
 #include <vector>
+
+#include <xdiag/operators/logic/types.hpp>
+#include <xdiag/operators/logic/valid.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag {
 
@@ -25,9 +26,14 @@ bool isreal(Op const &op) try {
 XDIAG_CATCH
 
 bool isreal(OpSum const &ops) try {
-  for (auto [cpl, op] : ops.plain()) {
-    if (!isreal(cpl.scalar()) || !isreal(op)) {
+  for (auto const &[coeff, mono] : ops.plain()) {
+    if (!isreal(coeff.scalar())) {
       return false;
+    }
+    for (auto const &op : mono) {
+      if (!isreal(op)) {
+        return false;
+      }
     }
   }
   return true;

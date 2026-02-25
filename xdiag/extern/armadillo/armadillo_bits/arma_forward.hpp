@@ -91,6 +91,10 @@ class op_diagmat;
 class op_trimat;
 class op_vectorise_row;
 class op_vectorise_col;
+
+class op_row_as_mat;
+class op_col_as_mat;
+
 class glue_times;
 class glue_times_diag;
 
@@ -241,9 +245,10 @@ template<                 typename T1, typename  op_type> class     SpToDOp;
 template<                 typename T1, typename  op_type> class CubeToMatOp;
 template<typename out_eT, typename T1, typename  op_type> class        mtOp;
 
-template<                 typename T1, typename T2, typename  glue_type> class   Glue;
-template<                 typename T1, typename T2, typename eglue_type> class  eGlue;
-template<typename out_eT, typename T1, typename T2, typename  glue_type> class mtGlue;
+template<                 typename T1, typename T2, typename  glue_type> class      Glue;
+template<                 typename T1, typename T2, typename eglue_type> class     eGlue;
+template<                 typename T1, typename T2, typename  glue_type> class SpToDGlue;
+template<typename out_eT, typename T1, typename T2, typename  glue_type> class    mtGlue;
 
 
 
@@ -346,6 +351,7 @@ struct arma_nozeros_indicator : public arma_initmode_indicator<false> {};
 
 template<typename Dummy = int> struct injector_end_of_row {};
 
+// DEPRECATED: DO NOT USE IN NEW CODE
 static const injector_end_of_row<> endr = injector_end_of_row<>();
 //!< endr indicates "end of row" when using the << operator;
 //!< similar conceptual meaning to std::endl

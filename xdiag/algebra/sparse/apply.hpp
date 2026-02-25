@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
-
 #include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 
 namespace xdiag {
 

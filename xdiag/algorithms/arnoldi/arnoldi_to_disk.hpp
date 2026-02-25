@@ -6,12 +6,13 @@
 // Created by Luke Staszewski on 13.06.23.
 //
 #pragma once
-#include <xdiag/extern/armadillo/armadillo>
-#include <xdiag/extern/fmt/format.hpp>
-#include <xdiag/utils/logger.hpp>
-#include <xdiag/utils/timing.hpp>
 #include <string>
 #include <utility>
+
+#include <xdiag/armadillo.hpp>
+#include <xdiag/utils/format.hpp>
+#include <xdiag/utils/logger.hpp>
+#include <xdiag/utils/timing.hpp>
 
 namespace xdiag {
 
@@ -45,7 +46,7 @@ inline bool arnoldi_step(mult const &H, arma::Mat<coeff_t> &h,
     v -= temp * v_prev;
   }
   timing(rightnow(), t0, "Arnoldi ortho", 2);
-  
+
   h(k, k - 1) = norm(v);
   // check for breakdown
   if (abs(h(k, k - 1)) < eps) {

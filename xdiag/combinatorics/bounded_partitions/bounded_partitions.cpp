@@ -10,6 +10,7 @@
 #include <xdiag/bits/log2.hpp>
 #include <xdiag/combinatorics/bounded_partitions/count_bounded_partitions.hpp>
 #include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag::combinatorics {
 
@@ -21,8 +22,8 @@ namespace xdiag::combinatorics {
 // right-to-left (consistent with the little-endian BoundedMultisets order).
 // ---------------------------------------------------------------------------
 template <typename bitarray_t>
-static void fill_rlex_first(bitarray_t &arr, int64_t lo, int64_t hi,
-                             int64_t S, int64_t bound) {
+static void fill_rlex_first(bitarray_t &arr, int64_t lo, int64_t hi, int64_t S,
+                            int64_t bound) {
   int64_t remaining = S;
   for (int64_t j = hi; j > lo; --j) {
     int64_t val = std::max((int64_t)0, remaining - (j - lo) * (bound - 1));
@@ -38,7 +39,7 @@ static void fill_rlex_first(bitarray_t &arr, int64_t lo, int64_t hi,
 
 template <typename bitarray_t>
 BoundedPartitions<bitarray_t>::BoundedPartitions(int64_t n, int64_t total,
-                                                  int64_t bound) try
+                                                 int64_t bound) try
     : n_(n), total_(total), bound_(bound),
       size_(count_bounded_partitions(n, total, bound)) {
   if (n < 0) {
@@ -57,25 +58,33 @@ BoundedPartitions<bitarray_t>::BoundedPartitions(int64_t n, int64_t total,
                             bound, nbits));
   }
   if (n > bitarray_t::maximum_size) {
-    XDIAG_THROW(fmt::format(
-        "Error constructing BoundedPartitions: n ({}) "
-        "is too large for BitArray type with maximum_size ({})",
-        n, bitarray_t::maximum_size));
+    XDIAG_THROW(
+        fmt::format("Error constructing BoundedPartitions: n ({}) "
+                    "is too large for BitArray type with maximum_size ({})",
+                    n, bitarray_t::maximum_size));
   }
 }
 XDIAG_CATCH
 
 template <typename bitarray_t>
-int64_t BoundedPartitions<bitarray_t>::n() const { return n_; }
+int64_t BoundedPartitions<bitarray_t>::n() const {
+  return n_;
+}
 
 template <typename bitarray_t>
-int64_t BoundedPartitions<bitarray_t>::total() const { return total_; }
+int64_t BoundedPartitions<bitarray_t>::total() const {
+  return total_;
+}
 
 template <typename bitarray_t>
-int64_t BoundedPartitions<bitarray_t>::bound() const { return bound_; }
+int64_t BoundedPartitions<bitarray_t>::bound() const {
+  return bound_;
+}
 
 template <typename bitarray_t>
-int64_t BoundedPartitions<bitarray_t>::size() const { return size_; }
+int64_t BoundedPartitions<bitarray_t>::size() const {
+  return size_;
+}
 
 template <typename bitarray_t>
 auto BoundedPartitions<bitarray_t>::operator[](int64_t idx) const

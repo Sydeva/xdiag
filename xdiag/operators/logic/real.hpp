@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#include <xdiag/common.hpp>
+
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 

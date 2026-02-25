@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include <xdiag/extern/armadillo/armadillo>
-
 #include <xdiag/algorithms/lanczos/lanczos_step.hpp>
 #include <xdiag/algorithms/lanczos/tmatrix.hpp>
-#include <xdiag/common.hpp>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/utils/logger.hpp>
 
 namespace xdiag::lanczos {

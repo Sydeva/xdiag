@@ -121,7 +121,7 @@ auxlib::inv_rcond(Mat<eT>& A, typename get_pod_type<eT>::result& out_rcond)
     podarray<blas_int> ipiv(A.n_rows);
     
     arma_extra_debug_print("lapack::lange()");
-    norm_val = lapack::lange<eT>(&norm_id, &n, &n, A.memptr(), &lda, junk.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_gen(A) : lapack::lange<eT>(&norm_id, &n, &n, A.memptr(), &lda, junk.memptr());
     
     arma_extra_debug_print("lapack::getrf()");
     lapack::getrf(&n, &n, A.memptr(), &lda, ipiv.memptr(), &info);
@@ -310,7 +310,7 @@ auxlib::inv_sympd(Mat<eT>& out, const Mat<eT>& X)
 template<typename eT>
 inline
 bool
-auxlib::inv_sympd_rcond(Mat<eT>& A, bool& out_sympd_state, eT& out_rcond, const eT rcond_threshold)
+auxlib::inv_sympd_rcond(Mat<eT>& A, bool& out_sympd_state, eT& out_rcond)
   {
   arma_extra_debug_sigprint();
   
@@ -333,7 +333,7 @@ auxlib::inv_sympd_rcond(Mat<eT>& A, bool& out_sympd_state, eT& out_rcond, const 
     podarray<T> work(A.n_rows);
     
     arma_extra_debug_print("lapack::lansy()");
-    norm_val = lapack::lansy(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_sym(A) : lapack::lansy(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
     
     arma_extra_debug_print("lapack::potrf()");
     lapack::potrf(&uplo, &n, A.memptr(), &n, &info);
@@ -344,7 +344,7 @@ auxlib::inv_sympd_rcond(Mat<eT>& A, bool& out_sympd_state, eT& out_rcond, const 
     
     out_rcond = auxlib::lu_rcond_sympd<T>(A, norm_val);
     
-    if( arma_isnan(out_rcond) || ((rcond_threshold > eT(0)) && (out_rcond < rcond_threshold)) )  { return false; }
+    if(arma_isnan(out_rcond))  { return false; }
     
     arma_extra_debug_print("lapack::potri()");
     lapack::potri(&uplo, &n, A.memptr(), &n, &info);
@@ -360,7 +360,6 @@ auxlib::inv_sympd_rcond(Mat<eT>& A, bool& out_sympd_state, eT& out_rcond, const 
     arma_ignore(A);
     arma_ignore(out_sympd_state);
     arma_ignore(out_rcond);
-    arma_ignore(rcond_threshold);
     arma_stop_logic_error("inv_sympd_rcond(): use LAPACK must be enabled");
     return false;
     }
@@ -372,7 +371,7 @@ auxlib::inv_sympd_rcond(Mat<eT>& A, bool& out_sympd_state, eT& out_rcond, const 
 template<typename T>
 inline
 bool
-auxlib::inv_sympd_rcond(Mat< std::complex<T> >& A, bool& out_sympd_state, T& out_rcond, const T rcond_threshold)
+auxlib::inv_sympd_rcond(Mat< std::complex<T> >& A, bool& out_sympd_state, T& out_rcond)
   {
   arma_extra_debug_sigprint();
   
@@ -385,7 +384,6 @@ auxlib::inv_sympd_rcond(Mat< std::complex<T> >& A, bool& out_sympd_state, T& out
     arma_ignore(A);
     arma_ignore(out_sympd_state);
     arma_ignore(out_rcond);
-    arma_ignore(rcond_threshold);
     return false;
     }
   #elif defined(ARMA_USE_LAPACK)
@@ -401,7 +399,7 @@ auxlib::inv_sympd_rcond(Mat< std::complex<T> >& A, bool& out_sympd_state, T& out
     podarray<T> work(A.n_rows);
     
     arma_extra_debug_print("lapack::lanhe()");
-    norm_val = lapack::lanhe(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
+    norm_val = (has_blas_float_bug<T>::value) ? auxlib::norm1_sym(A) : lapack::lanhe(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
     
     arma_extra_debug_print("lapack::potrf()");
     lapack::potrf(&uplo, &n, A.memptr(), &n, &info);
@@ -412,7 +410,7 @@ auxlib::inv_sympd_rcond(Mat< std::complex<T> >& A, bool& out_sympd_state, T& out
     
     out_rcond = auxlib::lu_rcond_sympd<T>(A, norm_val);
     
-    if( arma_isnan(out_rcond) || ((rcond_threshold > T(0)) && (out_rcond < rcond_threshold)) )  { return false; }
+    if(arma_isnan(out_rcond))  { return false; }
     
     arma_extra_debug_print("lapack::potri()");
     lapack::potri(&uplo, &n, A.memptr(), &n, &info);
@@ -428,7 +426,6 @@ auxlib::inv_sympd_rcond(Mat< std::complex<T> >& A, bool& out_sympd_state, T& out
     arma_ignore(A);
     arma_ignore(out_sympd_state);
     arma_ignore(out_rcond);
-    arma_ignore(rcond_threshold);
     arma_stop_logic_error("inv_sympd_rcond(): use LAPACK must be enabled");
     return false;
     }
@@ -813,7 +810,7 @@ auxlib::eig_gen
     
     if(X.is_empty())  { vals.reset(); vecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -921,7 +918,7 @@ auxlib::eig_gen
     
     if(X.is_empty())  { vals.reset(); vecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -988,7 +985,7 @@ auxlib::eig_gen_balance
     
     if(X.is_empty())  { vals.reset(); vecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -1112,7 +1109,7 @@ auxlib::eig_gen_balance
     
     if(X.is_empty())  { vals.reset(); vecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -1188,7 +1185,7 @@ auxlib::eig_gen_twosided
     
     if(X.is_empty())  { vals.reset(); lvecs.reset(); rvecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -1289,7 +1286,7 @@ auxlib::eig_gen_twosided
     
     if(X.is_empty())  { vals.reset(); lvecs.reset(); rvecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -1353,7 +1350,7 @@ auxlib::eig_gen_twosided_balance
     
     if(X.is_empty())  { vals.reset(); lvecs.reset(); rvecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -1470,7 +1467,7 @@ auxlib::eig_gen_twosided_balance
     
     if(X.is_empty())  { vals.reset(); lvecs.reset(); rvecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && X.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && X.internal_has_nonfinite())  { return false; }
     
     vals.set_size(X.n_rows, 1);
     
@@ -1548,8 +1545,8 @@ auxlib::eig_pair
     
     if(A.is_empty())  { vals.reset(); vecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     vals.set_size(A.n_rows, 1);
     
@@ -1686,8 +1683,8 @@ auxlib::eig_pair
     
     if(A.is_empty())  { vals.reset(); vecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     vals.set_size(A.n_rows, 1);
     
@@ -1783,8 +1780,8 @@ auxlib::eig_pair_twosided
     
     if(A.is_empty())  { vals.reset(); lvecs.reset(); rvecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     vals.set_size(A.n_rows, 1);
     
@@ -1914,8 +1911,8 @@ auxlib::eig_pair_twosided
     
     if(A.is_empty())  { vals.reset(); lvecs.reset(); rvecs.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     vals.set_size(A.n_rows, 1);
     
@@ -2977,7 +2974,7 @@ auxlib::svd(Col<eT>& S, Mat<eT>& A)
     {
     if(A.is_empty())  { S.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3047,7 +3044,7 @@ auxlib::svd(Col<T>& S, Mat< std::complex<T> >& A)
     
     if(A.is_empty())  { S.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3117,7 +3114,7 @@ auxlib::svd(Mat<eT>& U, Col<eT>& S, Mat<eT>& V, Mat<eT>& A)
     {
     if(A.is_empty())  { U.eye(A.n_rows, A.n_rows); S.reset(); V.eye(A.n_cols, A.n_cols); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3194,7 +3191,7 @@ auxlib::svd(Mat< std::complex<T> >& U, Col<T>& S, Mat< std::complex<T> >& V, Mat
     
     if(A.is_empty())  { U.eye(A.n_rows, A.n_rows); S.reset(); V.eye(A.n_cols, A.n_cols); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3270,7 +3267,7 @@ auxlib::svd_econ(Mat<eT>& U, Col<eT>& S, Mat<eT>& V, Mat<eT>& A, const char mode
     {
     if(A.is_empty())  { U.eye(); S.reset(); V.eye(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3383,7 +3380,7 @@ auxlib::svd_econ(Mat< std::complex<T> >& U, Col<T>& S, Mat< std::complex<T> >& V
     
     if(A.is_empty())  { U.eye(); S.reset(); V.eye(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3495,7 +3492,7 @@ auxlib::svd_dc(Col<eT>& S, Mat<eT>& A)
     {
     if(A.is_empty())  { S.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3567,7 +3564,7 @@ auxlib::svd_dc(Col<T>& S, Mat< std::complex<T> >& A)
     
     if(A.is_empty())  { S.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3638,7 +3635,7 @@ auxlib::svd_dc(Mat<eT>& U, Col<eT>& S, Mat<eT>& V, Mat<eT>& A)
     {
     if(A.is_empty())  { U.eye(A.n_rows, A.n_rows); S.reset(); V.eye(A.n_cols, A.n_cols); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3718,7 +3715,7 @@ auxlib::svd_dc(Mat< std::complex<T> >& U, Col<T>& S, Mat< std::complex<T> >& V, 
     
     if(A.is_empty())  { U.eye(A.n_rows, A.n_rows); S.reset(); V.eye(A.n_cols, A.n_cols); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3794,7 +3791,7 @@ auxlib::svd_dc_econ(Mat<eT>& U, Col<eT>& S, Mat<eT>& V, Mat<eT>& A)
   
   #if defined(ARMA_USE_LAPACK)
     {
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3881,7 +3878,7 @@ auxlib::svd_dc_econ(Mat< std::complex<T> >& U, Col<T>& S, Mat< std::complex<T> >
     {
     typedef std::complex<T> eT;
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -3965,30 +3962,28 @@ auxlib::solve_square_fast(Mat<typename T1::elem_type>& out, Mat<typename T1::ele
   {
   arma_extra_debug_sigprint();
   
-  typedef typename T1::elem_type eT;
-  
-  const uword A_n_rows = A.n_rows;
-  
   out = B_expr.get_ref();
   
   const uword B_n_rows = out.n_rows;
   const uword B_n_cols = out.n_cols;
-    
-  arma_debug_check( (A_n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
-    
+  
+  arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
+  
   if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
   
   #if defined(ARMA_USE_LAPACK)
     {
+    typedef typename T1::elem_type eT;
+    
     arma_debug_assert_blas_size(A);
     
-    blas_int n    = blas_int(A_n_rows);  // assuming A is square
-    blas_int lda  = blas_int(A_n_rows);
+    blas_int n    = blas_int(A.n_rows);  // assuming A is square
+    blas_int lda  = blas_int(A.n_rows);
     blas_int ldb  = blas_int(B_n_rows);
     blas_int nrhs = blas_int(B_n_cols);
     blas_int info = blas_int(0);
     
-    podarray<blas_int> ipiv(A_n_rows + 2);  // +2 for paranoia: some versions of Lapack might be trashing memory
+    podarray<blas_int> ipiv(A.n_rows + 2);  // +2 for paranoia: some versions of Lapack might be trashing memory
     
     arma_extra_debug_print("lapack::gesv()");
     lapack::gesv<eT>(&n, &nrhs, A.memptr(), &lda, ipiv.memptr(), out.memptr(), &ldb, &info);
@@ -4024,9 +4019,9 @@ auxlib::solve_square_rcond(Mat<typename T1::elem_type>& out, typename T1::pod_ty
     
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
-      
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
-      
+    
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
+    
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
     
     arma_debug_assert_blas_size(A);
@@ -4044,7 +4039,7 @@ auxlib::solve_square_rcond(Mat<typename T1::elem_type>& out, typename T1::pod_ty
     podarray<blas_int> ipiv(A.n_rows + 2);  // +2 for paranoia
     
     arma_extra_debug_print("lapack::lange()");
-    norm_val = lapack::lange<eT>(&norm_id, &n, &n, A.memptr(), &lda, junk.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_gen(A) : lapack::lange<eT>(&norm_id, &n, &n, A.memptr(), &lda, junk.memptr());
     
     arma_extra_debug_print("lapack::getrf()");
     lapack::getrf<eT>(&n, &n, A.memptr(), &n, ipiv.memptr(), &info);
@@ -4098,7 +4093,7 @@ auxlib::solve_square_refine(Mat<typename T1::pod_type>& out, typename T1::pod_ty
     
     const Mat<eT>& B = (use_copy) ? B_tmp : UB_M_as_Mat;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
       
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_rows, B.n_cols); return true; }
     
@@ -4195,7 +4190,7 @@ auxlib::solve_square_refine(Mat< std::complex<typename T1::pod_type> >& out, typ
     
     const Mat<eT>& B = (use_copy) ? B_tmp : UB_M_as_Mat;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
       
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_rows, B.n_cols); return true; }
     
@@ -4296,27 +4291,25 @@ auxlib::solve_sympd_fast_common(Mat<typename T1::elem_type>& out, Mat<typename T
   {
   arma_extra_debug_sigprint();
   
-  typedef typename T1::elem_type eT;
-  
-  const uword A_n_rows = A.n_rows;
-  
   out = B_expr.get_ref();
   
   const uword B_n_rows = out.n_rows;
   const uword B_n_cols = out.n_cols;
   
-  arma_debug_check( (A_n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+  arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
   
   if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
   
   #if defined(ARMA_USE_LAPACK)
     {
+    typedef typename T1::elem_type eT;
+    
     arma_debug_assert_blas_size(A, out);
     
     char     uplo = 'L';
-    blas_int n    = blas_int(A_n_rows);  // assuming A is square
+    blas_int n    = blas_int(A.n_rows);  // assuming A is square
     blas_int nrhs = blas_int(B_n_cols);
-    blas_int lda  = blas_int(A_n_rows);
+    blas_int lda  = blas_int(A.n_rows);
     blas_int ldb  = blas_int(B_n_rows);
     blas_int info = blas_int(0);
     
@@ -4359,7 +4352,7 @@ auxlib::solve_sympd_rcond(Mat<typename T1::pod_type>& out, bool& out_sympd_state
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
     
@@ -4375,7 +4368,7 @@ auxlib::solve_sympd_rcond(Mat<typename T1::pod_type>& out, bool& out_sympd_state
     podarray<T> work(A.n_rows);
     
     arma_extra_debug_print("lapack::lansy()");
-    norm_val = lapack::lansy(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_sym(A) : lapack::lansy(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
     
     arma_extra_debug_print("lapack::potrf()");
     lapack::potrf<eT>(&uplo, &n, A.memptr(), &n, &info);
@@ -4437,7 +4430,7 @@ auxlib::solve_sympd_rcond(Mat< std::complex<typename T1::pod_type> >& out, bool&
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
     
@@ -4453,7 +4446,7 @@ auxlib::solve_sympd_rcond(Mat< std::complex<typename T1::pod_type> >& out, bool&
     podarray<T> work(A.n_rows);
     
     arma_extra_debug_print("lapack::lanhe()");
-    norm_val = lapack::lanhe(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_sym(A) : lapack::lanhe(&norm_id, &uplo, &n, A.memptr(), &n, work.memptr());
     
     arma_extra_debug_print("lapack::potrf()");
     lapack::potrf<eT>(&uplo, &n, A.memptr(), &n, &info);
@@ -4510,7 +4503,7 @@ auxlib::solve_sympd_refine(Mat<typename T1::pod_type>& out, typename T1::pod_typ
     
     const Mat<eT>& B = (use_copy) ? B_tmp : UB_M_as_Mat;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
     
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_rows, B.n_cols); return true; }
     
@@ -4595,7 +4588,7 @@ auxlib::solve_sympd_refine(Mat< std::complex<typename T1::pod_type> >& out, type
     
     const Mat<eT>& B = (use_copy) ? B_tmp : UB_M_as_Mat;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
       
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_rows, B.n_cols); return true; }
     
@@ -4664,7 +4657,7 @@ auxlib::solve_rect_fast(Mat<typename T1::elem_type>& out, Mat<typename T1::elem_
     const unwrap<T1>   U(B_expr.get_ref());
     const Mat<eT>& B = U.M;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
     
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_cols, B.n_cols); return true; }
     
@@ -4758,7 +4751,7 @@ auxlib::solve_rect_rcond(Mat<typename T1::elem_type>& out, typename T1::pod_type
     const unwrap<T1>   U(B_expr.get_ref());
     const Mat<eT>& B = U.M;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
     
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_cols, B.n_cols); return true; }
     
@@ -4891,12 +4884,12 @@ auxlib::solve_approx_svd(Mat<typename T1::pod_type>& out, Mat<typename T1::pod_t
     const unwrap<T1>   U(B_expr.get_ref());
     const Mat<eT>& B = U.M;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
     
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_cols, B.n_cols); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A,B);
     
@@ -4946,7 +4939,7 @@ auxlib::solve_approx_svd(Mat<typename T1::pod_type>& out, Mat<typename T1::pod_t
     blas_int smlsiz    = (std::max)( blas_int(25), laenv_result );
     blas_int smlsiz_p1 = blas_int(1) + smlsiz;
     
-    blas_int nlvl   = (std::max)( blas_int(0), blas_int(1) + blas_int( std::log(double(min_mn) / double(smlsiz_p1))/double(0.69314718055994530942) ) );
+    blas_int nlvl   = (std::max)( blas_int(0), blas_int(1) + blas_int( std::log2( double(min_mn)/double(smlsiz_p1) ) ) );
     blas_int liwork = (std::max)( blas_int(1), (blas_int(3)*min_mn*nlvl + blas_int(11)*min_mn) );
     
     podarray<blas_int> iwork( static_cast<uword>(liwork) );
@@ -5012,12 +5005,12 @@ auxlib::solve_approx_svd(Mat< std::complex<typename T1::pod_type> >& out, Mat< s
     const unwrap<T1>   U(B_expr.get_ref());
     const Mat<eT>& B = U.M;
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
     
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_cols, B.n_cols); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A,B);
     
@@ -5064,7 +5057,7 @@ auxlib::solve_approx_svd(Mat< std::complex<typename T1::pod_type> >& out, Mat< s
     blas_int smlsiz    = (std::max)( blas_int(25), laenv_result );
     blas_int smlsiz_p1 = blas_int(1) + smlsiz;
     
-    blas_int nlvl = (std::max)( blas_int(0), blas_int(1) + blas_int( std::log(double(min_mn) / double(smlsiz_p1))/double(0.69314718055994530942) ) );
+    blas_int nlvl = (std::max)( blas_int(0), blas_int(1) + blas_int( std::log2( double(min_mn)/double(smlsiz_p1) ) ) );
     
     blas_int lrwork = (m >= n)
       ? blas_int(10)*n + blas_int(2)*n*smlsiz + blas_int(8)*n*nlvl + blas_int(3)*smlsiz*nrhs + (std::max)( (smlsiz_p1)*(smlsiz_p1), n*(blas_int(1)+nrhs) + blas_int(2)*nrhs )
@@ -5133,7 +5126,7 @@ auxlib::solve_trimat_fast(Mat<typename T1::elem_type>& out, const Mat<typename T
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
     
@@ -5183,7 +5176,7 @@ auxlib::solve_trimat_rcond(Mat<typename T1::elem_type>& out, typename T1::pod_ty
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_cols, B_n_cols); return true; }
     
@@ -5277,7 +5270,7 @@ auxlib::solve_band_fast_common(Mat<typename T1::elem_type>& out, const Mat<typen
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_rows, B_n_cols); return true; }
     
@@ -5381,7 +5374,7 @@ auxlib::solve_band_rcond_common(Mat<typename T1::elem_type>& out, typename T1::p
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_rows, B_n_cols); return true; }
     
@@ -5394,7 +5387,7 @@ auxlib::solve_band_rcond_common(Mat<typename T1::elem_type>& out, typename T1::p
     
     arma_debug_assert_blas_size(AB,out);
     
-    char     norm_id  = '1';
+  //char     norm_id  = '1';
     char     trans    = 'N';
     blas_int n        = blas_int(N);  // assuming square matrix
     blas_int kl       = blas_int(KL);
@@ -5405,11 +5398,14 @@ auxlib::solve_band_rcond_common(Mat<typename T1::elem_type>& out, typename T1::p
     blas_int info     = blas_int(0);
     T        norm_val = T(0);
     
-    podarray<T>        junk(1);
+  //podarray<T>        junk(1);
     podarray<blas_int> ipiv(N + 2);  // +2 for paranoia
     
-    arma_extra_debug_print("lapack::langb()");
-    norm_val = lapack::langb<eT>(&norm_id, &n, &kl, &ku, AB.memptr(), &ldab, junk.memptr());
+    // // NOTE: lapack::langb() and lapack::gbtrf() use incompatible storage formats for the band matrix
+    // arma_extra_debug_print("lapack::langb()");
+    // norm_val = lapack::langb<eT>(&norm_id, &n, &kl, &ku, AB.memptr(), &ldab, junk.memptr());
+    
+    norm_val = auxlib::norm1_band(A,KL,KU);
     
     arma_extra_debug_print("lapack::gbtrf()");
     lapack::gbtrf<eT>(&n, &n, &kl, &ku, AB.memptr(), &ldab, ipiv.memptr(), &info);
@@ -5455,7 +5451,7 @@ auxlib::solve_band_refine(Mat<typename T1::pod_type>& out, typename T1::pod_type
     
     Mat<eT> B = B_expr.get_ref();  // B is overwritten
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
       
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_rows, B.n_cols); return true; }
     
@@ -5559,7 +5555,7 @@ auxlib::solve_band_refine(Mat< std::complex<typename T1::pod_type> >& out, typen
     
     Mat<eT> B = B_expr.get_ref();  // B is overwritten
     
-    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B.n_rows), "solve(): number of rows in given matrices must be the same" );
       
     if(A.is_empty() || B.is_empty())  { out.zeros(A.n_rows, B.n_cols); return true; }
     
@@ -5692,7 +5688,7 @@ auxlib::solve_tridiag_fast_common(Mat<typename T1::elem_type>& out, const Mat<ty
     const uword B_n_rows = out.n_rows;
     const uword B_n_cols = out.n_cols;
     
-    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in the given matrices must be the same" );
+    arma_debug_check( (A.n_rows != B_n_rows), "solve(): number of rows in given matrices must be the same", [&](){ out.soft_reset(); } );
     
     if(A.is_empty() || out.is_empty())  { out.zeros(A.n_rows, B_n_cols); return true; }
     
@@ -5926,14 +5922,14 @@ auxlib::qz(Mat<T>& A, Mat<T>& B, Mat<T>& vsl, Mat<T>& vsr, const Base<T,T1>& X_e
     A = X_expr.get_ref();
     B = Y_expr.get_ref();
     
-    arma_debug_check( ((A.is_square() == false) || (B.is_square() == false)), "qz(): given matrices must be square sized" );
+    arma_debug_check( ((A.is_square() == false) || (B.is_square() == false)), "qz(): given matrices must be square sized", [&](){ A.soft_reset(); B.soft_reset(); } );
     
     arma_debug_check( (A.n_rows != B.n_rows), "qz(): given matrices must have the same size" );
     
     if(A.is_empty())  { A.reset();  B.reset();  vsl.reset(); vsr.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -6013,14 +6009,14 @@ auxlib::qz(Mat< std::complex<T> >& A, Mat< std::complex<T> >& B, Mat< std::compl
     A = X_expr.get_ref();
     B = Y_expr.get_ref();
     
-    arma_debug_check( ((A.is_square() == false) || (B.is_square() == false)), "qz(): given matrices must be square sized" );
+    arma_debug_check( ((A.is_square() == false) || (B.is_square() == false)), "qz(): given matrices must be square sized", [&](){ A.soft_reset(); B.soft_reset(); } );
     
     arma_debug_check( (A.n_rows != B.n_rows), "qz(): given matrices must have the same size" );
     
     if(A.is_empty())  { A.reset(); B.reset(); vsl.reset(); vsr.reset(); return true; }
     
-    if(arma_config::check_nonfinite && A.has_nonfinite())  { return false; }
-    if(arma_config::check_nonfinite && B.has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && A.internal_has_nonfinite())  { return false; }
+    if(arma_config::check_nonfinite && B.internal_has_nonfinite())  { return false; }
     
     arma_debug_assert_blas_size(A);
     
@@ -6105,7 +6101,7 @@ auxlib::rcond(Mat<eT>& A)
     podarray<blas_int> ipiv( (std::min)(A.n_rows, A.n_cols) );
     
     arma_extra_debug_print("lapack::lange()");
-    norm_val = lapack::lange(&norm_id, &m, &n, A.memptr(), &lda, work.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_gen(A) : lapack::lange(&norm_id, &m, &n, A.memptr(), &lda, work.memptr());
     
     arma_extra_debug_print("lapack::getrf()");
     lapack::getrf(&m, &n, A.memptr(), &lda, ipiv.memptr(), &info);
@@ -6155,7 +6151,7 @@ auxlib::rcond(Mat< std::complex<T> >& A)
     podarray<blas_int> ipiv( (std::min)(A.n_rows, A.n_cols) );
     
     arma_extra_debug_print("lapack::lange()");
-    norm_val = lapack::lange(&norm_id, &m, &n, A.memptr(), &lda, junk.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_gen(A) : lapack::lange(&norm_id, &m, &n, A.memptr(), &lda, junk.memptr());
     
     arma_extra_debug_print("lapack::getrf()");
     lapack::getrf(&m, &n, A.memptr(), &lda, ipiv.memptr(), &info);
@@ -6203,7 +6199,7 @@ auxlib::rcond_sympd(Mat<eT>& A, bool& calc_ok)
     podarray<blas_int> iwork(  A.n_rows);
     
     arma_extra_debug_print("lapack::lansy()");
-    norm_val = lapack::lansy(&norm_id, &uplo, &n, A.memptr(), &lda, work.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_sym(A) : lapack::lansy(&norm_id, &uplo, &n, A.memptr(), &lda, work.memptr());
     
     arma_extra_debug_print("lapack::potrf()");
     lapack::potrf(&uplo, &n, A.memptr(), &lda, &info);
@@ -6264,7 +6260,7 @@ auxlib::rcond_sympd(Mat< std::complex<T> >& A, bool& calc_ok)
     podarray< T> rwork(  A.n_rows);
     
     arma_extra_debug_print("lapack::lanhe()");
-    norm_val = lapack::lanhe(&norm_id, &uplo, &n, A.memptr(), &lda, rwork.memptr());
+    norm_val = (has_blas_float_bug<eT>::value) ? auxlib::norm1_sym(A) : lapack::lanhe(&norm_id, &uplo, &n, A.memptr(), &lda, rwork.memptr());
     
     arma_extra_debug_print("lapack::potrf()");
     lapack::potrf(&uplo, &n, A.memptr(), &lda, &info);
@@ -6704,6 +6700,105 @@ auxlib::rudimentary_sym_check(const Mat< std::complex<T> >& X)
   const bool okay_imag = ( (delta_imag <= tol) || (delta_imag <= (C_imag * tol)) );
   
   return (okay_real && okay_imag);
+  }
+
+
+
+template<typename eT>
+inline
+typename get_pod_type<eT>::result
+auxlib::norm1_gen(const Mat<eT>& A)
+  {
+  arma_extra_debug_sigprint();
+  
+  typedef typename get_pod_type<eT>::result T;
+  
+  if(A.n_elem == 0)  { return T(0); }
+  
+  const uword n_rows = A.n_rows;
+  const uword n_cols = A.n_cols;
+  
+  T max_val = T(0);
+  
+  for(uword c=0; c < n_cols; ++c)
+    {
+    const eT* colmem  = A.colptr(c);
+           T  acc_val = T(0);
+    
+    for(uword r=0; r < n_rows; ++r)  { acc_val += std::abs(colmem[r]); }
+    
+    max_val = (acc_val > max_val) ? acc_val : max_val;
+    }
+  
+  return max_val;
+  }
+
+
+
+template<typename eT>
+inline
+typename get_pod_type<eT>::result
+auxlib::norm1_sym(const Mat<eT>& A)
+  {
+  arma_extra_debug_sigprint();
+  
+  typedef typename get_pod_type<eT>::result T;
+  
+  if(A.n_elem == 0)  { return T(0); }
+  
+  const uword N = (std::min)(A.n_rows, A.n_cols);
+  
+  T max_val = T(0);
+  
+  for(uword col=0; col < N; ++col)
+    {
+    const eT* colmem  = A.colptr(col);
+           T  acc_val = T(0);
+    
+    for(uword c=0; c < col; ++c)  { acc_val += std::abs(A.at(col,c)); }
+    
+    for(uword r=col; r < N; ++r)  { acc_val += std::abs(colmem[r]);   }
+    
+    max_val = (acc_val > max_val) ? acc_val : max_val;
+    }
+  
+  return max_val;
+  }
+
+
+
+template<typename eT>
+inline
+typename get_pod_type<eT>::result
+auxlib::norm1_band(const Mat<eT>& A, const uword KL, const uword KU)
+  {
+  arma_extra_debug_sigprint();
+  
+  typedef typename get_pod_type<eT>::result T;
+  
+  if(A.n_elem == 0)  { return T(0); }
+  
+  const uword n_rows = A.n_rows;
+  const uword n_cols = A.n_cols;
+  
+  T max_val = T(0);
+  
+  for(uword c=0; c < n_cols; ++c)
+    {
+    const eT* colmem  = A.colptr(c);
+           T  acc_val = T(0);
+    
+    // use values only from main diagonal + KU upper diagonals + KL lower diagonals
+    
+    const uword start = ( c       > KU    ) ? (c - KU) : 0;
+    const uword   end = ((c + KL) < n_rows) ? (c + KL) : (n_rows-1);
+    
+    for(uword r=start; r <= end; ++r)  { acc_val += std::abs(colmem[r]); }
+    
+    max_val = (acc_val > max_val) ? acc_val : max_val;
+    }
+  
+  return max_val;
   }
 
 

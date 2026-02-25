@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <tuple>
 
+#include <xdiag/armadillo.hpp>
 #include <xdiag/bits/bitops.hpp>
 #include <xdiag/combinatorics/subsets.hpp>
-#include <xdiag/extern/armadillo/armadillo>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/parallel/mpi/buffer.hpp>
 #include <xdiag/parallel/mpi/comm_pattern.hpp>

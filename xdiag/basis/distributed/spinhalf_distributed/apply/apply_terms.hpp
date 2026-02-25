@@ -5,7 +5,7 @@
 #pragma once
 #ifdef XDIAG_USE_MPI
 
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/operators/opsum.hpp>
 
 namespace xdiag::basis::spinhalf_distributed {

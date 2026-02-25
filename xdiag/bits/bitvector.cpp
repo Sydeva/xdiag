@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <sstream>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag::bits {
 

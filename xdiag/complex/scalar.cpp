@@ -4,10 +4,18 @@
 
 #include "scalar.hpp"
 
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
+#include <xdiag/utils/overload.hpp>
+#include <xdiag/utils/to_string_generic.hpp>
+using namespace xdiag::utils;
+
 namespace xdiag {
 
 Scalar::Scalar(double value) : value_(value) {}
 Scalar::Scalar(complex value) : value_(value) {}
+Scalar::Scalar(int64_t value) : value_((double)value) {}
+Scalar::Scalar(int value) : value_((double)value) {}
 
 bool Scalar::isreal() const { return std::holds_alternative<double>(value_); }
 
@@ -33,6 +41,20 @@ Scalar Scalar::conj() const {
 double Scalar::abs() const {
   return std::visit([](auto &&a) { return std::abs(a); }, value_);
 }
+
+Scalar Scalar::to_real(double tol) const try {
+  if (isreal()) {
+    return *this;
+  }
+  if (imag() > tol) {
+    XDIAG_THROW(
+        fmt::format("Cannot narrow Scalar to real: imaginary part {} exceeds "
+                    "tolerance {}",
+                    imag(), tol));
+  }
+  return Scalar(real());
+}
+XDIAG_CATCH
 
 bool Scalar::isapprox(Scalar const &y, double rtol = 1e-12,
                       double atol = 1e-12) const {
@@ -116,7 +138,8 @@ template <> double Scalar::as<double>() const try {
     XDIAG_THROW("Cannot convert Scalar holding a value of type "
                 "\"complex\" to value of type \"double\"");
   }
-} XDIAG_CATCH
+}
+XDIAG_CATCH
 
 template <> complex Scalar::as<complex>() const {
   if (const double *v = std::get_if<double>(&value_)) {

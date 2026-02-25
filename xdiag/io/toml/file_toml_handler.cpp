@@ -9,8 +9,7 @@
 #include <cstdint>
 #include <vector>
 
-#include <xdiag/common.hpp>
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 #include <xdiag/extern/toml++/toml.hpp>
 
 #include <xdiag/io/toml/arma_matrix.hpp>

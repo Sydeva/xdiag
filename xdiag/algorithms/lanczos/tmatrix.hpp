@@ -6,8 +6,7 @@
 
 #include <utility>
 
-#include <xdiag/extern/armadillo/armadillo>
-
+#include <xdiag/armadillo.hpp>
 #include <xdiag/common.hpp>
 
 namespace xdiag {
@@ -31,9 +30,9 @@ public:
 
   void print_log() const;
 
-  bool operator==(Tmatrix const& rhs) const;
-  bool operator!=(Tmatrix const& rhs) const;
-  
+  bool operator==(Tmatrix const &rhs) const;
+  bool operator!=(Tmatrix const &rhs) const;
+
 private:
   std::vector<double> alphas_;
   std::vector<double> betas_;

@@ -7,8 +7,10 @@
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/types.hpp>
 #include <xdiag/operators/logic/valid.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag {
+
 Op hc(Op const &op) try {
   check_valid(op);
 
@@ -26,14 +28,13 @@ Op hc(Op const &op) try {
   } else if (type == "Cdn") {
     return Op("Cdagdn", op.sites());
   } else { // default: the type does not change
-
     if (op.hassites()) {
       if (op.hasmatrix()) {
         return Op(op.type(), op.sites(), op.matrix().hc());
       } else {
         return Op(op.type(), op.sites());
       }
-    } else { // no sites defined
+    } else {
       return Op(op.type());
     }
   }
@@ -42,13 +43,19 @@ XDIAG_CATCH
 
 OpSum hc(OpSum const &ops) try {
   OpSum ops_hc;
-  for (auto [cpl, op] : ops.plain()) {
-    std::string type = op.type();
-    if ((type == "Exchange") || (type == "Hop") || (type == "Hopup") ||
-        (type == "Hopdn")) {
-      ops_hc += cpl.scalar() * hc(op);
+  for (auto const &[coeff, mono] : ops.plain()) {
+    // For length-1 monomials of real-coupling types, coefficient stays real
+    if (mono.size() == 1) {
+      std::string type = mono[0].type();
+      if ((type == "Exchange") || (type == "Hop") || (type == "Hopup") ||
+          (type == "Hopdn")) {
+        ops_hc += coeff.scalar() * mono.hc();
+      } else {
+        ops_hc += conj(coeff.scalar()) * mono.hc();
+      }
     } else {
-      ops_hc += conj(cpl.scalar()) * hc(op);
+      // General monomial: conjugate the coefficient
+      ops_hc += conj(coeff.scalar()) * mono.hc();
     }
   }
   return ops_hc;

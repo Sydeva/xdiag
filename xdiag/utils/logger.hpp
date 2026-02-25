@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
-
 #ifdef XDIAG_USE_MPI
 #include <xdiag/utils/logger_mpi.hpp>
 #else
 #include <xdiag/utils/logger_serial.hpp>
 #endif
+
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
@@ -23,4 +23,3 @@ XDIAG_API inline auto &Log = LogSerial;
 XDIAG_API void set_verbosity(int64_t level);
 
 } // namespace xdiag
-

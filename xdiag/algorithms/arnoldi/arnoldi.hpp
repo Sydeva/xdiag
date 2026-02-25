@@ -6,8 +6,8 @@
 // Created by Luke Staszewski on 13.06.23.
 //
 #pragma once
-#include <xdiag/extern/armadillo/armadillo>
 #include <utility>
+#include <xdiag/armadillo.hpp>
 
 namespace xdiag {
 
@@ -34,7 +34,7 @@ arnoldi_iteration(mult const &H, arma::Col<coeff_t> const &q0, int n = 80,
    * TODO: add convergence check
    * TODO: write to disk
    */
-  
+
   using namespace arma;
   using mat_t = Mat<coeff_t>;
   using vec_t = Col<coeff_t>;

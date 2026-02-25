@@ -4,9 +4,8 @@
 
 #pragma once
 
+#include <xdiag/armadillo.hpp>
 #include <xdiag/blocks/blocks.hpp>
-#include <xdiag/common.hpp>
-#include <xdiag/extern/armadillo/armadillo>
 
 namespace xdiag {
 

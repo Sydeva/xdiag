@@ -5,7 +5,8 @@
 #include "types.hpp"
 
 #include <algorithm>
-#include <xdiag/common.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag {
 bool is_known_type(std::string type) {

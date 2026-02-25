@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#include <xdiag/common.hpp>
+
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
 
@@ -14,5 +14,5 @@ XDIAG_API OpSum hc(OpSum const &ops);
 
 XDIAG_API bool ishermitian(Op const &op);
 XDIAG_API bool ishermitian(OpSum const &ops);
-  
+
 } // namespace xdiag

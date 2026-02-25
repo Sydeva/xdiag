@@ -55,8 +55,10 @@ void check_valid(Op const &op) try {
 XDIAG_CATCH
 
 void check_valid(OpSum const &ops) try {
-  for (auto [cpl, op] : ops) {
-    check_valid(op);
+  for (auto const &[coeff, mono] : ops) {
+    for (auto const &op : mono) {
+      check_valid(op);
+    }
   }
 }
 XDIAG_CATCH
@@ -70,8 +72,10 @@ void check_valid(Op const &op, int64_t nsites) try {
 XDIAG_CATCH
 
 void check_valid(OpSum const &ops, int64_t nsites) try {
-  for (auto [cpl, op] : ops) {
-    check_valid(op, nsites);
+  for (auto const &[coeff, mono] : ops) {
+    for (auto const &op : mono) {
+      check_valid(op, nsites);
+    }
   }
 }
 XDIAG_CATCH

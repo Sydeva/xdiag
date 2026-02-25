@@ -6,11 +6,10 @@
 #include <limits>
 #include <random>
 
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 
 #include <xdiag/algorithms/lanczos/lanczos_step.hpp>
 #include <xdiag/algorithms/lanczos/tmatrix.hpp>
-#include <xdiag/common.hpp>
 #include <xdiag/utils/logger.hpp>
 #include <xdiag/utils/timing.hpp>
 
@@ -29,7 +28,7 @@ template <typename coeff_t> struct lanczos_pro_result {
 };
 
 inline arma::mat compute_omega(arma::vec const &alpha, arma::vec const &beta,
-                        double new_beta, int64_t dim, int last_reortho) {
+                               double new_beta, int64_t dim, int last_reortho) {
   // Computes the estimate of the orthogonality omega
   // Following Horst D. Simon, The Lanczos algorithm with partial reortho
   // Mathematics of Computation, Jan 1984, 42, 165, pp. 115-142

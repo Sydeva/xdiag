@@ -8,6 +8,8 @@
 #include <set>
 #include <xdiag/operators/logic/types.hpp>
 #include <xdiag/operators/logic/valid.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 #include <xdiag/utils/ipow.hpp>
 
 namespace xdiag {
@@ -243,8 +245,12 @@ OpSum order(OpSum const &ops) try {
 
   using pair_t = std::pair<Scalar, Op>;
   std::vector<pair_t> terms;
-  for (auto [a, op] : ops.plain()) {
-    terms.push_back(order(a.scalar(), op));
+  for (auto const &[coeff, mono] : ops.plain()) {
+    if (mono.size() != 1) {
+      XDIAG_THROW("order(OpSum) only supports length-1 monomials (single Ops). "
+                  "Cannot order a monomial product of multiple Ops.");
+    }
+    terms.push_back(order(coeff.scalar(), mono[0]));
   }
   std::sort(terms.begin(), terms.end(), [](pair_t const &p1, pair_t const &p2) {
     Scalar const &c1 = p1.first;
@@ -265,20 +271,21 @@ OpSum order(OpSum const &ops) try {
     opsnew += cplsum * op;
   }
 
-  // Compbine Matrix operators on same sites
+  // Combine Matrix operators on same sites
   OpSum ops_matrix;
   std::map<std::vector<int64_t>, Matrix> matrix_on_sites;
-  for (auto const &[cpl, op] : opsnew) {
+  for (auto const &[coeff, mono] : opsnew) {
+    Op const &op = mono[0];
     if (op.type() == "Matrix") {
       auto sites = op.sites();
-      auto coeff = cpl.scalar();
-      if (matrix_on_sites.count(sites)) { // sites already exist
-        matrix_on_sites[sites] += op.matrix() * coeff;
+      auto c = coeff.scalar();
+      if (matrix_on_sites.count(sites)) {
+        matrix_on_sites[sites] += op.matrix() * c;
       } else {
-        matrix_on_sites[sites] = op.matrix() * coeff;
+        matrix_on_sites[sites] = op.matrix() * c;
       }
     } else {
-      ops_matrix += cpl * op;
+      ops_matrix += coeff * op;
     }
   }
 

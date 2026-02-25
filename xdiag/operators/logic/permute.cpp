@@ -5,6 +5,8 @@
 #include "permute.hpp"
 
 #include <xdiag/operators/logic/isapprox.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag {
 
@@ -44,8 +46,12 @@ XDIAG_CATCH
 
 OpSum permute(OpSum const &ops, Permutation const &perm) try {
   OpSum ops_permuted;
-  for (auto const &[cpl, op] : ops.plain()) {
-    ops_permuted += cpl * permute(op, perm);
+  for (auto const &[coeff, mono] : ops.plain()) {
+    Monomial mono_permuted;
+    for (auto const &op : mono) {
+      mono_permuted *= permute(op, perm);
+    }
+    ops_permuted += coeff * mono_permuted;
   }
   return ops_permuted;
 }

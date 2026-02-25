@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#include <xdiag/common.hpp>
-#include <xdiag/extern/armadillo/armadillo>
 
+#include <xdiag/armadillo.hpp>
 #include <xdiag/blocks/blocks.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>

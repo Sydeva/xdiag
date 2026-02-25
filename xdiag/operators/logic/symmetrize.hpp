@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>

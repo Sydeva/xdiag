@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 
-#include <xdiag/common.hpp>
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 
 namespace xdiag {
 

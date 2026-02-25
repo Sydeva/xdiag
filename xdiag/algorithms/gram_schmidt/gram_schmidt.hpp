@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include <xdiag/extern/armadillo/armadillo>
-#include <xdiag/common.hpp>
+#include <xdiag/armadillo.hpp>
 
 namespace xdiag {
 

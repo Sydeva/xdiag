@@ -21,10 +21,10 @@
 
 
 
-#define ARMA_VERSION_MAJOR 11
-#define ARMA_VERSION_MINOR 2
+#define ARMA_VERSION_MAJOR 12
+#define ARMA_VERSION_MINOR 8
 #define ARMA_VERSION_PATCH 4
-#define ARMA_VERSION_NAME  "Classic Roast"
+#define ARMA_VERSION_NAME  "Cortisol Injector"
 
 
 

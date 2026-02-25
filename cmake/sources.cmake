@@ -5,10 +5,6 @@ set(XDIAG_SOURCES
   utils/say_hello.cpp
   utils/read_vectors.cpp
   utils/split.cpp
-  utils/arma_to_cx.cpp
-  # utils/scalar.cpp
-  # utils/vector.cpp
-  # utils/matrix.cpp
   utils/ipow.cpp
   
   bits/bitset.cpp
@@ -17,6 +13,11 @@ set(XDIAG_SOURCES
   bits/pack_unpack.cpp
   bits/to_string.cpp
 
+  complex/scalar.cpp
+  complex/vector.cpp
+  complex/matrix.cpp
+  complex/arma_to_cx.cpp
+  
   combinatorics/binomial.cpp
   combinatorics/combinations/enumerate_combinations.cpp
   combinatorics/combinations/combinations.cpp
@@ -112,20 +113,22 @@ set(XDIAG_SOURCES
   # symmetries/group_action/group_action_sublattice.cpp
   # symmetries/group_action/sublattice_stability.cpp
 
-  # operators/coupling.cpp
-  # operators/op.cpp
-  # operators/opsum.cpp
-  # operators/logic/compilation.cpp
-  # operators/logic/valid.cpp
-  # operators/logic/types.cpp
-  # operators/logic/symmetrize.cpp
-  # operators/logic/real.cpp
-  # operators/logic/hc.cpp
-  # operators/logic/isapprox.cpp
-  # operators/logic/permute.cpp
-  # operators/logic/qns.cpp
+  operators/coeff.cpp
+  operators/monomial.cpp
+  operators/op.cpp
+  operators/opsum.cpp
+  operators/logic/valid.cpp
+  operators/logic/types.cpp
+  operators/logic/symmetrize.cpp
+  operators/logic/real.cpp
+  operators/logic/hc.cpp
+  operators/logic/isapprox.cpp
+  operators/logic/permute.cpp
+  operators/logic/order.cpp
+  operators/logic/collect.cpp
+  # operators/logic/qns.cpp         (depends on blocks)
   # operators/logic/non_branching_op.cpp
-  # operators/logic/order.cpp
+  # operators/logic/compilation.cpp (depends on blocks)
   # operators/logic/block.cpp
   
   # states/gpwf.cpp

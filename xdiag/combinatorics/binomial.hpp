@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
+#include <cstdint>
 
 namespace xdiag::combinatorics {
 

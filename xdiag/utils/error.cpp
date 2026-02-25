@@ -16,7 +16,7 @@
 #include <xdiag/extern/fmt/color.hpp>
 #endif
 
-#include <xdiag/extern/armadillo/armadillo>
+#include <xdiag/armadillo.hpp>
 
 #ifdef __APPLE__
 #ifdef __clang__
