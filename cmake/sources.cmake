@@ -126,6 +126,7 @@ set(XDIAG_SOURCES
   operators/logic/permute.cpp
   operators/logic/order.cpp
   operators/logic/collect.cpp
+  operators/logic/rewrite.cpp
   # operators/logic/qns.cpp         (depends on blocks)
   # operators/logic/non_branching_op.cpp
   # operators/logic/compilation.cpp (depends on blocks)
