@@ -8,7 +8,8 @@
 
 namespace xdiag::basis {
 
-void Dispatcher::dispatch(Basis *a, Basis *b) const try {
+void Dispatcher::dispatch(typename Dispatcher::pointer_t const &a,
+                          typename Dispatcher::pointer_t const &b) const try {
   if (a->type() != b->type()) {
     XDIAG_THROW("Type mismatch for Basis: \n  1 -> " + std::string(a->name()) +
                 "\n  2 -> " + std::string(b->name()));

@@ -5,6 +5,7 @@
 #include "../../catch.hpp"
 
 #include <cstdint>
+#include <memory>
 
 #include <xdiag/basis/apply.hpp>
 #include <xdiag/basis/plain/basis_onthefly.hpp>
@@ -18,10 +19,14 @@ TEST_CASE("basis_onthefly", "[basis]") try {
   using namespace xdiag::basis;
   using namespace xdiag::combinatorics;
 
-  Basis *b1 = new BasisOnTheFly(Subsets<uint32_t>(3));
-  Basis *b2 = new BasisOnTheFly(Subsets<uint64_t>(3));
-  Basis *b3 = new BasisOnTheFly(Combinations<uint32_t>(3, 2));
-  Basis *b4 = new BasisOnTheFly(Combinations<uint64_t>(3, 2));
+  auto b1 =
+      std::make_shared<BasisOnTheFly<Subsets<uint32_t>>>(Subsets<uint32_t>(3));
+  auto b2 =
+      std::make_shared<BasisOnTheFly<Subsets<uint64_t>>>(Subsets<uint64_t>(3));
+  auto b3 = std::make_shared<BasisOnTheFly<Combinations<uint32_t>>>(
+      Combinations<uint32_t>(3, 2));
+  auto b4 = std::make_shared<BasisOnTheFly<Combinations<uint64_t>>>(
+      Combinations<uint64_t>(3, 2));
 
   Log("type: {} name: {}", b1->type(), b1->name());
   Log("type: {} name: {}", b2->type(), b2->name());
