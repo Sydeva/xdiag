@@ -7,6 +7,9 @@
 #include <cstddef>
 #include <string_view>
 
+#include <xdiag/bits/get_set_bit.hpp>
+#include <xdiag/states/product_state.hpp>
+
 namespace xdiag::basis {
 
 std::size_t create_basis_type_id();
@@ -15,6 +18,8 @@ class Basis {
 public:
   virtual std::size_t type() const = 0;
   virtual std::string_view name() const = 0;
+  virtual ProductState
+  product_state(int64_t idx, std::vector<std::string> const &dict) const = 0;
   virtual ~Basis() = default;
 };
 

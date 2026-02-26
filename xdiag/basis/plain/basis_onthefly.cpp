@@ -4,7 +4,9 @@
 
 #include "basis_onthefly.hpp"
 
+#include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
+#include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
 
 namespace xdiag::basis {
@@ -35,6 +37,18 @@ BasisOnTheFly<enumeration_t>::end() const {
 }
 
 template <typename enumeration_t>
+ProductState BasisOnTheFly<enumeration_t>::product_state(
+    int64_t idx, std::vector<std::string> const &dict) const {
+  int64_t nsites = enumeration_.n();
+  ProductState ps(nsites);
+  auto const b = enumeration_[idx];
+  for (int64_t i = 0; i < nsites; ++i) {
+    ps[i] = dict[bits::get_bit(b, i)];
+  }
+  return ps;
+}
+
+template <typename enumeration_t>
 bool BasisOnTheFly<enumeration_t>::operator==(
     BasisOnTheFly<enumeration_t> const &rhs) const {
   return enumeration_ == rhs.enumeration_;
@@ -47,9 +61,16 @@ bool BasisOnTheFly<enumeration_t>::operator!=(
 }
 
 using namespace combinatorics;
+using namespace bits;
 template class BasisOnTheFly<Subsets<uint32_t>>;
 template class BasisOnTheFly<Subsets<uint64_t>>;
 template class BasisOnTheFly<Combinations<uint32_t>>;
 template class BasisOnTheFly<Combinations<uint64_t>>;
+template class BasisOnTheFly<Combinations<BitsetStatic2>>;
+template class BasisOnTheFly<Combinations<BitsetStatic4>>;
+template class BasisOnTheFly<Combinations<BitsetStatic8>>;
+template class BasisOnTheFly<Combinations<BitsetDynamic>>;
+template class BasisOnTheFly<LinTable<uint32_t>>;
+template class BasisOnTheFly<LinTable<uint64_t>>;
 
 } // namespace xdiag::basis

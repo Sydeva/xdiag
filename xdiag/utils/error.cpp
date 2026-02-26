@@ -17,6 +17,7 @@
 #endif
 
 #include <xdiag/armadillo.hpp>
+#include <xdiag/utils/ipow.hpp>
 
 #ifdef __APPLE__
 #ifdef __clang__
@@ -106,6 +107,15 @@ void error_trace(Error const &error) {
   }
 #endif
 }
+
+void check_dimension_reasonable(int64_t dim) try {
+  int64_t max_exponent = 14;
+  if (dim > utils::ipow(10, max_exponent)) {
+    XDIAG_THROW(fmt::format("Dimension of requested block larger than 10^{}",
+                            max_exponent));
+  }
+}
+XDIAG_CATCH
 
 void check_dimension_works_with_blas_int_size(int64_t dim) try {
   // Backend 32 bit Blas implementation

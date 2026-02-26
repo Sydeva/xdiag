@@ -58,8 +58,9 @@ private:
 // Iterates through all bit patterns with exactly k bits set in n positions,
 // generating patterns in lexicographic order. Uses the "next permutation"
 // bit-twiddling algorithm for efficient iteration.
-template <typename bit_t> class CombinationsIterator {
+template <typename bit_tt> class CombinationsIterator {
 public:
+  using bit_t = bit_tt;
   CombinationsIterator() = default;
   CombinationsIterator(int64_t n, int64_t k, int64_t idx);
 

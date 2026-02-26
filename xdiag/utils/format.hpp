@@ -5,6 +5,7 @@
 #pragma once
 
 #include <complex>
+#include <locale>
 
 #define FMT_HEADER_ONLY
 #include <xdiag/extern/fmt/format.hpp>
@@ -28,5 +29,23 @@ template <> struct formatter<std::complex<double>> {
     }
   }
 };
+
+// comma separator for large numbers after 1,000 and 1,000,000 etc
+struct german_punct : std::numpunct<char> {
+protected:
+  char do_decimal_point() const override { return ','; }
+  char do_thousands_sep() const override { return '.'; }
+  std::string do_grouping() const override { return "\3"; }
+};
+
+template <typename... Args>
+std::string format_de(fmt::format_string<Args...> fmt_str, Args &&...args) {
+  static std::locale german(std::locale::classic(), new german_punct);
+
+  return fmt::vformat(
+      german,
+      fmt::string_view(fmt_str), // ← THIS is the important trick
+      fmt::make_format_args(args...));
+}
 
 } // namespace fmt

@@ -8,7 +8,8 @@
 
 namespace xdiag::basis::plain {
 
-template <typename basis_t>
-void apply(OpSum const &ops, basis_t const &in, basis_t const &out);
-
+template <typename mat_t, typename basis_t>
+void apply(OpSum const &ops, basis_t const &basis_in, mat_t const &mat_in,
+           basis_t const &basis_out, mat_t &mat_out);
+ 
 } // namespace xdiag::basis::plain

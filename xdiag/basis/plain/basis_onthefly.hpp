@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include <xdiag/basis/basis.hpp>
+#include <xdiag/states/product_state.hpp>
 #include <xdiag/utils/type_name.hpp>
 
 namespace xdiag::basis {
@@ -28,6 +29,10 @@ public:
   int64_t index(bit_t bits) const;
   iterator_t begin() const;
   iterator_t end() const;
+
+  ProductState
+  product_state(int64_t idx,
+                std::vector<std::string> const &dict) const override;
 
   bool operator==(BasisOnTheFly<enumeration_t> const &rhs) const;
   bool operator!=(BasisOnTheFly<enumeration_t> const &rhs) const;

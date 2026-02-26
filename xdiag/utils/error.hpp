@@ -40,6 +40,7 @@ XDIAG_API void error_trace(Error const &error);
 std::string cut_file(const char *file);
 
 // common error checks
+void check_dimension_reasonable(int64_t dim);
 void check_dimension_works_with_blas_int_size(int64_t dim);
 template <typename bit_t> void check_nsites_work_with_bits(int64_t nsites);
 

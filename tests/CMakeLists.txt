@@ -21,12 +21,14 @@ set(XDIAG_TEST_SOURCES
   combinatorics/test_schaefer_table.cpp
 
   basis/plain/test_basis_onthefly.cpp
-
+  
   operators/test_coeff.cpp
   operators/test_monomial.cpp
   operators/test_op.cpp
   operators/test_opsum.cpp
   operators/test_rewrite.cpp
+
+  blocks/spinhalf/test_spinhalf.cpp
 
   # io/test_file_toml.cpp
   # io/test_file_h5.cpp

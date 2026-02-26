@@ -6,7 +6,7 @@
 
 #include <string>
 #include <vector>
-#include <xdiag/common.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
@@ -41,19 +41,5 @@ XDIAG_API std::ostream &operator<<(std::ostream &out,
                                    ProductState const &state);
 XDIAG_API std::string to_string(ProductState const &state,
                                 std::string format = "fancy");
-
-// Conversions for low-level encoding of states
-template <typename bit_t>
-void to_product_state_spinhalf(bit_t spins, ProductState &pstate);
-template <typename bit_t>
-void to_product_state_tj(bit_t ups, bit_t dns, ProductState &pstate);
-template <typename bit_t>
-void to_product_state_electron(bit_t ups, bit_t dns, ProductState &pstate);
-
-template <typename bit_t> bit_t to_bits_spinhalf(ProductState const &pstate);
-template <typename bit_t>
-std::pair<bit_t, bit_t> to_bits_tj(ProductState const &pstate);
-template <typename bit_t>
-std::pair<bit_t, bit_t> to_bits_electron(ProductState const &pstate);
 
 } // namespace xdiag

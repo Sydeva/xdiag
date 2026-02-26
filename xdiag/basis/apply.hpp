@@ -10,7 +10,9 @@
 
 namespace xdiag::basis {
 
-void apply(OpSum const &ops, std::shared_ptr<Basis> const &in,
-           std::shared_ptr<Basis> const &out);
+template <typename mat_t>
+void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
+           mat_t const &mat_in, std::shared_ptr<Basis> const &basis_out,
+           mat_t &mat_out);
 
 } // namespace xdiag::basis

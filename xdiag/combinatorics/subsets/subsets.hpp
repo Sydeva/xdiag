@@ -51,8 +51,9 @@ private:
 // Forward iterator over subset bit patterns.
 //
 // Iterates through all bit patterns from 0 to 2^n-1 in ascending order.
-template <typename bit_t> class SubsetsIterator {
+template <typename bit_tt> class SubsetsIterator {
 public:
+  using bit_t = bit_tt;
   SubsetsIterator() = default;
   SubsetsIterator(int64_t idx);
 
