@@ -86,38 +86,37 @@ std::ostream &operator<<(std::ostream &out,
 using namespace xdiag::bits;
 
 // Template instantiations
-#define INSTANTIATE_BITARRAY(BIT_T, NBITS)                                     \
+#define INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, NBITS)                          \
   template class xdiag::bits::BitArray<BIT_T, NBITS>;                          \
   template std::string xdiag::bits::to_string(BitArray<BIT_T, NBITS> const &,  \
                                               int64_t, bool);                  \
   template std::ostream &xdiag::bits::operator<<(                              \
       std::ostream &, BitArray<BIT_T, NBITS> const &);
 
-#define INSTANTIATE_BITARRAY_FOR_NBITS(BIT_T)                                  \
-  INSTANTIATE_BITARRAY(BIT_T, 1)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 2)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 3)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 4)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 5)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 6)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 7)                                               \
-  INSTANTIATE_BITARRAY(BIT_T, 8)
+#define INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BIT_T)                       \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 1)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 2)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 3)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 4)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 5)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 6)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 7)                                    \
+  INSTANTIATE_XDIAG_BITS_BITARRAY(BIT_T, 8)
 
 // Native integer types
 // BEGIN_INSTANTIATION_GROUP(native)
-INSTANTIATE_BITARRAY_FOR_NBITS(uint16_t)
-INSTANTIATE_BITARRAY_FOR_NBITS(uint32_t)
-INSTANTIATE_BITARRAY_FOR_NBITS(uint64_t)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(uint16_t)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(uint32_t)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(uint64_t)
 // END_INSTANTIATION_GROUP
 
 // Bitset types
 // BEGIN_INSTANTIATION_GROUP(bitset)
-INSTANTIATE_BITARRAY_FOR_NBITS(BitsetDynamic)
-INSTANTIATE_BITARRAY_FOR_NBITS(BitsetStatic1)
-INSTANTIATE_BITARRAY_FOR_NBITS(BitsetStatic2)
-INSTANTIATE_BITARRAY_FOR_NBITS(BitsetStatic4)
-INSTANTIATE_BITARRAY_FOR_NBITS(BitsetStatic8)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetDynamic)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic1)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic2)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic4)
+INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic8)
 // END_INSTANTIATION_GROUP
 
-#undef INSTANTIATE_BITARRAY_FOR_NBITS
 #undef INSTANTIATE_BITARRAY
