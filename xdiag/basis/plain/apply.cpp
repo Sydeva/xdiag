@@ -28,115 +28,59 @@ void apply(OpSum const &ops, basis_t const &basis_in, mat_t const &mat_in,
 }
 XDIAG_CATCH
 
-using namespace combinatorics;
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint32_t>> const &basis_in,
-           arma::vec const &mat_in,
-           BasisOnTheFly<Subsets<uint32_t>> const &basis_out,
-           arma::vec &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint32_t>> const &basis_in,
-           arma::cx_vec const &mat_in,
-           BasisOnTheFly<Subsets<uint32_t>> const &basis_out,
-           arma::cx_vec &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint64_t>> const &basis_in,
-           arma::vec const &mat_in,
-           BasisOnTheFly<Subsets<uint64_t>> const &basis_out,
-           arma::vec &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint64_t>> const &basis_in,
-           arma::cx_vec const &mat_in,
-           BasisOnTheFly<Subsets<uint64_t>> const &basis_out,
-           arma::cx_vec &mat_out);
-
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint32_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<LinTable<uint32_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint32_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<LinTable<uint32_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint64_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<LinTable<uint64_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint64_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<LinTable<uint64_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint32_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<Subsets<uint32_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint32_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<Subsets<uint32_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint64_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<Subsets<uint64_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<Subsets<uint64_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<Subsets<uint64_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<Combinations<uint32_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<Combinations<uint64_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint32_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<LinTable<uint32_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint32_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<LinTable<uint32_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint64_t>> const &basis_in,
-           arma::mat const &mat_in,
-           BasisOnTheFly<LinTable<uint64_t>> const &basis_out,
-           arma::mat &mat_out);
-void apply(OpSum const &ops, BasisOnTheFly<LinTable<uint64_t>> const &basis_in,
-           arma::cx_mat const &mat_in,
-           BasisOnTheFly<LinTable<uint64_t>> const &basis_out,
-           arma::cx_mat &mat_out);
-
 } // namespace xdiag::basis::plain
+
+using namespace arma;
+using namespace xdiag::combinatorics;
+using namespace xdiag::basis;
+
+
+// Macro for declaring a single apply instantiation
+#define INSTANTIATE_APPLY(BASIS_TYPE, ENUM_TYPE, INT_TYPE, MAT_TYPE)           \
+  template void xdiag::basis::plain::apply(                                    \
+      OpSum const &, BASIS_TYPE<ENUM_TYPE<INT_TYPE>> const &,                  \
+      MAT_TYPE const &, BASIS_TYPE<ENUM_TYPE<INT_TYPE>> const &, MAT_TYPE &);
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_subsets_uint32_t)
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint32_t, vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint32_t, cx_vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint32_t, mat);
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint32_t, cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_subsets_uint64_t)
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint64_t, vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint64_t, cx_vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint64_t, mat);
+INSTANTIATE_APPLY(BasisOnTheFly, Subsets, uint64_t, cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_uint32_t)
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint32_t, vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint32_t, cx_vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint32_t, mat);
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint32_t, cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_uint64_t)
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint64_t, vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint64_t, cx_vec);
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint64_t, mat);
+INSTANTIATE_APPLY(BasisOnTheFly, Combinations, uint64_t, cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_lintable_uint32_t)
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint32_t, vec);
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint32_t, cx_vec);
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint32_t, mat);
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint32_t, cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_lintable_uint64_t)
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint64_t, vec);
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint64_t, cx_vec);
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint64_t, mat);
+INSTANTIATE_APPLY(BasisOnTheFly, LinTable, uint64_t, cx_mat);
+// END_INSTANTIATION_GROUP
+
+#undef INSTANTIATE_APPLY

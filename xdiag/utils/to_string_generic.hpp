@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <sstream>
+#include <string>
+
 namespace xdiag {
 
 template <typename T> inline std::string to_string_generic(T const &x) {

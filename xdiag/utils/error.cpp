@@ -18,6 +18,7 @@
 
 #include <xdiag/armadillo.hpp>
 #include <xdiag/utils/ipow.hpp>
+#include <xdiag/config.hpp>
 
 #ifdef __APPLE__
 #ifdef __clang__

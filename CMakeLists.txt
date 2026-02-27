@@ -28,7 +28,13 @@ message(STATUS "Compiler version: " ${CMAKE_CXX_COMPILER_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include("cmake/sources.cmake")
+include("cmake/instantiations.cmake")
 
+detect_grouped_sources(
+    "${XDIAG_SOURCES}"
+    XDIAG_GROUPED_SOURCES
+    XDIAG_NORMAL_SOURCES
+  )
 
 # Set release build as default
 if(NOT CMAKE_BUILD_TYPE)

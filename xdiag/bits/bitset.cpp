@@ -426,15 +426,19 @@ uint64_t to_uint64(Bitset<chunk_t, nchunks> const &bits) {
   return result;
 }
 
+} // namespace xdiag::bits
+
+using namespace xdiag::bits;
+
 // Explicit template instantiations
 #define INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, NCHUNKS)                        \
-  template class Bitset<CHUNK_T, NCHUNKS>;                                     \
-  template std::string to_string(Bitset<CHUNK_T, NCHUNKS> const &, int64_t,    \
-                                 bool);                                        \
-  template std::ostream &operator<<(std::ostream &,                            \
-                                    Bitset<CHUNK_T, NCHUNKS> const &);         \
-  template Bitset<CHUNK_T, NCHUNKS> make_bitset(uint64_t);                     \
-  template uint64_t to_uint64(Bitset<CHUNK_T, NCHUNKS> const &);
+  template class xdiag::bits::Bitset<CHUNK_T, NCHUNKS>;                        \
+  template std::string xdiag::bits::to_string(                                 \
+      Bitset<CHUNK_T, NCHUNKS> const &, int64_t, bool);                        \
+  template std::ostream &xdiag::bits::operator<<(                              \
+      std::ostream &, Bitset<CHUNK_T, NCHUNKS> const &);                       \
+  template Bitset<CHUNK_T, NCHUNKS> xdiag::bits::make_bitset(uint64_t);        \
+  template uint64_t xdiag::bits::to_uint64(Bitset<CHUNK_T, NCHUNKS> const &);
 
 #define INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS(CHUNK_T)                     \
   INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, 0)                                    \
@@ -443,12 +447,21 @@ uint64_t to_uint64(Bitset<chunk_t, nchunks> const &bits) {
   INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, 4)                                    \
   INSTANTIATE_XDIAG_BITS_BITSET(CHUNK_T, 8)
 
+// BEGIN_INSTANTIATION_GROUP(uint8_t)
 INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS(uint8_t)
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(uint16_t)
 INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS(uint16_t)
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(uint32_t)
 INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS(uint32_t)
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(uint64_t)
 INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS(uint64_t)
+// END_INSTANTIATION_GROUP
 
 #undef INSTANTIATE_XDIAG_BITS_BITSET_FOR_NCHUNKS
 #undef INSTANTIATE_XDIAG_BITS_BITSET
-
-} // namespace xdiag::bits

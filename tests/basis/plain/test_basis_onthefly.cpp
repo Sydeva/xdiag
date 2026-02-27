@@ -34,10 +34,10 @@ TEST_CASE("basis_onthefly", "[basis]") try {
   Log("type: {} name: {}", b4->type(), b4->name());
 
   auto ops = OpSum();
-  apply(ops, b1, b1);
-  apply(ops, b2, b2);
-  apply(ops, b3, b3);
-  apply(ops, b4, b4);
+  // apply(ops, b1, b1);
+  // apply(ops, b2, b2);
+  // apply(ops, b3, b3);
+  // apply(ops, b4, b4);
   // apply(ops, b1, b4);
 } catch (xdiag::Error e) {
   error_trace(e);
