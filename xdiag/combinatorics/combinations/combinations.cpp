@@ -8,15 +8,15 @@
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/popcount.hpp>
-#include <xdiag/combinatorics/binomial.hpp>
 #include <xdiag/combinatorics/combinations/enumerate_combinations.hpp>
+#include <xdiag/math/binomial.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag::combinatorics {
 
 template <class bit_t>
 Combinations<bit_t>::Combinations(int64_t n, int64_t k) try
-    : n_(n), k_(k), size_(binomial(n, k)) {
+    : n_(n), k_(k), size_(math::binomial(n, k)) {
   if (n < 0) {
     XDIAG_THROW("Error constructing Combinations: n<0");
   }

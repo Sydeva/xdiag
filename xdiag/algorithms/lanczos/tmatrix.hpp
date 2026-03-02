@@ -4,10 +4,11 @@
 
 #pragma once
 
+#include <cstdint>
 #include <utility>
+#include <vector>
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/common.hpp>
 
 namespace xdiag {
 

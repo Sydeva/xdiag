@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include <xdiag/complex/scalar.hpp>
+#include <xdiag/math/scalar.hpp>
 #include <xdiag/operators/coeff.hpp>
 #include <xdiag/operators/monomial.hpp>
 #include <xdiag/operators/op.hpp>

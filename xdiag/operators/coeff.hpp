@@ -6,8 +6,9 @@
 
 #include <string>
 #include <variant>
-#include <xdiag/complex/complex.hpp>
-#include <xdiag/complex/scalar.hpp>
+
+#include <xdiag/math/complex.hpp>
+#include <xdiag/math/scalar.hpp>
 #include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {

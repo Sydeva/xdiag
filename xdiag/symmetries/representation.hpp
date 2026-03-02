@@ -9,7 +9,7 @@
 #include <vector>
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/complex/vector.hpp>
+#include <xdiag/math/vector.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>
 
 namespace xdiag {

@@ -6,6 +6,8 @@
 
 #include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
 #include <xdiag/armadillo.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
@@ -40,6 +42,7 @@ XDIAG_API void apply(CSRMatrix<idx_t, double> const &spmat,
                      arma::Mat<complex> &mat_out);
 
 // For internal use only (needed for some generic algorithm, no QN checking)
+// keep in header
 template <typename idx_t, typename coeff_t, typename block_t, typename vec_t>
 inline void apply(CSRMatrix<idx_t, coeff_t> const &spmat, block_t const &,
                   vec_t const &vec_in, block_t const &, vec_t &vec_out) try {

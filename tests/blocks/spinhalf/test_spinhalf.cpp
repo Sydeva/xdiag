@@ -4,6 +4,9 @@
 
 #include "../../catch.hpp"
 
+#include "testcases_spinhalf.hpp"
+
+#include <xdiag/algorithms/sparse_diag.hpp>
 #include <xdiag/blocks/spinhalf/spinhalf.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/logger.hpp>
@@ -19,6 +22,11 @@ TEST_CASE("spinhalf", "[blocks]") try {
   for (auto s : b2) {
     Log("{}", to_string(s));
   }
+
+  auto ops = testcases::HBchain(4, 1.0);
+
+  double e0 = eigval0(ops, b2);
+  Log("e0: {}", e0);
 
 } catch (xdiag::Error e) {
   error_trace(e);

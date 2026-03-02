@@ -8,6 +8,7 @@
 #include <xdiag/basis/dispatcher.hpp>
 #include <xdiag/basis/plain/apply.hpp>
 #include <xdiag/basis/plain/basis_onthefly.hpp>
+#include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
@@ -20,6 +21,7 @@ void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
            mat_t const &mat_in, std::shared_ptr<Basis> const &basis_out,
            mat_t &mat_out) try {
   using namespace combinatorics;
+  using namespace bits;
 
   Dispatcher d;
 #define ADD_DISPATCH(BASIS, FUNCTION)                                          \
@@ -31,6 +33,10 @@ void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
   ADD_DISPATCH(BasisOnTheFly<Subsets<uint64_t>>, plain::apply);
   ADD_DISPATCH(BasisOnTheFly<Combinations<uint32_t>>, plain::apply);
   ADD_DISPATCH(BasisOnTheFly<Combinations<uint64_t>>, plain::apply);
+  ADD_DISPATCH(BasisOnTheFly<Combinations<BitsetDynamic>>, plain::apply);
+  ADD_DISPATCH(BasisOnTheFly<Combinations<BitsetStatic2>>, plain::apply);
+  ADD_DISPATCH(BasisOnTheFly<Combinations<BitsetStatic4>>, plain::apply);
+  ADD_DISPATCH(BasisOnTheFly<Combinations<BitsetStatic8>>, plain::apply);
   ADD_DISPATCH(BasisOnTheFly<LinTable<uint32_t>>, plain::apply);
   ADD_DISPATCH(BasisOnTheFly<LinTable<uint64_t>>, plain::apply);
 #undef ADD_DISPATCH
@@ -39,16 +45,14 @@ void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
 }
 XDIAG_CATCH
 
-template void apply(OpSum const &, std::shared_ptr<Basis> const &,
-                    arma::vec const &, std::shared_ptr<Basis> const &,
-                    arma::vec &);
-template void apply(OpSum const &, std::shared_ptr<Basis> const &,
-                    arma::cx_vec const &, std::shared_ptr<Basis> const &,
-                    arma::cx_vec &);
-template void apply(OpSum const &, std::shared_ptr<Basis> const &,
-                    arma::mat const &, std::shared_ptr<Basis> const &,
-                    arma::mat &);
-template void apply(OpSum const &, std::shared_ptr<Basis> const &,
-                    arma::cx_mat const &, std::shared_ptr<Basis> const &,
-                    arma::cx_mat &);
+#define INSTANTIATE_XDIAG_BASIS_APPLY(MAT_TYPE)                                \
+  template void apply(OpSum const &, std::shared_ptr<Basis> const &,           \
+                      MAT_TYPE const &, std::shared_ptr<Basis> const &,        \
+                      MAT_TYPE &);
+
+INSTANTIATE_XDIAG_BASIS_APPLY(arma::vec);
+INSTANTIATE_XDIAG_BASIS_APPLY(arma::cx_vec);
+INSTANTIATE_XDIAG_BASIS_APPLY(arma::mat);
+INSTANTIATE_XDIAG_BASIS_APPLY(arma::cx_mat);
+
 } // namespace xdiag::basis

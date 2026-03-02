@@ -4,7 +4,7 @@
 
 #include "../catch.hpp"
 
-#include <xdiag/complex/vector.hpp>
+#include <xdiag/math/vector.hpp>
 #include <xdiag/utils/logger.hpp>
 
 using namespace xdiag;
@@ -68,9 +68,11 @@ TEST_CASE("test_vector", "[complex]") {
     Vector cc = vc.conj();
     REQUIRE(!cc.isreal());
     arma::cx_vec expected = arma::conj(cv);
-    REQUIRE(arma::approx_equal(cc.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(cc.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
     // free function
-    REQUIRE(arma::approx_equal(conj(vc).as<arma::cx_vec>(), expected, "absdiff", 1e-14));
+    REQUIRE(arma::approx_equal(conj(vc).as<arma::cx_vec>(), expected, "absdiff",
+                               1e-14));
   }
 
   // --- to_real ---
@@ -78,7 +80,8 @@ TEST_CASE("test_vector", "[complex]") {
     Vector vr(rv);
     REQUIRE(vr.to_real().isreal());
 
-    arma::cx_vec near_real = {complex(1.0, 1e-15), complex(2.0, 0.0), complex(3.0, -1e-15)};
+    arma::cx_vec near_real = {complex(1.0, 1e-15), complex(2.0, 0.0),
+                              complex(3.0, -1e-15)};
     Vector vnr(near_real);
     REQUIRE(vnr.to_real(1e-12).isreal());
 
@@ -91,13 +94,15 @@ TEST_CASE("test_vector", "[complex]") {
     Vector a(rv), b(rv * 2.0);
     Vector sum = a + b;
     REQUIRE(sum.isreal());
-    REQUIRE(arma::approx_equal(sum.as<arma::vec>(), rv * 3.0, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(sum.as<arma::vec>(), rv * 3.0, "absdiff", 1e-14));
 
     Vector diff = b - a;
     REQUIRE(arma::approx_equal(diff.as<arma::vec>(), rv, "absdiff", 1e-14));
 
     Vector scaled = a * Scalar(3.0);
-    REQUIRE(arma::approx_equal(scaled.as<arma::vec>(), rv * 3.0, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(scaled.as<arma::vec>(), rv * 3.0, "absdiff", 1e-14));
 
     Vector div = b / Scalar(2.0);
     REQUIRE(arma::approx_equal(div.as<arma::vec>(), rv, "absdiff", 1e-14));
@@ -112,8 +117,10 @@ TEST_CASE("test_vector", "[complex]") {
     Vector vc(cv);
     Vector sum = vr + vc;
     REQUIRE(!sum.isreal());
-    arma::cx_vec expected = arma::cx_vec(rv, arma::vec(3, arma::fill::zeros)) + cv;
-    REQUIRE(arma::approx_equal(sum.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
+    arma::cx_vec expected =
+        arma::cx_vec(rv, arma::vec(3, arma::fill::zeros)) + cv;
+    REQUIRE(
+        arma::approx_equal(sum.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
   }
 
   // --- Scalar promotion on multiply ---
@@ -122,7 +129,8 @@ TEST_CASE("test_vector", "[complex]") {
     Vector vc = vr * Scalar(complex(0.0, 1.0));
     REQUIRE(!vc.isreal());
     arma::cx_vec expected(arma::vec(3, arma::fill::zeros), rv);
-    REQUIRE(arma::approx_equal(vc.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(vc.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
   }
 
   // --- isapprox ---

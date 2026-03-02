@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "matrix.hpp"
-#include <xdiag/complex/arma_to_cx.hpp>
+#include <xdiag/math/arma_to_cx.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
-#include <xdiag/utils/overload.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
 #include <xdiag/utils/type_name.hpp>
+#include <xdiag/utils/variants.hpp>
 
 namespace xdiag {
 
@@ -35,7 +35,7 @@ XDIAG_CATCH
 
 template <> arma::cx_mat Matrix::as<arma::cx_mat>() const {
   if (const arma::mat *m = std::get_if<arma::mat>(&mat_)) {
-    return cplx::to_cx_mat(*m);
+    return math::to_cx_mat(*m);
   } else {
     return std::get<arma::cx_mat>(mat_);
   }
@@ -115,11 +115,11 @@ bool Matrix::isapprox(Matrix const &y, double rtol, double atol) const {
                           return arma::approx_equal(a, b, "both", atol, rtol);
                         },
                         [&](arma::mat const &a, arma::cx_mat const &&b) {
-                          return arma::approx_equal(cplx::to_cx_mat(a), b,
+                          return arma::approx_equal(math::to_cx_mat(a), b,
                                                     "both", atol, rtol);
                         },
                         [&](arma::cx_mat const &a, arma::mat const &&b) {
-                          return arma::approx_equal(a, cplx::to_cx_mat(b),
+                          return arma::approx_equal(a, math::to_cx_mat(b),
                                                     "both", atol, rtol);
                         },
                         [&](arma::cx_mat const &a, arma::cx_mat const &b) {
@@ -137,10 +137,10 @@ bool Matrix::operator!=(Matrix const &rhs) const { return !operator==(rhs); }
 
 Matrix &Matrix::operator+=(Matrix const &rhs) {
   std::visit(utils::overload{[&](arma::mat &a, arma::cx_mat b) {
-                               mat_ = arma::cx_mat(cplx::to_cx_mat(a) + b);
+                               mat_ = arma::cx_mat(math::to_cx_mat(a) + b);
                              },
                              [&](arma::cx_mat &a, arma::mat b) {
-                               mat_ = arma::cx_mat(a + cplx::to_cx_mat(b));
+                               mat_ = arma::cx_mat(a + math::to_cx_mat(b));
                              },
                              [](auto &&a, auto &&b) { a += b; }},
              mat_, rhs.mat_);
@@ -148,10 +148,10 @@ Matrix &Matrix::operator+=(Matrix const &rhs) {
 }
 Matrix &Matrix::operator-=(Matrix const &rhs) {
   std::visit(utils::overload{[&](arma::mat &a, arma::cx_mat b) {
-                               mat_ = arma::cx_mat(cplx::to_cx_mat(a) - b);
+                               mat_ = arma::cx_mat(math::to_cx_mat(a) - b);
                              },
                              [&](arma::cx_mat &a, arma::mat b) {
-                               mat_ = arma::cx_mat(a - cplx::to_cx_mat(b));
+                               mat_ = arma::cx_mat(a - math::to_cx_mat(b));
                              },
                              [](auto &&a, auto &&b) { a -= b; }},
              mat_, rhs.mat_);

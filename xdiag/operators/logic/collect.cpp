@@ -5,7 +5,7 @@
 #include "collect.hpp"
 
 #include <map>
-#include <xdiag/complex/scalar.hpp>
+#include <xdiag/math/scalar.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag {

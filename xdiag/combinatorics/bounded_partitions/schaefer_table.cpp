@@ -8,20 +8,18 @@
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/pack_unpack.hpp>
 #include <xdiag/combinatorics/bounded_partitions/count_bounded_partitions.hpp>
+#include <xdiag/math/ipow.hpp>
 #include <xdiag/utils/error.hpp>
-#include <xdiag/utils/ipow.hpp>
 
 namespace xdiag::combinatorics {
 
 template <typename bitarray_t>
 SchaeferTable<bitarray_t>::SchaeferTable(int64_t n, int64_t total,
                                          int64_t bound) try
-    : bounded_partitions_(n, total, bound),
-      n_fast_((n + 1) / 2),
-      n_slow_(n / 2),
-      bound_(bound),
-      fast_rank_table_(utils::ipow(bound, (n + 1) / 2), 0),
-      slow_offset_table_(utils::ipow(bound, n / 2), 0) {
+    : bounded_partitions_(n, total, bound), n_fast_((n + 1) / 2),
+      n_slow_(n / 2), bound_(bound),
+      fast_rank_table_(math::ipow(bound, (n + 1) / 2), 0),
+      slow_offset_table_(math::ipow(bound, n / 2), 0) {
 
   // ------------------------------------------------------------------
   // Build fast_rank_table_:
@@ -33,8 +31,7 @@ SchaeferTable<bitarray_t>::SchaeferTable(int64_t n, int64_t total,
   // ------------------------------------------------------------------
   for (int64_t k_fast = 0; k_fast <= n_fast_ * (bound - 1); ++k_fast) {
     int64_t local_rank = 0;
-    for (auto pattern :
-         BoundedPartitions<bitarray_t>(n_fast_, k_fast, bound)) {
+    for (auto pattern : BoundedPartitions<bitarray_t>(n_fast_, k_fast, bound)) {
       int64_t fp = bits::pack(pattern, bound, n_fast_);
       fast_rank_table_[fp] = local_rank++;
     }
@@ -50,7 +47,7 @@ SchaeferTable<bitarray_t>::SchaeferTable(int64_t n, int64_t total,
   //   k_fast = total - slow_sum, and accumulate
   //   count_BP(n_fast_, k_fast, bound) as the offset increment.
   // ------------------------------------------------------------------
-  int64_t slow_table_size = utils::ipow(bound, n_slow_);
+  int64_t slow_table_size = math::ipow(bound, n_slow_);
   int64_t offset = 0;
   for (int64_t sp = 0; sp < slow_table_size; ++sp) {
     slow_offset_table_[sp] = offset;
@@ -69,8 +66,7 @@ SchaeferTable<bitarray_t>::SchaeferTable(int64_t n, int64_t total,
 }
 XDIAG_CATCH
 
-template <typename bitarray_t>
-int64_t SchaeferTable<bitarray_t>::n() const {
+template <typename bitarray_t> int64_t SchaeferTable<bitarray_t>::n() const {
   return bounded_partitions_.n();
 }
 
@@ -84,8 +80,7 @@ int64_t SchaeferTable<bitarray_t>::bound() const {
   return bounded_partitions_.bound();
 }
 
-template <typename bitarray_t>
-int64_t SchaeferTable<bitarray_t>::size() const {
+template <typename bitarray_t> int64_t SchaeferTable<bitarray_t>::size() const {
   return bounded_partitions_.size();
 }
 
@@ -95,14 +90,12 @@ bitarray_t SchaeferTable<bitarray_t>::operator[](int64_t idx) const {
 }
 
 template <typename bitarray_t>
-BoundedPartitionsIterator<bitarray_t>
-SchaeferTable<bitarray_t>::begin() const {
+BoundedPartitionsIterator<bitarray_t> SchaeferTable<bitarray_t>::begin() const {
   return bounded_partitions_.begin();
 }
 
 template <typename bitarray_t>
-BoundedPartitionsIterator<bitarray_t>
-SchaeferTable<bitarray_t>::end() const {
+BoundedPartitionsIterator<bitarray_t> SchaeferTable<bitarray_t>::end() const {
   return bounded_partitions_.end();
 }
 
@@ -118,12 +111,13 @@ bool SchaeferTable<bitarray_t>::operator!=(
   return !operator==(rhs);
 }
 
-// ---------------------------------------------------------------------------
-// Template instantiations
-// ---------------------------------------------------------------------------
-// clang-format off
+} // namespace xdiag::combinatorics
+
+using namespace xdiag::bits;
+
 #define INSTANTIATE_ST(BIT_T, NBITS)                                           \
-  template class SchaeferTable<bits::BitArray<BIT_T, NBITS>>;
+  template class xdiag::combinatorics::SchaeferTable<                          \
+      xdiag::bits::BitArray<BIT_T, NBITS>>;
 
 #define INSTANTIATE_ST_ALL(BIT_T)                                              \
   INSTANTIATE_ST(BIT_T, 1)                                                     \
@@ -135,17 +129,19 @@ bool SchaeferTable<bitarray_t>::operator!=(
   INSTANTIATE_ST(BIT_T, 7)                                                     \
   INSTANTIATE_ST(BIT_T, 8)
 
+// BEGIN_INSTANTIATION_GROUP(native)
 INSTANTIATE_ST_ALL(uint16_t)
 INSTANTIATE_ST_ALL(uint32_t)
 INSTANTIATE_ST_ALL(uint64_t)
-INSTANTIATE_ST_ALL(bits::BitsetDynamic)
-INSTANTIATE_ST_ALL(bits::BitsetStatic1)
-INSTANTIATE_ST_ALL(bits::BitsetStatic2)
-INSTANTIATE_ST_ALL(bits::BitsetStatic4)
-INSTANTIATE_ST_ALL(bits::BitsetStatic8)
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(bitset)
+INSTANTIATE_ST_ALL(BitsetDynamic)
+INSTANTIATE_ST_ALL(BitsetStatic1)
+INSTANTIATE_ST_ALL(BitsetStatic2)
+INSTANTIATE_ST_ALL(BitsetStatic4)
+INSTANTIATE_ST_ALL(BitsetStatic8)
+// END_INSTANTIATION_GROUP
 
 #undef INSTANTIATE_ST_ALL
 #undef INSTANTIATE_ST
-// clang-format on
-
-} // namespace xdiag::combinatorics

@@ -6,6 +6,8 @@
 
 #include <xdiag/algorithms/time_evolution/evolve_lanczos.hpp>
 #include <xdiag/algorithms/time_evolution/time_evolve_expokit.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag {
 

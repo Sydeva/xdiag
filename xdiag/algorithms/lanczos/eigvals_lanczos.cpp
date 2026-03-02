@@ -10,14 +10,11 @@
 #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/lanczos/lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos_convergence.hpp>
-
-#include <xdiag/states/fill.hpp>
-#include <xdiag/states/random_state.hpp>
-
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/real.hpp>
-
+#include <xdiag/states/fill.hpp>
+#include <xdiag/states/random_state.hpp>
 #include <xdiag/utils/timing.hpp>
 
 #ifdef XDIAG_USE_MPI
@@ -39,7 +36,8 @@ eigvals_lanczos(op_t const &ops, Block const &block, int64_t neigvals,
   fill(state0, RandomState(random_seed));
   return eigvals_lanczos_inplace(ops, state0, neigvals, precision,
                                  max_iterations, deflation_tol);
-} XDIAG_CATCH
+}
+XDIAG_CATCH
 
 EigvalsLanczosResult eigvals_lanczos(OpSum const &ops, Block const &block,
                                      int64_t neigvals, double precision,
@@ -48,7 +46,8 @@ EigvalsLanczosResult eigvals_lanczos(OpSum const &ops, Block const &block,
                                      int64_t random_seed) try {
   return eigvals_lanczos<OpSum>(ops, block, neigvals, precision, max_iterations,
                                 deflation_tol, random_seed);
-} XDIAG_CATCH
+}
+XDIAG_CATCH
 
 template <typename idx_t, typename coeff_t>
 EigvalsLanczosResult
@@ -58,20 +57,8 @@ eigvals_lanczos(CSRMatrix<idx_t, coeff_t> const &ops, Block const &block,
   return eigvals_lanczos<CSRMatrix<idx_t, coeff_t>>(ops, block, neigvals,
                                                     precision, max_iterations,
                                                     deflation_tol, random_seed);
-} XDIAG_CATCH
-
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int32_t, double> const &, Block const &, int64_t,
-                double, int64_t, double, int64_t);
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int32_t, complex> const &, Block const &, int64_t,
-                double, int64_t, double, int64_t);
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int64_t, double> const &, Block const &, int64_t,
-                double, int64_t, double, int64_t);
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int64_t, complex> const &, Block const &, int64_t,
-                double, int64_t, double, int64_t);
+}
+XDIAG_CATCH
 
 ///////////////////////////////////////////////////////////////
 // Routine with given starting state which is copied
@@ -82,7 +69,8 @@ EigvalsLanczosResult eigvals_lanczos(OpSum const &ops, State psi0,
                                      double deflation_tol) try {
   return eigvals_lanczos_inplace(ops, psi0, neigvals, precision, max_iterations,
                                  deflation_tol);
-} XDIAG_CATCH
+}
+XDIAG_CATCH
 
 template <typename idx_t, typename coeff_t>
 EigvalsLanczosResult eigvals_lanczos(CSRMatrix<idx_t, coeff_t> const &ops,
@@ -91,20 +79,8 @@ EigvalsLanczosResult eigvals_lanczos(CSRMatrix<idx_t, coeff_t> const &ops,
                                      double deflation_tol) try {
   return eigvals_lanczos_inplace(ops, psi0, neigvals, precision, max_iterations,
                                  deflation_tol);
-} XDIAG_CATCH
-  
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int32_t, double> const &, State, int64_t, double,
-                int64_t, double);
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int32_t, complex> const &, State, int64_t, double,
-                int64_t, double);
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int64_t, double> const &, State, int64_t, double,
-                int64_t, double);
-template EigvalsLanczosResult
-eigvals_lanczos(CSRMatrix<int64_t, complex> const &, State, int64_t, double,
-                int64_t, double);
+}
+XDIAG_CATCH
 
 ///////////////////////////////////////////////////////////////
 // Routine with given starting state which is overwritten
@@ -183,7 +159,8 @@ eigvals_lanczos_inplace(op_t const &ops, State &psi0, int64_t neigvals,
                          deflation_tol);
   }
   return {r.alphas, r.betas, r.eigenvalues, r.niterations, r.criterion};
-} XDIAG_CATCH
+}
+XDIAG_CATCH
 
 EigvalsLanczosResult eigvals_lanczos_inplace(OpSum const &ops, State &psi0,
                                              int64_t neigvals, double precision,
@@ -191,7 +168,8 @@ EigvalsLanczosResult eigvals_lanczos_inplace(OpSum const &ops, State &psi0,
                                              double deflation_tol) try {
   return eigvals_lanczos_inplace<OpSum>(ops, psi0, neigvals, precision,
                                         max_iterations, deflation_tol);
-} XDIAG_CATCH
+}
+XDIAG_CATCH
 
 template <typename idx_t, typename coeff_t>
 EigvalsLanczosResult
@@ -200,7 +178,35 @@ eigvals_lanczos_inplace(CSRMatrix<idx_t, coeff_t> const &ops, State &psi0,
                         int64_t max_iterations, double deflation_tol) try {
   return eigvals_lanczos_inplace<CSRMatrix<idx_t, coeff_t>>(
       ops, psi0, neigvals, precision, max_iterations, deflation_tol);
-} XDIAG_CATCH
+}
+XDIAG_CATCH
+
+// Template Instantiations
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int32_t, double> const &, Block const &, int64_t,
+                double, int64_t, double, int64_t);
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int32_t, complex> const &, Block const &, int64_t,
+                double, int64_t, double, int64_t);
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int64_t, double> const &, Block const &, int64_t,
+                double, int64_t, double, int64_t);
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int64_t, complex> const &, Block const &, int64_t,
+                double, int64_t, double, int64_t);
+
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int32_t, double> const &, State, int64_t, double,
+                int64_t, double);
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int32_t, complex> const &, State, int64_t, double,
+                int64_t, double);
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int64_t, double> const &, State, int64_t, double,
+                int64_t, double);
+template EigvalsLanczosResult
+eigvals_lanczos(CSRMatrix<int64_t, complex> const &, State, int64_t, double,
+                int64_t, double);
 
 template EigvalsLanczosResult
 eigvals_lanczos_inplace(CSRMatrix<int32_t, double> const &, State &, int64_t,

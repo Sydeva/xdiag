@@ -4,6 +4,7 @@
 
 #include "arnoldi_to_disk.hpp"
 
+#include <xdiag/math/complex.hpp>
 #include <xdiag/utils/read_vectors.hpp>
 
 namespace xdiag {

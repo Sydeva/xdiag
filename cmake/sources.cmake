@@ -5,20 +5,20 @@ set(XDIAG_SOURCES
   utils/say_hello.cpp
   utils/read_vectors.cpp
   utils/split.cpp
-  utils/ipow.cpp
-  
+
+  math/ipow.cpp
+  math/binomial.cpp
+  math/scalar.cpp
+  math/vector.cpp
+  math/matrix.cpp
+  math/arma_to_cx.cpp
+
   bits/bitset.cpp
   bits/bitvector.cpp
   bits/bitarray.cpp
   bits/pack_unpack.cpp
   bits/to_string.cpp
-
-  complex/scalar.cpp
-  complex/vector.cpp
-  complex/matrix.cpp
-  complex/arma_to_cx.cpp
   
-  combinatorics/binomial.cpp
   combinatorics/combinations/enumerate_combinations.cpp
   combinatorics/combinations/combinations.cpp
   combinatorics/combinations/lin_table.cpp
@@ -35,9 +35,14 @@ set(XDIAG_SOURCES
   basis/plain/matrix.cpp
   basis/plain/apply.cpp
 
+  blocks/blocks.cpp
+  blocks/apply.cpp
   blocks/spinhalf/spinhalf.cpp
 
   states/product_state.cpp
+  states/random_state.cpp
+  states/state.cpp
+  states/apply.cpp
 
   operators/coeff.cpp
   operators/monomial.cpp
@@ -53,14 +58,30 @@ set(XDIAG_SOURCES
   operators/logic/order.cpp
   operators/logic/collect.cpp
   operators/logic/rewrite.cpp
+
+  algebra/algebra.cpp
+  algebra/apply.cpp
+  
+  algorithms/lanczos/lanczos_convergence.cpp
+  algorithms/lanczos/tmatrix.cpp
+  algorithms/lanczos/eigvals_lanczos.cpp
+  algorithms/lanczos/eigs_lanczos.cpp
+  algorithms/sparse_diag.cpp
+  algorithms/arnoldi/arnoldi_to_disk.cpp
+  algorithms/gram_schmidt/gram_schmidt.cpp
+  algorithms/gram_schmidt/orthogonalize.cpp
+
+  algorithms/norm_estimate.cpp
+  algorithms/time_evolution/time_evolve.cpp
+  algorithms/time_evolution/imaginary_time_evolve.cpp
+  algorithms/time_evolution/time_evolve_expokit.cpp
+  algorithms/time_evolution/evolve_lanczos.cpp
+  algorithms/time_evolution/expm.cpp
   
   # parallel/omp/omp_utils.cpp  
-  # algebra/algebra.cpp
-  # algebra/matrix.cpp
-  # algebra/apply.cpp
+
   # algebra/apply_dispatch.cpp
   # algebra/isapprox.cpp
-  
   # algebra/sparse/apply.cpp
   
   # algebra/sparse/coo_matrix.cpp
@@ -148,21 +169,7 @@ set(XDIAG_SOURCES
   # random/random_utils.cpp
   # random/hash.cpp
 
-  # algorithms/lanczos/lanczos_convergence.cpp
-  # algorithms/lanczos/tmatrix.cpp
-  # algorithms/lanczos/eigvals_lanczos.cpp
-  # algorithms/lanczos/eigs_lanczos.cpp
-  # algorithms/sparse_diag.cpp
-  # algorithms/arnoldi/arnoldi_to_disk.cpp
-  # algorithms/gram_schmidt/gram_schmidt.cpp
-  # algorithms/gram_schmidt/orthogonalize.cpp
 
-  # algorithms/norm_estimate.cpp
-  # algorithms/time_evolution/time_evolve.cpp
-  # algorithms/time_evolution/imaginary_time_evolve.cpp
-  # algorithms/time_evolution/time_evolve_expokit.cpp
-  # algorithms/time_evolution/evolve_lanczos.cpp
-  # algorithms/time_evolution/expm.cpp
 )
 
 set(XDIAG_DISTRIBUTED_SOURCES

@@ -6,7 +6,7 @@
 
 #include <string>
 #include <variant>
-#include <xdiag/complex/complex.hpp>
+#include <xdiag/math/complex.hpp>
 #include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
@@ -25,7 +25,8 @@ public:
   XDIAG_API Scalar() = default;
   XDIAG_API Scalar(double value);
   XDIAG_API Scalar(complex value);
-  XDIAG_API Scalar(int64_t value);  // prevents ambiguous integer literal overload
+  XDIAG_API
+  Scalar(int64_t value); // prevents ambiguous integer literal overload
   XDIAG_API Scalar(int value);
 
   XDIAG_API bool operator==(Scalar const &rhs) const;
@@ -43,15 +44,16 @@ public:
   XDIAG_API Scalar operator*(Scalar const &b) const;
   XDIAG_API Scalar operator/(Scalar const &b) const;
 
-  template <typename T> bool is() const;  // is<double>() or is<complex>()
-  template <typename T> T as() const;     // as<double>() throws if complex
+  template <typename T> bool is() const; // is<double>() or is<complex>()
+  template <typename T> T as() const;    // as<double>() throws if complex
 
   XDIAG_API bool isreal() const;
   XDIAG_API double real() const;
-  XDIAG_API double imag() const;   // 0 for real Scalars
+  XDIAG_API double imag() const; // 0 for real Scalars
   XDIAG_API double abs() const;
-  XDIAG_API Scalar conj() const;   // identity for real Scalars
-  XDIAG_API Scalar to_real(double tol = 1e-12) const; // narrows to double; throws if |imag| > tol
+  XDIAG_API Scalar conj() const; // identity for real Scalars
+  XDIAG_API Scalar to_real(
+      double tol = 1e-12) const; // narrows to double; throws if |imag| > tol
   XDIAG_API bool isapprox(Scalar const &y, double rtol, double atol) const;
 
 private:

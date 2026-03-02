@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
+#include <string>
 
 #include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/states/state.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 

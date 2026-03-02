@@ -9,7 +9,7 @@
 #include <vector>
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/complex/matrix.hpp>
+#include <xdiag/math/matrix.hpp>
 #include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {

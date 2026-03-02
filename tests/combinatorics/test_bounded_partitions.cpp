@@ -8,12 +8,12 @@
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/bounded_partitions/bounded_partitions.hpp>
-#include <xdiag/utils/ipow.hpp>
+#include <xdiag/math/ipow.hpp>
 #include <xdiag/utils/logger.hpp>
 
 using namespace xdiag::combinatorics;
 using namespace xdiag::bits;
-using namespace xdiag::utils;
+using namespace xdiag::math;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -186,11 +186,11 @@ void test_total_max() {
   }
 }
 
-
 // ---------------------------------------------------------------------------
 // Test: the sequences are growing in size
 // ---------------------------------------------------------------------------
-template <typename bitarray_t> void test_growing(int n, int total, int64_t bound) {
+template <typename bitarray_t>
+void test_growing(int n, int total, int64_t bound) {
   BoundedPartitions<bitarray_t> ms(n, total, bound);
   bitarray_t prev;
   int64_t ctr = 0;
@@ -202,7 +202,6 @@ template <typename bitarray_t> void test_growing(int n, int total, int64_t bound
     ++ctr;
   }
 }
-
 
 // ---------------------------------------------------------------------------
 // Test: operator[] and index() — random access and round-trip
@@ -321,8 +320,7 @@ TEST_CASE("BoundedPartitions", "[combinatorics/bounded_partitions]") {
     test_growing<BitArray<uint64_t, 3>>(3, 5, 5);
     test_growing<BitArray<uint32_t, 2>>(4, 4, 4);
   }
-  
-  
+
   SECTION("equality operator") { test_equality(); }
 
   SECTION("random access and index") {

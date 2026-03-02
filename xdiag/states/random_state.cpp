@@ -4,6 +4,8 @@
 
 #include "random_state.hpp"
 
+#include <xdiag/utils/to_string_generic.hpp>
+
 namespace xdiag {
 
 RandomState::RandomState(int64_t seed, bool normalized)

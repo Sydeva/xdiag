@@ -4,7 +4,7 @@
 
 #include "../catch.hpp"
 
-#include <xdiag/complex/scalar.hpp>
+#include <xdiag/math/scalar.hpp>
 #include <xdiag/utils/logger.hpp>
 
 using namespace xdiag;

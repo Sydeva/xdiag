@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
-#include <xdiag/combinatorics/binomial.hpp>
+#include <xdiag/math/binomial.hpp>
 
 namespace xdiag::combinatorics {
 
@@ -18,8 +18,8 @@ int64_t count_bounded_partitions(int64_t n, int64_t total, int64_t bound) {
     return 0;
   int64_t result = 0;
   for (int64_t k = 0; k * bound <= total; ++k) {
-    int64_t b1 = binom(n, k);
-    int64_t b2 = binom(total - k * bound + n - 1, n - 1);
+    int64_t b1 = math::binomial(n, k);
+    int64_t b2 = math::binomial(total - k * bound + n - 1, n - 1);
     if (k % 2 == 0)
       result += b1 * b2;
     else

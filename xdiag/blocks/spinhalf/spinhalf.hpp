@@ -29,6 +29,7 @@ public:
   XDIAG_API int64_t nsites() const;
   XDIAG_API int64_t dim() const;
   XDIAG_API int64_t size() const;
+  XDIAG_API bool isreal() const;
 
   XDIAG_API bool operator==(Spinhalf const &rhs) const;
   XDIAG_API bool operator!=(Spinhalf const &rhs) const;
@@ -49,6 +50,7 @@ private:
 XDIAG_API int64_t nsites(Spinhalf const &block);
 XDIAG_API int64_t dim(Spinhalf const &block);
 XDIAG_API int64_t size(Spinhalf const &block);
+XDIAG_API bool isreal(Spinhalf const &block);
 
 XDIAG_API std::ostream &operator<<(std::ostream &out, Spinhalf const &block);
 XDIAG_API std::string to_string(Spinhalf const &block);

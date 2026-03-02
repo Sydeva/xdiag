@@ -4,7 +4,7 @@
 
 #include "../catch.hpp"
 
-#include <xdiag/complex/matrix.hpp>
+#include <xdiag/math/matrix.hpp>
 #include <xdiag/utils/logger.hpp>
 
 using namespace xdiag;
@@ -61,14 +61,17 @@ TEST_CASE("test_matrix", "[complex]") {
   {
     Matrix mr(rm);
     arma::mat expected_r = arma::trans(rm);
-    REQUIRE(arma::approx_equal(mr.hc().as<arma::mat>(), expected_r, "absdiff", 1e-14));
+    REQUIRE(arma::approx_equal(mr.hc().as<arma::mat>(), expected_r, "absdiff",
+                               1e-14));
     REQUIRE(mr.hc().isreal());
 
     Matrix mc(cm);
     arma::cx_mat expected_c = arma::trans(cm);
-    REQUIRE(arma::approx_equal(mc.hc().as<arma::cx_mat>(), expected_c, "absdiff", 1e-14));
+    REQUIRE(arma::approx_equal(mc.hc().as<arma::cx_mat>(), expected_c,
+                               "absdiff", 1e-14));
     // free function
-    REQUIRE(arma::approx_equal(hc(mc).as<arma::cx_mat>(), expected_c, "absdiff", 1e-14));
+    REQUIRE(arma::approx_equal(hc(mc).as<arma::cx_mat>(), expected_c, "absdiff",
+                               1e-14));
   }
 
   // --- to_real ---
@@ -76,10 +79,12 @@ TEST_CASE("test_matrix", "[complex]") {
     Matrix mr(rm);
     REQUIRE(mr.to_real().isreal());
 
-    arma::cx_mat near_real = arma::cx_mat(rm, arma::mat(2, 2, arma::fill::zeros));
+    arma::cx_mat near_real =
+        arma::cx_mat(rm, arma::mat(2, 2, arma::fill::zeros));
     Matrix mnr(near_real);
     REQUIRE(mnr.to_real(1e-12).isreal());
-    REQUIRE(arma::approx_equal(mnr.to_real(1e-12).as<arma::mat>(), rm, "absdiff", 1e-14));
+    REQUIRE(arma::approx_equal(mnr.to_real(1e-12).as<arma::mat>(), rm,
+                               "absdiff", 1e-14));
 
     Matrix mc(cm);
     REQUIRE_THROWS(mc.to_real());
@@ -110,14 +115,17 @@ TEST_CASE("test_matrix", "[complex]") {
     Matrix a(rm), b(rm);
     Matrix prod = a * b;
     REQUIRE(prod.isreal());
-    REQUIRE(arma::approx_equal(prod.as<arma::mat>(), rm * rm, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(prod.as<arma::mat>(), rm * rm, "absdiff", 1e-14));
 
     // real * complex widens
     Matrix c(cm);
     Matrix mixed = a * c;
     REQUIRE(!mixed.isreal());
-    arma::cx_mat expected = arma::cx_mat(rm, arma::mat(2, 2, arma::fill::zeros)) * cm;
-    REQUIRE(arma::approx_equal(mixed.as<arma::cx_mat>(), expected, "absdiff", 1e-14));
+    arma::cx_mat expected =
+        arma::cx_mat(rm, arma::mat(2, 2, arma::fill::zeros)) * cm;
+    REQUIRE(arma::approx_equal(mixed.as<arma::cx_mat>(), expected, "absdiff",
+                               1e-14));
   }
 
   // --- Matrix * Vector ---
@@ -127,14 +135,17 @@ TEST_CASE("test_matrix", "[complex]") {
     Vector vr(rv);
     Vector result = mr * vr;
     REQUIRE(result.isreal());
-    REQUIRE(arma::approx_equal(result.as<arma::vec>(), rm * rv, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(result.as<arma::vec>(), rm * rv, "absdiff", 1e-14));
 
     // complex matrix * real vector widens
     Matrix mc(cm);
     Vector vc_result = mc * vr;
     REQUIRE(!vc_result.isreal());
-    arma::cx_vec expected = cm * arma::cx_vec(rv, arma::vec(2, arma::fill::zeros));
-    REQUIRE(arma::approx_equal(vc_result.as<arma::cx_vec>(), expected, "absdiff", 1e-14));
+    arma::cx_vec expected =
+        cm * arma::cx_vec(rv, arma::vec(2, arma::fill::zeros));
+    REQUIRE(arma::approx_equal(vc_result.as<arma::cx_vec>(), expected,
+                               "absdiff", 1e-14));
   }
 
   // --- Promotion on scalar multiply ---
@@ -143,7 +154,8 @@ TEST_CASE("test_matrix", "[complex]") {
     Matrix mc = mr * Scalar(complex(0.0, 1.0));
     REQUIRE(!mc.isreal());
     arma::cx_mat expected(arma::mat(2, 2, arma::fill::zeros), rm);
-    REQUIRE(arma::approx_equal(mc.as<arma::cx_mat>(), expected, "absdiff", 1e-14));
+    REQUIRE(
+        arma::approx_equal(mc.as<arma::cx_mat>(), expected, "absdiff", 1e-14));
   }
 
   // --- isapprox ---

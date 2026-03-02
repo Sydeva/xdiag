@@ -6,8 +6,9 @@
 
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
-#include <xdiag/utils/overload.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
+#include <xdiag/utils/variants.hpp>
+
 using namespace xdiag::utils;
 
 namespace xdiag {

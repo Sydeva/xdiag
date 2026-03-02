@@ -10,6 +10,7 @@
 #include <xdiag/basis/fill_functions.hpp>
 #include <xdiag/basis/plain/basis_onthefly.hpp>
 #include <xdiag/basis/plain/implementation/apply_generic.hpp>
+#include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
@@ -33,6 +34,7 @@ XDIAG_CATCH
 using namespace arma;
 using namespace xdiag::combinatorics;
 using namespace xdiag::basis;
+using namespace xdiag::bits;
 
 // Macro for declaring a single apply instantiation
 #define INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BASIS_TYPE, ENUM_TYPE, INT_TYPE,   \
@@ -70,6 +72,50 @@ INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, uint64_t,
                                     cx_vec);
 INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, uint64_t, mat);
 INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, uint64_t,
+                                    cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_dynamic)
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    cx_vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    mat);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_static_2)
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    cx_vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    mat);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+                                    cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_static_4)
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic4,
+                                    vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic4,
+                                    cx_vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic4,
+                                    mat);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic4,
+                                    cx_mat);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_static_8)
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic8,
+                                    vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic8,
+                                    cx_vec);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic8,
+                                    mat);
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic8,
                                     cx_mat);
 // END_INSTANTIATION_GROUP
 

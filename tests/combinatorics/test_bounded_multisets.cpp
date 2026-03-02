@@ -8,12 +8,12 @@
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/bounded_multisets/bounded_multisets.hpp>
-#include <xdiag/utils/ipow.hpp>
+#include <xdiag/math/ipow.hpp>
 #include <xdiag/utils/logger.hpp>
 
 using namespace xdiag::combinatorics;
 using namespace xdiag::bits;
-using namespace xdiag::utils;
+using namespace xdiag::math;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -257,7 +257,7 @@ TEST_CASE("BoundedMultisets", "[combinatorics/bounded_multisets]") {
     test_growing<BitArray<uint64_t, 3>>(3, 5);
     test_growing<BitArray<uint32_t, 2>>(4, 4);
   }
-  
+
   SECTION("equality operator") {
     test_equality<BitArray<uint64_t, 2>>();
     test_equality<BitArray<uint32_t, 2>>();

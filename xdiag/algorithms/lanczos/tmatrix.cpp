@@ -4,6 +4,7 @@
 
 #include "tmatrix.hpp"
 
+#include <cassert>
 #include <xdiag/utils/logger.hpp>
 
 namespace xdiag {

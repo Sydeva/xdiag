@@ -11,14 +11,12 @@
 #include <xdiag/algorithms/lanczos/eigvals_lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos_convergence.hpp>
-
-#include <xdiag/states/fill.hpp>
-#include <xdiag/states/random_state.hpp>
-
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/real.hpp>
-
+#include <xdiag/states/fill.hpp>
+#include <xdiag/states/random_state.hpp>
+#include <xdiag/utils/error.hpp>
 #include <xdiag/utils/timing.hpp>
 
 namespace xdiag {
@@ -156,23 +154,6 @@ EigsLanczosResult eigs_lanczos(CSRMatrix<idx_t, coeff_t> const &ops,
 }
 XDIAG_CATCH
 
-template EigsLanczosResult
-eigs_lanczos(CSRMatrix<int32_t, double> const &ops, Block const &block,
-             int64_t neigvals, double precision, int64_t max_iterations,
-             double deflation_tol, int64_t random_seed);
-template EigsLanczosResult
-eigs_lanczos(CSRMatrix<int32_t, complex> const &ops, Block const &block,
-             int64_t neigvals, double precision, int64_t max_iterations,
-             double deflation_tol, int64_t random_seed);
-template EigsLanczosResult
-eigs_lanczos(CSRMatrix<int64_t, double> const &ops, Block const &block,
-             int64_t neigvals, double precision, int64_t max_iterations,
-             double deflation_tol, int64_t random_seed);
-template EigsLanczosResult
-eigs_lanczos(CSRMatrix<int64_t, complex> const &ops, Block const &block,
-             int64_t neigvals, double precision, int64_t max_iterations,
-             double deflation_tol, int64_t random_seed);
-
 ///////////////////////////////////////////////////////////////
 // Routine with random state initialization
 EigsLanczosResult eigs_lanczos(OpSum const &ops, State const &state0,
@@ -193,6 +174,25 @@ EigsLanczosResult eigs_lanczos(CSRMatrix<idx_t, coeff_t> const &ops,
       ops, state0, neigvals, precision, max_iterations, deflation_tol);
 }
 XDIAG_CATCH
+
+// Template instantiations
+
+template EigsLanczosResult
+eigs_lanczos(CSRMatrix<int32_t, double> const &ops, Block const &block,
+             int64_t neigvals, double precision, int64_t max_iterations,
+             double deflation_tol, int64_t random_seed);
+template EigsLanczosResult
+eigs_lanczos(CSRMatrix<int32_t, complex> const &ops, Block const &block,
+             int64_t neigvals, double precision, int64_t max_iterations,
+             double deflation_tol, int64_t random_seed);
+template EigsLanczosResult
+eigs_lanczos(CSRMatrix<int64_t, double> const &ops, Block const &block,
+             int64_t neigvals, double precision, int64_t max_iterations,
+             double deflation_tol, int64_t random_seed);
+template EigsLanczosResult
+eigs_lanczos(CSRMatrix<int64_t, complex> const &ops, Block const &block,
+             int64_t neigvals, double precision, int64_t max_iterations,
+             double deflation_tol, int64_t random_seed);
 
 template EigsLanczosResult eigs_lanczos(CSRMatrix<int32_t, double> const &ops,
                                         State const &state0, int64_t neigvals,

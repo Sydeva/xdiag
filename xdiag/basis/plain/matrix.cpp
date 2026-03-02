@@ -10,7 +10,7 @@
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
-#include <xdiag/complex/complex.hpp>
+#include <xdiag/math/complex.hpp>
 
 namespace xdiag::basis::plain {
 

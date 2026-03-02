@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <string>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
@@ -17,6 +20,11 @@ namespace xdiag::basis::plain {
 template <typename coeff_t, typename basis_t, typename fill_f>
 void apply_generic(OpSum const &ops, basis_t const &basis_in,
                    basis_t const &basis_out, fill_f fill) try {
+
+#ifdef _OPENMP
+  omp_set_schedule(omp_sched_guided, 0);
+#endif
+
   for (auto const &[c, monomial] : ops) {
     assert(monomial.size() == 1);
 

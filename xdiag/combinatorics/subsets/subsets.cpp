@@ -6,13 +6,13 @@
 #include <limits>
 
 #include <xdiag/extern/fmt/format.hpp>
+#include <xdiag/math/ipow.hpp>
 #include <xdiag/utils/error.hpp>
-#include <xdiag/utils/ipow.hpp>
 
 namespace xdiag::combinatorics {
 
 template <class bit_t>
-Subsets<bit_t>::Subsets(int64_t n) try : n_(n), size_(utils::ipow(2, n)) {
+Subsets<bit_t>::Subsets(int64_t n) try : n_(n), size_(math::ipow(2, n)) {
   if (n < 0) {
     XDIAG_THROW("Error constructing Subsets: n<0");
   }

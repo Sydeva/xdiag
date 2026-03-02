@@ -4,12 +4,15 @@
 
 #pragma once
 
+#include <cstdint>
+#include <string>
+
 #include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
-#include <xdiag/algorithms/lanczos/lanczos.hpp>
-#include <xdiag/common.hpp>
+#include <xdiag/armadillo.hpp>
+#include <xdiag/math/complex.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/states/state.hpp>
-#include <xdiag/utils/timing.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 

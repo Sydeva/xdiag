@@ -6,8 +6,8 @@
 
 #include <cstdint>
 
-namespace xdiag::utils {
+namespace xdiag::math {
 
 int64_t ipow(int64_t base, int64_t exp);
 
-} // namespace xdiag::utils
+} // namespace xdiag::math

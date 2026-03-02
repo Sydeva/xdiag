@@ -6,10 +6,12 @@
 // Created by Luke Staszewski on 07.02.23.
 //
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/utils/ipow.hpp>
+#include <xdiag/math/complex.hpp>
+#include <xdiag/math/ipow.hpp>
 
 namespace xdiag {
 
@@ -34,7 +36,7 @@ arma::Mat<coeff_t> expm(arma::Mat<coeff_t> const &A, coeff_t alpha = 1.) {
   auto a_norm = arma::norm(A2, "inf");
   int ee = (int)log2abs(a_norm) + 1;
   int s = std::max(0, ee + 1);
-  double t = 1.0 / pow(2.0, s);
+  double t = 1.0 / math::ipow(2, s);
 
   A2 = t * A2;
   mat_t X = A2;
@@ -57,7 +59,7 @@ arma::Mat<coeff_t> expm(arma::Mat<coeff_t> const &A, coeff_t alpha = 1.) {
 
   // inverse of D
   E = E * D.i();
-  E = arma::powmat(E, (int)std::pow(2, s));
+  E = arma::powmat(E, (int)math::ipow(2, s));
 
   return E;
 }

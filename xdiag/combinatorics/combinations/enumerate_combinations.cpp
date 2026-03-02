@@ -8,7 +8,7 @@
 #include <xdiag/bits/bit_zero_one.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
-#include <xdiag/combinatorics/binomial.hpp>
+#include <xdiag/math/binomial.hpp>
 
 namespace xdiag::combinatorics {
 
@@ -41,8 +41,7 @@ template <typename bit_t> bit_t next_combination(bit_t v) noexcept {
 //   find the lowest set bit (low), measure the run of consecutive 1s from it
 //   (length m), then: clear [low, low+m), set bit low+m, set bits [0, m-1).
 // This avoids negation, addition, and division across nchunks words.
-template <typename bit_t>
-bit_t next_combination(bit_t v, int64_t n) noexcept {
+template <typename bit_t> bit_t next_combination(bit_t v, int64_t n) noexcept {
   if constexpr (std::is_integral_v<bit_t>) {
     (void)n;
     return next_combination(v);
@@ -76,7 +75,7 @@ template <class bit_t> int64_t rank_combination(bit_t bits, int64_t n) {
   int64_t result = 0, j = 0;
   for (int64_t b = 0; b < n; ++b) {
     if (bits::get_bit(bits, b)) {
-      result += binomial(b, j + 1);
+      result += math::binomial(b, j + 1);
       ++j;
     }
   }
@@ -98,10 +97,10 @@ bit_t nth_combination(int64_t n, int64_t k, int64_t idx) {
   int64_t remaining = idx;
   for (int64_t j = k; j >= 1; --j) {
     int64_t b = j - 1;
-    while (binomial(b + 1, j) <= remaining)
+    while (math::binomial(b + 1, j) <= remaining)
       ++b;
     bits::set_bit(result, b);
-    remaining -= binomial(b, j);
+    remaining -= math::binomial(b, j);
   }
   return result;
 }

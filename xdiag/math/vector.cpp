@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "vector.hpp"
-#include <xdiag/complex/arma_to_cx.hpp>
+
+#include <xdiag/math/arma_to_cx.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
-#include <xdiag/utils/overload.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
 #include <xdiag/utils/type_name.hpp>
+#include <xdiag/utils/variants.hpp>
 
 namespace xdiag {
 
@@ -35,7 +36,7 @@ XDIAG_CATCH
 
 template <> arma::cx_vec Vector::as<arma::cx_vec>() const {
   if (const arma::vec *m = std::get_if<arma::vec>(&vec_)) {
-    return cplx::to_cx_vec(*m);
+    return math::to_cx_vec(*m);
   } else {
     return std::get<arma::cx_vec>(vec_);
   }
@@ -93,11 +94,11 @@ bool Vector::isapprox(Vector const &y, double rtol, double atol) const {
                           return arma::approx_equal(a, b, "both", atol, rtol);
                         },
                         [&](arma::vec const &a, arma::cx_vec const &&b) {
-                          return arma::approx_equal(cplx::to_cx_vec(a), b,
+                          return arma::approx_equal(math::to_cx_vec(a), b,
                                                     "both", atol, rtol);
                         },
                         [&](arma::cx_vec const &a, arma::vec const &&b) {
-                          return arma::approx_equal(a, cplx::to_cx_vec(b),
+                          return arma::approx_equal(a, math::to_cx_vec(b),
                                                     "both", atol, rtol);
                         },
                         [&](arma::cx_vec const &a, arma::cx_vec const &b) {
@@ -115,10 +116,10 @@ bool Vector::operator!=(Vector const &rhs) const { return !operator==(rhs); }
 
 Vector &Vector::operator+=(Vector const &rhs) {
   std::visit(utils::overload{[&](arma::vec &a, arma::cx_vec b) {
-                               vec_ = arma::cx_vec(cplx::to_cx_vec(a) + b);
+                               vec_ = arma::cx_vec(math::to_cx_vec(a) + b);
                              },
                              [&](arma::cx_vec &a, arma::vec b) {
-                               vec_ = arma::cx_vec(a + cplx::to_cx_vec(b));
+                               vec_ = arma::cx_vec(a + math::to_cx_vec(b));
                              },
                              [](auto &&a, auto &&b) { a += b; }},
              vec_, rhs.vec_);
@@ -126,10 +127,10 @@ Vector &Vector::operator+=(Vector const &rhs) {
 }
 Vector &Vector::operator-=(Vector const &rhs) {
   std::visit(utils::overload{[&](arma::vec &a, arma::cx_vec b) {
-                               vec_ = arma::cx_vec(cplx::to_cx_vec(a) - b);
+                               vec_ = arma::cx_vec(math::to_cx_vec(a) - b);
                              },
                              [&](arma::cx_vec &a, arma::vec b) {
-                               vec_ = arma::cx_vec(a - cplx::to_cx_vec(b));
+                               vec_ = arma::cx_vec(a - math::to_cx_vec(b));
                              },
                              [](auto &&a, auto &&b) { a -= b; }},
              vec_, rhs.vec_);

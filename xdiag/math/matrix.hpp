@@ -8,8 +8,8 @@
 #include <variant>
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/complex/scalar.hpp>
-#include <xdiag/complex/vector.hpp>
+#include <xdiag/math/scalar.hpp>
+#include <xdiag/math/vector.hpp>
 #include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {

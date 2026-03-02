@@ -4,7 +4,7 @@
 
 #include "symmetrize.hpp"
 
-#include <xdiag/complex/scalar.hpp>
+#include <xdiag/math/scalar.hpp>
 #include <xdiag/operators/logic/permute.hpp>
 #include <xdiag/operators/logic/real.hpp>
 #include <xdiag/utils/error.hpp>

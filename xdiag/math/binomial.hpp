@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-namespace xdiag::combinatorics {
+namespace xdiag::math {
 
 int64_t binomial(int64_t n, int64_t k);
 
@@ -25,4 +25,4 @@ constexpr int64_t binom(int64_t n, int64_t k) {
   return res;
 }
 
-} // namespace xdiag::combinatorics
+} // namespace xdiag::math

@@ -6,6 +6,7 @@
 
 #include <xdiag/algorithms/lanczos/tmatrix.hpp>
 #include <xdiag/armadillo.hpp>
+#include <xdiag/math/complex.hpp>
 
 namespace xdiag::lanczos {
 

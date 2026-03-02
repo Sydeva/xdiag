@@ -5,6 +5,7 @@
 #include "imaginary_time_evolve.hpp"
 
 #include <xdiag/algorithms/time_evolution/evolve_lanczos.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag {
 

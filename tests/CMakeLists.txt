@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 set(XDIAG_TEST_SOURCES
-  complex/test_scalar.cpp
-  complex/test_vector.cpp
-  complex/test_matrix.cpp
+  math/test_binomial.cpp
+  math/test_scalar.cpp
+  math/test_vector.cpp
+  math/test_matrix.cpp
 
   bits/test_bitops.cpp
   bits/test_bitset.cpp
   bits/test_bitvector.cpp
   bits/test_bitarray.cpp
 
-  combinatorics/test_binomial.cpp
   combinatorics/test_subsets.cpp
   combinatorics/test_combinations.cpp
   combinatorics/test_lin_table.cpp
@@ -29,6 +29,7 @@ set(XDIAG_TEST_SOURCES
   operators/test_rewrite.cpp
 
   blocks/spinhalf/test_spinhalf.cpp
+  blocks/spinhalf/testcases_spinhalf.cpp
 
   # io/test_file_toml.cpp
   # io/test_file_h5.cpp

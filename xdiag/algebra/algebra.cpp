@@ -5,8 +5,11 @@
 #include "algebra.hpp"
 
 #include <xdiag/algebra/apply.hpp>
+#include <xdiag/states/apply.hpp>
+#include <xdiag/math/arma_to_cx.hpp>
 #include <xdiag/operators/logic/real.hpp>
-#include <xdiag/utils/arma_to_cx.hpp>
+#include <xdiag/operators/logic/block.hpp>
+#include <xdiag/utils/error.hpp>
 
 #ifdef XDIAG_USE_MPI
 #include <xdiag/parallel/mpi/allreduce.hpp>
@@ -164,7 +167,7 @@ arma::cx_mat matrix_dotC(State const &v, State const &w) try {
   }
 
   if (isreal(v) && isreal(w)) {
-    return utils::to_cx_mat(
+    return math::to_cx_mat(
         matrix_dot(v.block(), v.matrix(false), w.matrix(false)));
   } else if ((isreal(v)) && (!isreal(w))) {
     State v2;

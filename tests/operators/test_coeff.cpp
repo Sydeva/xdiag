@@ -4,7 +4,7 @@
 
 #include "../catch.hpp"
 
-#include <xdiag/complex/scalar.hpp>
+#include <xdiag/math/scalar.hpp>
 #include <xdiag/operators/coeff.hpp>
 #include <xdiag/utils/error.hpp>
 
@@ -56,7 +56,8 @@ TEST_CASE("Coeff", "[operators]") try {
   // --- operator== / operator!= ---
 
   REQUIRE(Coeff(1.0) == Coeff(1.0));
-  // double 1.0 and complex(1.0,0.0) are different variant alternatives inside Scalar
+  // double 1.0 and complex(1.0,0.0) are different variant alternatives inside
+  // Scalar
   REQUIRE(Coeff(1.0) != Coeff(complex(1.0, 0.0)));
   REQUIRE(Coeff("J") == Coeff("J"));
   REQUIRE(Coeff("J") != Coeff("K"));

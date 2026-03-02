@@ -4,7 +4,7 @@
 
 #include "isapprox.hpp"
 
-#include <xdiag/complex/matrix.hpp>
+#include <xdiag/math/matrix.hpp>
 #include <xdiag/operators/logic/order.hpp>
 #include <xdiag/utils/error.hpp>
 

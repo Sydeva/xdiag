@@ -8,15 +8,15 @@
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/log2.hpp>
 #include <xdiag/bits/pack_unpack.hpp>
+#include <xdiag/math/ipow.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
-#include <xdiag/utils/ipow.hpp>
 
 namespace xdiag::combinatorics {
 
 template <typename bitarray_t>
 BoundedMultisets<bitarray_t>::BoundedMultisets(int64_t n, int64_t bound) try
-    : n_(n), bound_(bound), size_(utils::ipow((int64_t)bound, n)) {
+    : n_(n), bound_(bound), size_(math::ipow((int64_t)bound, n)) {
   if (n < 0) {
     XDIAG_THROW("Error constructing BoundedMultisets: n<0");
   }

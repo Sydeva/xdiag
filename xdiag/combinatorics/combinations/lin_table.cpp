@@ -7,8 +7,8 @@
 #include <cmath>
 
 #include <xdiag/bits/popcount.hpp>
-#include <xdiag/combinatorics/binomial.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
+#include <xdiag/math/binomial.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag::combinatorics {
@@ -28,7 +28,7 @@ LinTable<bit_t>::LinTable(int64_t n, int64_t k) try
     } else {
       left_indices_[left] =
           left_indices_[left - 1] +
-          binomial(n_right_, k - bits::popcount(bit_t(left - 1)));
+          math::binomial(n_right_, k - bits::popcount(bit_t(left - 1)));
     }
   }
 

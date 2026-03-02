@@ -6,13 +6,13 @@
 
 #include <xdiag/basis/plain/basis_onthefly.hpp>
 #include <xdiag/bits/bitset.hpp>
-#include <xdiag/combinatorics/binomial.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
+#include <xdiag/math/binomial.hpp>
+#include <xdiag/math/ipow.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
-#include <xdiag/utils/ipow.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
 
 namespace xdiag {
@@ -27,7 +27,7 @@ Spinhalf::Spinhalf(int64_t nsites) try : nsites_(nsites), nup_(std::nullopt) {
     XDIAG_THROW("Invalid argument: nsites < 0");
   }
 
-  size_ = utils::ipow(2, nsites);
+  size_ = math::ipow(2, nsites);
   check_dimension_reasonable(size_);
   check_dimension_works_with_blas_int_size(size_);
 
@@ -63,7 +63,7 @@ Spinhalf::Spinhalf(int64_t nsites, int64_t nup) try
     XDIAG_THROW("Invalid argument: nup > nsites");
   }
 
-  size_ = combinatorics::binomial(nsites, nup);
+  size_ = math::binomial(nsites, nup);
   check_dimension_reasonable(size_);
   check_dimension_works_with_blas_int_size(size_);
 
@@ -109,6 +109,7 @@ XDIAG_CATCH
 
 int64_t Spinhalf::dim() const { return size_; }
 int64_t Spinhalf::size() const { return size_; }
+bool Spinhalf::isreal() const { return true; }
 
 SpinhalfIterator Spinhalf::begin() const { return {this, 0}; }
 SpinhalfIterator Spinhalf::end() const { return {this, size_}; }
@@ -129,6 +130,7 @@ std::shared_ptr<basis::Basis> const &Spinhalf::basis() const { return basis_; }
 int64_t nsites(Spinhalf const &block) { return block.nsites(); }
 int64_t dim(Spinhalf const &block) { return block.dim(); }
 int64_t size(Spinhalf const &block) { return block.size(); }
+bool isreal(Spinhalf const &block) { return block.isreal(); }
 
 std::ostream &operator<<(std::ostream &out, Spinhalf const &block) {
   out << "Spinhalf:\n";

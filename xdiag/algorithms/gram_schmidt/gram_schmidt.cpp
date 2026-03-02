@@ -5,6 +5,7 @@
 #include "gram_schmidt.hpp"
 
 #include <xdiag/algorithms/gram_schmidt/orthogonalize.hpp>
+#include <xdiag/math/complex.hpp>
 #include <xdiag/utils/logger.hpp>
 
 namespace xdiag {

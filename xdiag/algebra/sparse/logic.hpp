@@ -4,7 +4,6 @@
 
 #pragma once
 #include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
-#include <xdiag/common.hpp>
 
 namespace xdiag {
 

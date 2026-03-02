@@ -11,6 +11,7 @@
 #include <xdiag/algorithms/time_evolution/zahexpv.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
+#include <xdiag/utils/error.hpp>
 #include <xdiag/utils/timing.hpp>
 
 namespace xdiag {

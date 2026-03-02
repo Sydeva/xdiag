@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "../catch.hpp"
-#include <xdiag/combinatorics/binomial.hpp>
+#include <xdiag/math/binomial.hpp>
 
-TEST_CASE( "binomial", "[combinatorics]" ) {
+TEST_CASE("binomial", "[matg]") {
   using namespace xdiag;
-  using namespace xdiag::combinatorics;
+  using namespace xdiag::math;
 
   // Check Pascals triangle manually
   REQUIRE(binomial(1, -1) == 0);
@@ -56,8 +56,8 @@ TEST_CASE( "binomial", "[combinatorics]" ) {
   REQUIRE(binomial(6, 7) == 0);
 
   // Check whether lookups give sam as computation
-  for (int n=0; n<40; ++n)
-    for (int k=0; k<40; ++k)
+  for (int n = 0; n < 40; ++n)
+    for (int k = 0; k < 40; ++k)
       REQUIRE(binomial(n, k) == binom(n, k));
 
   // // time lookup vs computation of binomials
@@ -85,5 +85,4 @@ TEST_CASE( "binomial", "[combinatorics]" ) {
   // 	}
   // t2 = clock::now();
   // std::cout << "compute " << secs(t2-t1).count() << " " << sum << "\n";
-
 }

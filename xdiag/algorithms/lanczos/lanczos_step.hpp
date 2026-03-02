@@ -7,7 +7,7 @@
 #include <xdiag/algorithms/gram_schmidt/orthogonalize.hpp>
 #include <xdiag/algorithms/lanczos/tmatrix.hpp>
 #include <xdiag/armadillo.hpp>
-#include <xdiag/utils/xdiag_show.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag {
 

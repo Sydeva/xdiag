@@ -4,7 +4,7 @@
 
 #include "arma_to_cx.hpp"
 
-namespace xdiag::cplx {
+namespace xdiag::math {
 
 arma::cx_vec to_cx_vec(arma::vec const &A) {
   return arma::cx_vec(A, arma::vec(A.n_rows, A.n_cols, arma::fill::zeros));
@@ -18,4 +18,4 @@ arma::cx_mat to_cx_mat(arma::mat const &A) {
 
 arma::cx_mat to_cx_mat(arma::cx_mat const &A) { return A; }
 
-} // namespace xdiag::cplx
+} // namespace xdiag::math

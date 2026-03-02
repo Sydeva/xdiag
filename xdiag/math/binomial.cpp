@@ -6,7 +6,7 @@
 
 #include <array>
 
-namespace xdiag::combinatorics {
+namespace xdiag::math {
 
 // Create a table for 32 x 32 binomial coefficients
 static constexpr int64_t max_d = 5;
@@ -34,4 +34,4 @@ int64_t binomial(int64_t n, int64_t k) {
     return binomial_table[(n << max_d) | k];
 }
 
-} // namespace xdiag::combinatorics
+} // namespace xdiag::math

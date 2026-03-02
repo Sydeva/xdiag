@@ -4,10 +4,13 @@
 
 #pragma once
 
+#include <xdiag/armadillo.hpp>
 #include <xdiag/blocks/blocks.hpp>
-#include <xdiag/common.hpp>
+#include <xdiag/math/complex.hpp>
+#include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/states/state.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 

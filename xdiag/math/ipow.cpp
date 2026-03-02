@@ -1,6 +1,6 @@
 #include "ipow.hpp"
 
-namespace xdiag::utils {
+namespace xdiag::math {
 
 int64_t ipow(int64_t base, int64_t exp) {
   int64_t result = 1;
@@ -15,4 +15,4 @@ int64_t ipow(int64_t base, int64_t exp) {
   return result;
 }
 
-} // namespace xdiag::utils
+} // namespace xdiag::math

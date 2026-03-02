@@ -6,7 +6,7 @@
 
 #include <xdiag/armadillo.hpp>
 
-namespace xdiag::cplx {
+namespace xdiag::math {
 
 // Promote real armadillo vectors/matrices to complex equivalents.
 // If the argument is already complex, it is returned unchanged (identity).
@@ -15,4 +15,4 @@ arma::cx_vec to_cx_vec(arma::cx_vec const &A);
 arma::cx_mat to_cx_mat(arma::mat const &A);
 arma::cx_mat to_cx_mat(arma::cx_mat const &A);
 
-} // namespace xdiag::cplx
+} // namespace xdiag::math

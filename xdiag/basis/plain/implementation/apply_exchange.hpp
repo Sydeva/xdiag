@@ -9,7 +9,6 @@
 #include <xdiag/basis/plain/implementation/apply_offdiag.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/popcount.hpp>
-#include <xdiag/complex/complex.hpp>
 
 namespace xdiag::basis::plain {
 
