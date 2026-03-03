@@ -54,21 +54,12 @@ bool Monomial::operator!=(Monomial const &rhs) const noexcept {
   return !operator==(rhs);
 }
 bool Monomial::operator<(Monomial const &rhs) const noexcept {
-  // Shorter monomials come first; equal length: lexicographic by Op
-  if (ops_.size() != rhs.ops_.size()) {
+  // Shorter monomials come first; equal length: lexicographic by Op::operator<
+  if (ops_.size() != rhs.ops_.size())
     return ops_.size() < rhs.ops_.size();
-  }
   for (int64_t i = 0; i < (int64_t)ops_.size(); ++i) {
-    if (ops_[i] != rhs.ops_[i]) {
-      // Use Op's string type as primary key, then sites lexicographically
-      if (ops_[i].type() != rhs.ops_[i].type()) {
-        return ops_[i].type() < rhs.ops_[i].type();
-      }
-      if (ops_[i].hassites() && rhs.ops_[i].hassites()) {
-        return ops_[i].sites() < rhs.ops_[i].sites();
-      }
-      return ops_[i].hassites() < rhs.ops_[i].hassites();
-    }
+    if (ops_[i] != rhs.ops_[i])
+      return ops_[i] < rhs.ops_[i];
   }
   return false; // equal
 }
@@ -94,12 +85,11 @@ Monomial operator*(Op const &lhs, Monomial const &rhs) {
 
 std::ostream &operator<<(std::ostream &out, Monomial const &m) {
   if (m.empty()) {
-    out << "I"; // identity
+    out << "1";
   } else {
     for (int64_t i = 0; i < m.size(); ++i) {
-      if (i > 0) {
+      if (i > 0)
         out << " * ";
-      }
       out << m[i];
     }
   }

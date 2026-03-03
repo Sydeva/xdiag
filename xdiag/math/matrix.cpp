@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "matrix.hpp"
+#include <algorithm>
 #include <xdiag/math/arma_to_cx.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
@@ -134,6 +135,34 @@ bool Matrix::operator==(Matrix const &rhs) const {
   return isapprox(rhs, 1e-16, 1e-16);
 }
 bool Matrix::operator!=(Matrix const &rhs) const { return !operator==(rhs); }
+
+// Lexicographic ordering: real < complex; within same type, compare
+// element-by-element in column-major (Armadillo memory) order.
+bool Matrix::operator<(Matrix const &rhs) const {
+  // real matrices come before complex
+  if (isreal() != rhs.isreal())
+    return isreal() > rhs.isreal(); // real (true) > complex (false) → real first
+  // Compare by shape first
+  if (n_rows() != rhs.n_rows())
+    return n_rows() < rhs.n_rows();
+  if (n_cols() != rhs.n_cols())
+    return n_cols() < rhs.n_cols();
+  // Same shape: lexicographic comparison of elements (column-major memory)
+  if (isreal()) {
+    auto const &a = as<arma::mat>();
+    auto const &b = rhs.as<arma::mat>();
+    int64_t s = n_rows() * n_cols();
+    return std::lexicographical_compare(a.memptr(), a.memptr() + s,
+                                        b.memptr(), b.memptr() + s);
+  } else {
+    auto const &a = as<arma::cx_mat>();
+    auto const &b = rhs.as<arma::cx_mat>();
+    int64_t s = n_rows() * n_cols() * 2;
+    auto pa = reinterpret_cast<const double *>(a.memptr());
+    auto pb = reinterpret_cast<const double *>(b.memptr());
+    return std::lexicographical_compare(pa, pa + s, pb, pb + s);
+  }
+}
 
 Matrix &Matrix::operator+=(Matrix const &rhs) {
   std::visit(utils::overload{[&](arma::mat &a, arma::cx_mat b) {

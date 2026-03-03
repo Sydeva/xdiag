@@ -51,6 +51,7 @@ public:
 
   XDIAG_API bool operator==(const Op &rhs) const;
   XDIAG_API bool operator!=(const Op &rhs) const;
+  XDIAG_API bool operator<(const Op &rhs) const noexcept;
 
 private:
   std::string type_;

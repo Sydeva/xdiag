@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <xdiag/math/complex.hpp>
+
 #ifdef _OPENMP
 #include <xdiag/parallel/omp/omp_utils.hpp>
 #include <xdiag/random/hash_functions.hpp>

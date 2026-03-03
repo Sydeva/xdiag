@@ -6,14 +6,11 @@
 
 #include <variant>
 
-#include <xdiag/blocks/electron.hpp>
-#include <xdiag/blocks/spinhalf.hpp>
-#include <xdiag/blocks/tj.hpp>
-
-#include <xdiag/algebra/algebra.hpp>
 #include <xdiag/random/hash.hpp>
 #include <xdiag/random/hash_functions.hpp>
 #include <xdiag/random/random_utils.hpp>
+#include <xdiag/states/norm.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag {
 
@@ -74,80 +71,80 @@ void fill(State &state, RandomState const &rstate, int64_t col) try {
 }
 XDIAG_CATCH
 
-template <class block_t, typename coeff_t>
-void fill(block_t const &block, arma::Col<coeff_t> &vec,
-          ProductState const &p) try {
-  int64_t idx = block.index(p);
-  if (isdistributed(block)) {
-    vec.zeros();
+// template <class block_t, typename coeff_t>
+// void fill(block_t const &block, arma::Col<coeff_t> &vec,
+//           ProductState const &p) try {
+//   int64_t idx = block.index(p);
+//   if (isdistributed(block)) {
+//     vec.zeros();
 
-#ifdef XDIAG_USE_MPI
-    // all processes except one should hold invalid index
-    int64_t max_idx;
-    MPI_Allreduce(&idx, &max_idx, 1, MPI_LONG_LONG_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
-    if (max_idx == invalid_index) {
-      XDIAG_THROW("Index of product state cannot be determined");
-    } else if (idx != invalid_index) {
-      vec(idx) = 1.0;
-    }
-#endif
-  } else {
-    if (idx == invalid_index) {
-      XDIAG_THROW("Index of product state cannot be determined");
-    }
-    vec.zeros();
-    vec(idx) = 1.0;
-  }
-}
-XDIAG_CATCH
+// #ifdef XDIAG_USE_MPI
+//     // all processes except one should hold invalid index
+//     int64_t max_idx;
+//     MPI_Allreduce(&idx, &max_idx, 1, MPI_LONG_LONG_INT, MPI_MAX,
+//                   MPI_COMM_WORLD);
+//     if (max_idx == invalid_index) {
+//       XDIAG_THROW("Index of product state cannot be determined");
+//     } else if (idx != invalid_index) {
+//       vec(idx) = 1.0;
+//     }
+// #endif
+//   } else {
+//     if (idx == invalid_index) {
+//       XDIAG_THROW("Index of product state cannot be determined");
+//     }
+//     vec.zeros();
+//     vec(idx) = 1.0;
+//   }
+// }
+// XDIAG_CATCH
 
-void fill(State &state, ProductState const &pstate, int64_t col) try {
-  if (state.nsites() != pstate.size()) {
-    XDIAG_THROW("State and ProductState do not have the same number of sites");
-  } else if (col >= state.ncols()) {
-    XDIAG_THROW("Column index larger than number of columns in State");
-  }
-  auto const &block = state.block();
-  if (state.isreal()) {
-    arma::vec v = state.vector(col, false);
-    std::visit([&](auto &&block) { fill(block, v, pstate); }, block);
-  } else {
-    arma::cx_vec v = state.vectorC(col, false);
-    std::visit([&](auto &&block) { fill(block, v, pstate); }, block);
-  }
-}
-XDIAG_CATCH
+// void fill(State &state, ProductState const &pstate, int64_t col) try {
+//   if (state.nsites() != pstate.size()) {
+//     XDIAG_THROW("State and ProductState do not have the same number of sites");
+//   } else if (col >= state.ncols()) {
+//     XDIAG_THROW("Column index larger than number of columns in State");
+//   }
+//   auto const &block = state.block();
+//   if (state.isreal()) {
+//     arma::vec v = state.vector(col, false);
+//     std::visit([&](auto &&block) { fill(block, v, pstate); }, block);
+//   } else {
+//     arma::cx_vec v = state.vectorC(col, false);
+//     std::visit([&](auto &&block) { fill(block, v, pstate); }, block);
+//   }
+// }
+// XDIAG_CATCH
 
-void fill(State &state, GPWF const &gpwf, int64_t col) try {
-  if (state.nsites() != gpwf.nsites()) {
-    XDIAG_THROW("State and GPWF do not have the same number of sites");
-  }
-  auto const &block = state.block();
+// void fill(State &state, GPWF const &gpwf, int64_t col) try {
+//   if (state.nsites() != gpwf.nsites()) {
+//     XDIAG_THROW("State and GPWF do not have the same number of sites");
+//   }
+//   auto const &block = state.block();
 
-#ifdef XDIAG_USE_MPI
-  if (!std::holds_alternative<Spinhalf>(block) &&
-      !std::holds_alternative<SpinhalfDistributed>(block)) {
-    XDIAG_THROW("GPWF is currently only defined for \"Spinhalf\" and "
-                "\"SpinhalfDistributed\" type blocks");
-  }
-#else
-  if (!std::holds_alternative<Spinhalf>(block)) {
-    XDIAG_THROW("GPWF is currently only defined for \"Spinhalf\" type blocks");
-  }
-#endif
+// #ifdef XDIAG_USE_MPI
+//   if (!std::holds_alternative<Spinhalf>(block) &&
+//       !std::holds_alternative<SpinhalfDistributed>(block)) {
+//     XDIAG_THROW("GPWF is currently only defined for \"Spinhalf\" and "
+//                 "\"SpinhalfDistributed\" type blocks");
+//   }
+// #else
+//   if (!std::holds_alternative<Spinhalf>(block)) {
+//     XDIAG_THROW("GPWF is currently only defined for \"Spinhalf\" type blocks");
+//   }
+// #endif
 
-  if (gpwf.isreal()) {
-    std::function<double(ProductState const &)> f =
-        [&](ProductState const &pstate) { return gpwf.coefficient(pstate); };
-    fill(state, f, col);
-  } else {
-    std::function<complex(ProductState const &)> f =
-        [&](ProductState const &pstate) { return gpwf.coefficientC(pstate); };
-    state.make_complex();
-    fill(state, f, col);
-  }
-}
-XDIAG_CATCH
+//   if (gpwf.isreal()) {
+//     std::function<double(ProductState const &)> f =
+//         [&](ProductState const &pstate) { return gpwf.coefficient(pstate); };
+//     fill(state, f, col);
+//   } else {
+//     std::function<complex(ProductState const &)> f =
+//         [&](ProductState const &pstate) { return gpwf.coefficientC(pstate); };
+//     state.make_complex();
+//     fill(state, f, col);
+//   }
+// }
+// XDIAG_CATCH
 
 } // namespace xdiag

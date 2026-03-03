@@ -5,6 +5,7 @@
 #ifdef _OPENMP
 
 #include "omp_utils.hpp"
+#include <xdiag/math/binomial.hpp>
 
 namespace xdiag::omp {
 
@@ -38,8 +39,9 @@ std::pair<int64_t, int64_t> get_omp_subsets_start_end(int64_t n) {
   return get_omp_start_end(size);
 }
 
-std::pair<int64_t, int64_t> get_omp_combinations_start_end(int64_t n, int64_t k) {
-  int64_t size = combinatorics::binomial(n, k);
+std::pair<int64_t, int64_t> get_omp_combinations_start_end(int64_t n,
+                                                           int64_t k) {
+  int64_t size = math::binomial(n, k);
   return get_omp_start_end(size);
 }
 

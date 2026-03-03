@@ -76,13 +76,13 @@ INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, uint64_t,
 // END_INSTANTIATION_GROUP
 
 // BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_dynamic)
-INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetDynamic,
                                     vec);
-INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetDynamic,
                                     cx_vec);
-INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetDynamic,
                                     mat);
-INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetStatic2,
+INSTANITATE_XDIAG_BASIS_PLAIN_APPLY(BasisOnTheFly, Combinations, BitsetDynamic,
                                     cx_mat);
 // END_INSTANTIATION_GROUP
 

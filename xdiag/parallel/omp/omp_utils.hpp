@@ -10,9 +10,8 @@
 
 #include <omp.h>
 
-#include <xdiag/combinatorics/binomial.hpp>
-#include <xdiag/common.hpp>
 #include <xdiag/extern/gsl/span>
+#include <xdiag/math/binomial.hpp>
 
 namespace xdiag::omp {
 int64_t get_omp_start(int64_t size);
@@ -72,7 +71,7 @@ combine_vectors_copy(std::vector<std::vector<T>> const &vec_of_vec) {
 #endif // _OPENMP
 
 namespace xdiag::omp {
-  
+
 // The structs and definitions below are used to extract the
 // number of parameters of a lambda function
 // This is a bit black magic, but described here:

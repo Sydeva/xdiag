@@ -31,6 +31,7 @@ public:
 
   XDIAG_API bool operator==(Matrix const &rhs) const;
   XDIAG_API bool operator!=(Matrix const &rhs) const;
+  XDIAG_API bool operator<(Matrix const &rhs) const;
 
   // Linear combination (scalar multiply/add). Mixed real/complex widens to
   // complex.

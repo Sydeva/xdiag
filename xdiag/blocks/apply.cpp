@@ -4,11 +4,12 @@
 
 #include "apply.hpp"
 
-#include <xdiag/algebra/apply.hpp>
 #include <xdiag/armadillo.hpp>
+#include <xdiag/blocks/apply_block.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/utils/error.hpp>
+#include <xdiag/utils/logger.hpp>
 #include <xdiag/utils/variants.hpp>
 
 namespace xdiag {
@@ -18,8 +19,8 @@ void apply(op_t const &ops, Block const &block_in, mat_t const &vec_in,
            Block const &block_out, mat_t &vec_out) try {
   utils::visit_same_type(
       block_in, block_out,
-      [](auto const &, auto const &) {
-        apply(ops.b1, block_in, vec_in, block_out, vec_out);
+      [&](auto const &bin, auto const &bout) {
+        apply_block(ops, bin, vec_in, bout, vec_out);
       },
       "Type mismatch of Block types");
 }

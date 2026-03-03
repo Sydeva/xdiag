@@ -33,7 +33,7 @@ TEST_CASE("basis_onthefly", "[basis]") try {
   Log("type: {} name: {}", b3->type(), b3->name());
   Log("type: {} name: {}", b4->type(), b4->name());
 
-  auto ops = OpSum();
+  // auto ops = OpSum();
   // apply(ops, b1, b1);
   // apply(ops, b2, b2);
   // apply(ops, b3, b3);

@@ -12,7 +12,9 @@ set(XDIAG_SOURCES
   math/vector.cpp
   math/matrix.cpp
   math/arma_to_cx.cpp
-
+  math/dot.cpp
+  math/norm.cpp
+  
   bits/bitset.cpp
   bits/bitvector.cpp
   bits/bitarray.cpp
@@ -36,13 +38,21 @@ set(XDIAG_SOURCES
   basis/plain/apply.cpp
 
   blocks/blocks.cpp
+  blocks/apply_block.cpp
   blocks/apply.cpp
   blocks/spinhalf/spinhalf.cpp
+  blocks/spinhalf/valid.cpp
 
   states/product_state.cpp
   states/random_state.cpp
   states/state.cpp
   states/apply.cpp
+  states/dot.cpp
+  states/norm.cpp
+  states/fill.cpp
+
+  random/random_utils.cpp
+  random/hash.cpp
 
   operators/coeff.cpp
   operators/monomial.cpp
@@ -51,17 +61,20 @@ set(XDIAG_SOURCES
   operators/logic/valid.cpp
   operators/logic/types.cpp
   operators/logic/symmetrize.cpp
-  operators/logic/real.cpp
+  operators/logic/isreal.cpp
   operators/logic/hc.cpp
   operators/logic/isapprox.cpp
   operators/logic/permute.cpp
-  operators/logic/order.cpp
   operators/logic/collect.cpp
   operators/logic/rewrite.cpp
-
-  algebra/algebra.cpp
-  algebra/apply.cpp
-  
+  operators/logic/combine_matrix_ops.cpp
+  operators/logic/permute_matrix_op.cpp
+  operators/logic/algebra.cpp
+  operators/logic/normal_order.cpp
+  operators/qns/nup_ndn.cpp
+  operators/qns/block.cpp
+  operators/qns/blocks_match.cpp
+ 
   algorithms/lanczos/lanczos_convergence.cpp
   algorithms/lanczos/tmatrix.cpp
   algorithms/lanczos/eigvals_lanczos.cpp
@@ -78,7 +91,7 @@ set(XDIAG_SOURCES
   algorithms/time_evolution/evolve_lanczos.cpp
   algorithms/time_evolution/expm.cpp
   
-  # parallel/omp/omp_utils.cpp  
+  parallel/omp/omp_utils.cpp  
 
   # algebra/apply_dispatch.cpp
   # algebra/isapprox.cpp

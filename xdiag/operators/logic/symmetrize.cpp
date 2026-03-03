@@ -6,7 +6,7 @@
 
 #include <xdiag/math/scalar.hpp>
 #include <xdiag/operators/logic/permute.hpp>
-#include <xdiag/operators/logic/real.hpp>
+#include <xdiag/operators/logic/isreal.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag {

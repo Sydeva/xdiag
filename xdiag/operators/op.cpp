@@ -4,10 +4,16 @@
 
 #include "op.hpp"
 
+#include <string>
+
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
 #include <xdiag/utils/xdiag_offset.hpp>
+
+#ifndef XDIAG_DISABLE_COLOR
+#include <xdiag/extern/fmt/color.hpp>
+#endif
 
 namespace xdiag {
 
@@ -79,16 +85,57 @@ bool Op::operator==(Op const &rhs) const {
 }
 bool Op::operator!=(Op const &rhs) const { return !operator==(rhs); }
 
-std::ostream &operator<<(std::ostream &out, Op const &op) {
-  out << op.type();
-  if (op.hassites()) {
-    out << " ";
-    for (int64_t site : op.sites()) {
-      out << site + XDIAG_OFFSET << " ";
-    }
+bool Op::operator<(Op const &rhs) const noexcept {
+  // 1. No-site ops come before ops with sites
+  if (hassites() != rhs.hassites())
+    return !hassites();
+  // 2. Both have sites: fewer sites first, then lexicographic site values
+  if (hassites()) {
+    if (sites_->size() != rhs.sites_->size())
+      return sites_->size() < rhs.sites_->size();
+    if (*sites_ != *rhs.sites_)
+      return *sites_ < *rhs.sites_;
   }
-  if (op.hasmatrix()) {
-    out << "\n" << op.matrix();
+  // 3. Same site(s): compare by type string
+  if (type_ != rhs.type_)
+    return type_ < rhs.type_;
+  // 4. Same type and sites: no-matrix before has-matrix, then by matrix value
+  if (hasmatrix() != rhs.hasmatrix())
+    return hasmatrix() < rhs.hasmatrix();
+  if (hasmatrix())
+    return matrix() < rhs.matrix();
+  return false;
+}
+
+// Styled helpers — no-ops when XDIAG_DISABLE_COLOR is defined
+static std::string styled_type(std::string const &s) {
+#ifndef XDIAG_DISABLE_COLOR
+  return fmt::format(fmt::emphasis::bold | fg(fmt::rgb(0xE06C75)), "{}", s);
+#else
+  return s;
+#endif
+}
+
+static std::string styled_sites(std::string const &s) {
+#ifndef XDIAG_DISABLE_COLOR
+  return fmt::format(fg(fmt::rgb(0x61AFEF)), "{}", s);
+#else
+  return s;
+#endif
+}
+
+std::ostream &operator<<(std::ostream &out, Op const &op) {
+  out << styled_type(op.type());
+  if (op.hassites()) {
+    auto const &sites = op.sites();
+    std::string s = "{";
+    for (size_t i = 0; i < sites.size(); ++i) {
+      if (i > 0)
+        s += ",";
+      s += std::to_string(sites[i] + XDIAG_OFFSET);
+    }
+    s += "}";
+    out << styled_sites(s);
   }
   return out;
 }

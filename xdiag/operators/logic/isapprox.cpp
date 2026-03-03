@@ -4,82 +4,61 @@
 
 #include "isapprox.hpp"
 
+#include <map>
+#include <set>
+
 #include <xdiag/math/matrix.hpp>
-#include <xdiag/operators/logic/order.hpp>
+#include <xdiag/math/scalar.hpp>
+#include <xdiag/operators/monomial.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag {
 
-bool isapprox(Op const &op1, Op const &op2, double rtol, double atol) try {
-  auto [a1, o1] = order(op1);
-  auto [a2, o2] = order(op2);
-
-  if (o1.type() == o2.type()) {
-    if (o1.hassites() && o2.hassites()) {
-      auto s1 = o1.sites();
-      auto s2 = o2.sites();
-      if (s1 == s2) {
-        if (o1.hasmatrix() && o2.hasmatrix()) {
-          return isapprox(o1.matrix() * a1, o2.matrix() * a2, rtol, atol);
-        } else if (!o1.hasmatrix() && !o2.hasmatrix()) {
-          return isapprox(a1, a2, rtol, atol);
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } else if (!o1.hassites() && !o2.hassites()) {
-      return isapprox(a1, a2, rtol, atol);
-    } else {
-      return false;
-    }
-  } else {
+bool isapprox(Op const &op1, Op const &op2, double rtol, double atol) {
+  if (op1.type() != op2.type())
     return false;
-  }
+  if (op1.hassites() != op2.hassites())
+    return false;
+  if (op1.hassites() && op1.sites() != op2.sites())
+    return false;
+  if (op1.hasmatrix() != op2.hasmatrix())
+    return false;
+  if (op1.hasmatrix())
+    return xdiag::isapprox(op1.matrix(), op2.matrix(), rtol, atol);
+  return true;
 }
-XDIAG_CATCH
+
+// Build a map {Monomial -> Scalar} summing coefficients for equal monomials,
+// using ops.plain() to resolve named parameters.
+static std::map<Monomial, Scalar> to_map(OpSum const &ops) {
+  std::map<Monomial, Scalar> m;
+  for (auto const &[c, mono] : ops.plain()) {
+    auto it = m.find(mono);
+    if (it == m.end())
+      m[mono] = c.scalar();
+    else
+      it->second += c.scalar();
+  }
+  return m;
+}
 
 bool isapprox(OpSum const &ops1, OpSum const &ops2, double rtol,
               double atol) try {
-  auto t1z = order(ops1).terms();
-  auto t2z = order(ops2).terms();
+  auto map1 = to_map(ops1);
+  auto map2 = to_map(ops2);
 
-  // Remove zero entries
-  OpSum t1o;
-  for (auto const &[coeff, mono] : t1z) {
-    if (!isapprox(coeff.scalar(), Scalar(0.), rtol, atol)) {
-      t1o += coeff * mono;
-    }
-  }
-  OpSum t2o;
-  for (auto const &[coeff, mono] : t2z) {
-    if (!isapprox(coeff.scalar(), Scalar(0.), rtol, atol)) {
-      t2o += coeff * mono;
-    }
-  }
-  auto const &t1 = t1o.terms();
-  auto const &t2 = t2o.terms();
+  // Collect all monomials
+  std::set<Monomial> all;
+  for (auto const &[m, c] : map1)
+    all.insert(m);
+  for (auto const &[m, c] : map2)
+    all.insert(m);
 
-  if (t1.size() != t2.size()) {
-    return false;
-  }
-  for (int64_t i = 0; i < (int64_t)t1.size(); ++i) {
-    Scalar a1 = t1[i].coeff.scalar();
-    Scalar a2 = t2[i].coeff.scalar();
-    // For length-1 monomials compare the Op; for general monomials compare Op
-    // by Op
-    if (t1[i].monomial.size() != t2[i].monomial.size()) {
+  for (auto const &m : all) {
+    Scalar c1 = map1.count(m) ? map1.at(m) : Scalar(0.0);
+    Scalar c2 = map2.count(m) ? map2.at(m) : Scalar(0.0);
+    if (!xdiag::isapprox(c1, c2, rtol, atol))
       return false;
-    }
-    if (!isapprox(a1, a2, rtol, atol)) {
-      return false;
-    }
-    for (int64_t j = 0; j < t1[i].monomial.size(); ++j) {
-      if (!isapprox(t1[i].monomial[j], t2[i].monomial[j], rtol, atol)) {
-        return false;
-      }
-    }
   }
   return true;
 }
@@ -87,44 +66,38 @@ XDIAG_CATCH
 
 std::optional<Scalar> isapprox_multiple(OpSum const &ops1, OpSum const &ops2,
                                         double rtol, double atol) try {
-  auto const &t1 = order(ops1).terms();
-  auto const &t2 = order(ops2).terms();
+  auto map1 = to_map(ops1);
+  auto map2 = to_map(ops2);
 
-  if ((t1.size() != t2.size()) || (t1.size() == 0)) {
-    return std::nullopt;
-  }
+  std::set<Monomial> all;
+  for (auto const &[m, c] : map1)
+    all.insert(m);
+  for (auto const &[m, c] : map2)
+    all.insert(m);
 
-  // Determine first non-zero coefficient of ops1 and ratio of the terms
-  Scalar ratio = 0.;
-  int64_t idx0 = 0;
-  for (; idx0 < (int64_t)t1.size(); ++idx0) {
-    Scalar a01 = t1[idx0].coeff.scalar();
-    if (abs(a01) > 1e-12) {
-      Scalar a02 = t2[idx0].coeff.scalar();
-      ratio = a02 / a01;
-      break;
-    }
-  }
-  if (idx0 == (int64_t)t1.size()) {
-    XDIAG_THROW("All coefficients in first operator are zero.");
-  }
+  // Find lambda such that ops1 = lambda * ops2
+  std::optional<Scalar> lambda;
+  for (auto const &m : all) {
+    Scalar c1 = map1.count(m) ? map1.at(m) : Scalar(0.0);
+    Scalar c2 = map2.count(m) ? map2.at(m) : Scalar(0.0);
 
-  for (int64_t i = 0; i < (int64_t)t1.size(); ++i) {
-    Scalar a1 = t1[i].coeff.scalar();
-    Scalar a2 = t2[i].coeff.scalar();
-    if (!isapprox(a1 * ratio, a2, rtol, atol)) {
+    bool z1 = xdiag::isapprox(c1, Scalar(0.0), rtol, atol);
+    bool z2 = xdiag::isapprox(c2, Scalar(0.0), rtol, atol);
+
+    if (z1 && z2)
+      continue;
+    if (z1 != z2)
       return std::nullopt;
-    }
-    if (t1[i].monomial.size() != t2[i].monomial.size()) {
-      return std::nullopt;
-    }
-    for (int64_t j = 0; j < t1[i].monomial.size(); ++j) {
-      if (!isapprox(t1[i].monomial[j], t2[i].monomial[j], rtol, atol)) {
+
+    Scalar ratio = c1 / c2;
+    if (!lambda) {
+      lambda = ratio;
+    } else {
+      if (!xdiag::isapprox(*lambda, ratio, rtol, atol))
         return std::nullopt;
-      }
     }
   }
-  return ratio;
+  return lambda;
 }
 XDIAG_CATCH
 

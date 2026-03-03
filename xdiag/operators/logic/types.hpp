@@ -2,66 +2,68 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma once
+
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <string>
-#include <vector>
 
 namespace xdiag {
 
 constexpr int64_t undefined = std::numeric_limits<int64_t>::min();
 
-inline const std::vector<std::string> known_types = {
-    "Id",     "SdotS",           "Exchange", "SzSz",       "Sz",     "S+",
-    "S-",     "ScalarChirality", "Hop",      "Hopup",      "Hopdn",  "Cdagup",
-    "Cup",    "Cdagdn",          "Cdn",      "HubbardU",   "Ntot",   "Nup",
-    "Ndn",    "Nupdn",           "NtotNtot", "NupdnNupdn", "tJSzSz", "tJSdotS",
-    "Matrix", "NupNdn",          "NupNup",   "NdnNdn",     "NdnNup"};
+// Per-type static properties
+struct OpTypeInfo {
+  int64_t     nsites;            // required site count; undefined = no constraint
+  bool        site_required;     // must have a site list
+  bool        allow_overlapping; // repeated sites are allowed
+  bool        matrix_required;   // must carry an arma matrix
+  bool        is_real;           // matrix is always real
+  std::string hc_partner;        // same name = self-adjoint; different name = partner
+                                 // for "Matrix": also conjugate-transposes the matrix
+};
 
-inline const std::vector<std::string> real_types = {
-    "Id",     "SdotS",    "Exchange",   "SzSz",   "Sz",      "S+",
-    "S-",     "Hop",      "Hopup",      "Hopdn",  "Cdagup",  "Cup",
-    "Cdagdn", "Cdn",      "HubbardU",   "Ntot",   "Nup",     "Ndn",
-    "Nupdn",  "NtotNtot", "NupdnNupdn", "tJSzSz", "tJSdotS", "NupNdn",
-    "NupNup", "NdnNdn",   "NdnNup"};
-inline const std::vector<std::string> cplx_types = {"ScalarChirality"};
+// clang-format off
+inline const std::map<std::string, OpTypeInfo> op_registry = {
+//  type             nsites      site_req  overlap  mat_req  is_real  hc_partner
+  {"Id",            {undefined,  false,    false,   false,   true,    "Id"           }},
+  {"SdotS",         {2,          true,     false,   false,   true,    "SdotS"        }},
+  {"Exchange",      {2,          true,     false,   false,   true,    "Exchange"     }},
+  {"SzSz",          {2,          true,     false,   false,   true,    "SzSz"         }},
+  {"Sz",            {1,          true,     false,   false,   true,    "Sz"           }},
+  {"S+",            {1,          true,     false,   false,   true,    "S-"           }},
+  {"S-",            {1,          true,     false,   false,   true,    "S+"           }},
+  {"ScalarChirality",{3,         true,     false,   false,   false,   "ScalarChirality"}},
+  {"Hop",           {2,          true,     false,   false,   true,    "Hop"          }},
+  {"Hopup",         {2,          true,     false,   false,   true,    "Hopup"        }},
+  {"Hopdn",         {2,          true,     false,   false,   true,    "Hopdn"        }},
+  {"Cdagup",        {1,          true,     false,   false,   true,    "Cup"          }},
+  {"Cup",           {1,          true,     false,   false,   true,    "Cdagup"       }},
+  {"Cdagdn",        {1,          true,     false,   false,   true,    "Cdn"          }},
+  {"Cdn",           {1,          true,     false,   false,   true,    "Cdagdn"       }},
+  {"HubbardU",      {undefined,  false,    false,   false,   true,    "HubbardU"     }},
+  {"Ntot",          {1,          true,     false,   false,   true,    "Ntot"         }},
+  {"Nup",           {1,          true,     false,   false,   true,    "Nup"          }},
+  {"Ndn",           {1,          true,     false,   false,   true,    "Ndn"          }},
+  {"Nupdn",         {1,          true,     false,   false,   true,    "Nupdn"        }},
+  {"NtotNtot",      {2,          true,     false,   false,   true,    "NtotNtot"     }},
+  {"NupdnNupdn",    {2,          true,     false,   false,   true,    "NupdnNupdn"   }},
+  {"tJSzSz",        {2,          true,     false,   false,   true,    "tJSzSz"       }},
+  {"tJSdotS",       {2,          true,     false,   false,   true,    "tJSdotS"      }},
+  {"Matrix",        {undefined,  true,     true,    true,    false,   "Matrix"       }},
+  {"NupNdn",        {2,          true,     false,   false,   true,    "NupNdn"       }},
+  {"NupNup",        {2,          true,     false,   false,   true,    "NupNup"       }},
+  {"NdnNdn",        {2,          true,     false,   false,   true,    "NdnNdn"       }},
+  {"NdnNup",        {2,          true,     false,   false,   true,    "NdnNup"       }},
+};
+// clang-format on
 
-inline const std::map<std::string, int64_t> _nsites_of_type = {
-    {"Id", undefined},
-    {"SdotS", 2},
-    {"Exchange", 2},
-    {"SzSz", 2},
-    {"Sz", 1},
-    {"S+", 1},
-    {"S-", 1},
-    {"ScalarChirality", 3},
-    {"Hop", 2},
-    {"Hopup", 2},
-    {"Hopdn", 2},
-    {"Cdagup", 1},
-    {"Cup", 1},
-    {"Cdagdn", 1},
-    {"Cdn", 1},
-    {"HubbardU", undefined},
-    {"Ntot", 1},
-    {"Nup", 1},
-    {"Ndn", 1},
-    {"Nupdn", 1},
-    {"NtotNtot", 2},
-    {"NupdnNupdn", 2},
-    {"tJSzSz", 2},
-    {"tJSdotS", 2},
-    {"Matrix", undefined},
-    {"NupNdn", 2},
-    {"NupNup", 2},
-    {"NdnNdn", 2},
-    {"NdnNup", 2}};
-
-bool is_known_type(std::string type);
-bool is_real_type(std::string type);
-bool is_cplx_type(std::string type);
-int64_t nsites_of_type(std::string type);
-
+// Query functions
+bool is_known_type(std::string const &type);
+bool is_real_type(std::string const &type);
+int64_t nsites_of_type(std::string const &type);
+OpTypeInfo const &info_of_type(std::string const &type);
 std::string known_types_string();
 
 } // namespace xdiag

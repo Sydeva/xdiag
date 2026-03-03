@@ -6,11 +6,12 @@
 
 #include <memory>
 #include <xdiag/basis/basis.hpp>
+#include <xdiag/operators/opsum.hpp>
 
 namespace xdiag::basis {
 
-template <typename op_t, typename mat_t>
-void apply(op_t const &ops, std::shared_ptr<Basis> const &basis_in,
+template <typename mat_t>
+void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
            mat_t const &mat_in, std::shared_ptr<Basis> const &basis_out,
            mat_t &mat_out);
 

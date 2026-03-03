@@ -4,16 +4,17 @@
 
 #include "evolve_lanczos.hpp"
 
-#include <xdiag/algebra/algebra.hpp>
-#include <xdiag/algebra/apply.hpp>
+#include <xdiag/math/dot.hpp>
+#include <xdiag/states/norm.hpp>
 #include <xdiag/algebra/sparse/apply.hpp>
 #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/lanczos/lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos_convergence.hpp>
 #include <xdiag/algorithms/time_evolution/exp_sym_v.hpp>
+#include <xdiag/blocks/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
-#include <xdiag/operators/logic/real.hpp>
+#include <xdiag/operators/logic/isreal.hpp>
 #include <xdiag/utils/timing.hpp>
 
 namespace xdiag {
@@ -144,7 +145,7 @@ evolve_lanczos_inplace(op_t const &H, State &psi, double tau, double precision,
       ++iter;
     };
     auto dot_f = [&block](arma::vec const &v, arma::vec const &w) {
-      return dot(block, v, w);
+      return math::dot(block, v, w);
     };
 
     arma::vec v = psi.vector(0, false);
@@ -231,7 +232,7 @@ evolve_lanczos_inplace(op_t const &H, State &psi, complex tau, double precision,
     ++iter;
   };
   auto dot_f = [&block](arma::cx_vec const &v, arma::cx_vec const &w) {
-    return dot(block, v, w);
+    return math::dot(block, v, w);
   };
   arma::cx_vec v = psi.vectorC(0, false);
   auto r = exp_sym_v(mult, dot_f, v, tau, precision, shift, normalize,

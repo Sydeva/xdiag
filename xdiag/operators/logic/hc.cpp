@@ -14,29 +14,18 @@ namespace xdiag {
 Op hc(Op const &op) try {
   check_valid(op);
 
-  std::string type = op.type();
-  if (type == "S+") {
-    return Op("S-", op.sites());
-  } else if (type == "S-") {
-    return Op("S+", op.sites());
-  } else if (type == "Cdagup") {
-    return Op("Cup", op.sites());
-  } else if (type == "Cup") {
-    return Op("Cdagup", op.sites());
-  } else if (type == "Cdagdn") {
-    return Op("Cdn", op.sites());
-  } else if (type == "Cdn") {
-    return Op("Cdagdn", op.sites());
-  } else { // default: the type does not change
-    if (op.hassites()) {
-      if (op.hasmatrix()) {
-        return Op(op.type(), op.sites(), op.matrix().hc());
-      } else {
-        return Op(op.type(), op.sites());
-      }
-    } else {
-      return Op(op.type());
-    }
+  auto const &info = info_of_type(op.type());
+
+  // "Matrix" type: same hc_partner but matrix must be conjugate-transposed
+  if (op.type() == "Matrix") {
+    return Op("Matrix", op.sites(), op.matrix().hc());
+  }
+
+  // All other types: hc_partner encodes the target type; sites are unchanged
+  if (op.hassites()) {
+    return Op(info.hc_partner, op.sites());
+  } else {
+    return Op(info.hc_partner);
   }
 }
 XDIAG_CATCH
@@ -44,19 +33,7 @@ XDIAG_CATCH
 OpSum hc(OpSum const &ops) try {
   OpSum ops_hc;
   for (auto const &[coeff, mono] : ops.plain()) {
-    // For length-1 monomials of real-coupling types, coefficient stays real
-    if (mono.size() == 1) {
-      std::string type = mono[0].type();
-      if ((type == "Exchange") || (type == "Hop") || (type == "Hopup") ||
-          (type == "Hopdn")) {
-        ops_hc += coeff.scalar() * mono.hc();
-      } else {
-        ops_hc += conj(coeff.scalar()) * mono.hc();
-      }
-    } else {
-      // General monomial: conjugate the coefficient
-      ops_hc += conj(coeff.scalar()) * mono.hc();
-    }
+    ops_hc += conj(coeff.scalar()) * mono.hc();
   }
   return ops_hc;
 }

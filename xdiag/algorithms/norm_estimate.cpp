@@ -4,10 +4,10 @@
 
 #include "norm_estimate.hpp"
 
-#include <xdiag/algebra/algebra.hpp>
-#include <xdiag/algebra/apply.hpp>
 #include <xdiag/algebra/sparse/apply.hpp>
 #include <xdiag/algebra/sparse/logic.hpp>
+#include <xdiag/blocks/apply.hpp>
+#include <xdiag/math/norm.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/random/hash.hpp>
 #include <xdiag/utils/timing.hpp>
@@ -130,10 +130,14 @@ static double norm_estimate(op_t const &ops, block_t const &block,
     ++iter;
     return w;
   };
-  auto norm_f = [&block](arma::cx_vec const &v) { return norm(block, v); };
-  auto norm1_f = [&block](arma::cx_vec const &v) { return norm1(block, v); };
+  auto norm_f = [&block](arma::cx_vec const &v) {
+    return math::norm(block, v);
+  };
+  auto norm1_f = [&block](arma::cx_vec const &v) {
+    return math::norm1(block, v);
+  };
   auto norminf_f = [&block](arma::cx_vec const &v) {
-    return norminf(block, v);
+    return math::norminf(block, v);
   };
 #ifdef XDIAG_USE_MPI
   if (isdistributed(block)) {

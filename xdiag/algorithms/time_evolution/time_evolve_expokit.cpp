@@ -4,11 +4,13 @@
 
 #include "time_evolve_expokit.hpp"
 
-#include <xdiag/algebra/algebra.hpp>
-#include <xdiag/algebra/apply.hpp>
+#include <xdiag/math/dot.hpp>
+#include <xdiag/math/norm.hpp>
+#include <xdiag/states/norm.hpp>
 #include <xdiag/algebra/sparse/apply.hpp>
 #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/time_evolution/zahexpv.hpp>
+#include <xdiag/blocks/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/utils/error.hpp>
@@ -110,7 +112,7 @@ time_evolve_expokit_inplace(op_t const &ops, State &state, double time,
     return w;
   };
   auto dot_f = [&block](arma::cx_vec const &v, arma::cx_vec const &w) {
-    return dot(block, v, w);
+    return math::dot(block, v, w);
   };
 
   auto v0 = state.vectorC(0, false);

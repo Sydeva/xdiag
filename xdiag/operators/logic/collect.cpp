@@ -11,23 +11,15 @@
 namespace xdiag {
 
 OpSum collect(OpSum const &ops, double tol) try {
-  // Group terms by monomial, summing scalar coefficients
-  // Use a vector to preserve insertion order (for deterministic output)
-  std::vector<Monomial> order;
+  // Group terms by monomial, summing scalar coefficients.
+  // std::map uses Monomial::operator< so the output is in canonical order.
   std::map<Monomial, Scalar> sums;
-
   for (auto const &[coeff, mono] : ops.plain()) {
-    if (sums.find(mono) == sums.end()) {
-      order.push_back(mono);
-      sums[mono] = coeff.scalar();
-    } else {
-      sums[mono] += coeff.scalar();
-    }
+    sums[mono] += coeff.scalar();
   }
 
   OpSum result;
-  for (auto const &mono : order) {
-    Scalar c = sums.at(mono);
+  for (auto const &[mono, c] : sums) {
     if (abs(c) > tol) {
       result += c * mono;
     }

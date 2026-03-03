@@ -5,7 +5,12 @@
 #include "coeff.hpp"
 
 #include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
+
+#ifndef XDIAG_DISABLE_COLOR
+#include <xdiag/extern/fmt/color.hpp>
+#endif
 
 namespace xdiag {
 
@@ -74,7 +79,11 @@ std::ostream &operator<<(std::ostream &out, Coeff const &c) {
   if (c.isscalar()) {
     out << c.scalar();
   } else {
-    out << c.string();
+#ifndef XDIAG_DISABLE_COLOR
+    out << fmt::format(fg(fmt::rgb(0x98C379)), "'{}'", c.string());
+#else
+    out << "'" << c.string() << "'";
+#endif
   }
   return out;
 }

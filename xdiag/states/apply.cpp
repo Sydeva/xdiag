@@ -5,7 +5,11 @@
 #include "apply.hpp"
 
 #include <xdiag/armadillo.hpp>
+#include <xdiag/blocks/apply.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
+#include <xdiag/operators/logic/isreal.hpp>
+#include <xdiag/operators/qns/block.hpp>
+#include <xdiag/operators/qns/blocks_match.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
 

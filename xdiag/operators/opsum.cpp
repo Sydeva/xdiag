@@ -4,6 +4,10 @@
 
 #include "opsum.hpp"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
 #include <xdiag/utils/to_string_generic.hpp>
@@ -281,6 +285,21 @@ OpSum operator/(OpSum const &ops, Scalar const &scalar) {
   return ops * (Scalar(1.0) / scalar);
 }
 
+// Additive ops: Monomial on the left
+OpSum operator+(Monomial const &lhs, Monomial const &rhs) {
+  return OpSum(lhs) + OpSum(rhs);
+}
+OpSum operator-(Monomial const &lhs, Monomial const &rhs) {
+  return OpSum(lhs) - OpSum(rhs);
+}
+OpSum operator-(Monomial const &mono) { return -OpSum(mono); }
+OpSum operator+(Monomial const &lhs, OpSum const &rhs) {
+  return OpSum(lhs) + rhs;
+}
+OpSum operator-(Monomial const &lhs, OpSum const &rhs) {
+  return OpSum(lhs) - rhs;
+}
+
 // Algebra products: Op * OpSum, Monomial * OpSum
 OpSum operator*(Op const &lhs, OpSum const &rhs) { return OpSum(lhs) * rhs; }
 OpSum operator*(Monomial const &lhs, OpSum const &rhs) {
@@ -289,18 +308,52 @@ OpSum operator*(Monomial const &lhs, OpSum const &rhs) {
 
 // --- I/O ---
 
-std::ostream &operator<<(std::ostream &out, OpSum const &ops) {
-  out << "Terms:\n";
-  out << "------\n";
-  for (auto const &[coeff, mono] : ops) {
-    out << coeff << " * " << mono << "\n";
+// Returns the visible (uncolored) width of a coefficient for alignment purposes.
+// ANSI escape codes in the styled string are invisible, so we must not use
+// the styled string's byte length for padding.
+static size_t coeff_visible_width(Coeff const &c) {
+  if (c.isscalar()) {
+    return to_string(c.scalar()).size(); // scalar output has no ANSI codes
+  } else {
+    return c.string().size() + 2; // 'name' — name plus two single quotes
   }
+}
+
+std::ostream &operator<<(std::ostream &out, OpSum const &ops) {
+  if (ops.size() == 0) {
+    out << "0\n";
+    return out;
+  }
+
+  // Collect styled coefficient strings, their visible widths, and mono strings
+  std::vector<std::string> cstrs, mstrs;
+  std::vector<size_t> cwidths;
+  cstrs.reserve(ops.size());
+  mstrs.reserve(ops.size());
+  cwidths.reserve(ops.size());
+  for (auto const &[coeff, mono] : ops) {
+    cstrs.push_back(to_string(coeff));
+    cwidths.push_back(coeff_visible_width(coeff));
+    mstrs.push_back(to_string(mono));
+  }
+
+  // Max visible width determines the padding column
+  size_t cw = *std::max_element(cwidths.begin(), cwidths.end());
+
+  // Right-align using explicit space padding (not fmt width, which counts bytes)
+  for (size_t i = 0; i < cstrs.size(); ++i) {
+    out << "  " << std::string(cw - cwidths[i], ' ') << cstrs[i]
+        << "  " << mstrs[i] << "\n";
+  }
+
+  // Named parameters section
   if (!ops.params().empty()) {
-    out << "\nParameters:\n";
-    out << "-----------\n";
-    for (auto const &[name, val] : ops.params()) {
-      out << name << ": " << val << "\n";
-    }
+    out << "\n";
+    size_t nw = 0;
+    for (auto const &[name, val] : ops.params())
+      nw = std::max(nw, name.size());
+    for (auto const &[name, val] : ops.params())
+      out << fmt::format("  {0:>{1}} = {2}\n", name, nw, to_string(val));
   }
   return out;
 }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
+#include <cstdint>
 
 namespace xdiag::random {
 
@@ -52,8 +52,8 @@ inline uint64_t hash_div3(uint64_t bits) noexcept {
   uint64_t num = A * 1357911 + B * 1197531 + C * 2739651;
 
   // std::cout << "num1 " << num << "\n";
-  // std::cout << "num2 " << (123456789 * num + 987654321) % 3000000019ULL << "\n\n";
-  
+  // std::cout << "num2 " << (123456789 * num + 987654321) % 3000000019ULL <<
+  // "\n\n";
 
   return (123456789 * num + 987654321) % 3000000019ULL;
 }
@@ -78,7 +78,8 @@ inline uint32_t hash_div3(uint32_t bits) noexcept {
   uint32_t num = A * 1357911 + B * 1197531 + C * 2739651;
 
   //   std::cout << "num1 " << num << "\n";
-  // std::cout << "num2 " << (123456789 * num + 987654321) % 3000000019ULL << "\n\n";
+  // std::cout << "num2 " << (123456789 * num + 987654321) % 3000000019ULL <<
+  // "\n\n";
   return (123456789 * num + 987654321) % 3000000019ULL;
 }
 

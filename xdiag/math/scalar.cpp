@@ -169,9 +169,13 @@ bool isapprox(Scalar const &a, Scalar const &b, double rtol, double atol) {
 
 std::ostream &operator<<(std::ostream &out, Scalar const &v) {
   if (v.isreal()) {
-    out << fmt::format("{:.8e}", real(v));
+    out << fmt::format("{:.6g}", real(v));
   } else {
-    out << fmt::format("({:.8e},{:.8e})", real(v), imag(v));
+    double re = real(v), im = imag(v);
+    if (im < 0)
+      out << fmt::format("({:.6g}-{:.6g}i)", re, -im);
+    else
+      out << fmt::format("({:.6g}+{:.6g}i)", re, im);
   }
   return out;
 }

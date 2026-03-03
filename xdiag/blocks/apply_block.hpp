@@ -9,8 +9,8 @@
 namespace xdiag {
 
 template <typename op_t, typename mat_t, typename block_t>
-XDIAG_API void apply(op_t const &ops, block_t const &block_in,
-                     mat_t const &mat_in, block_t const &block_out,
-                     mat_t &mat_out);
+XDIAG_API void apply_block(op_t const &ops, block_t const &block_in,
+                           mat_t const &mat_in, block_t const &block_out,
+                           mat_t &mat_out);
 
 } // namespace xdiag

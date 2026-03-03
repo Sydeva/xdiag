@@ -26,7 +26,7 @@ void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
   Dispatcher d;
 #define ADD_DISPATCH(BASIS, FUNCTION)                                          \
   d.add<BASIS>([&](BASIS const &in, BASIS const &out) {                        \
-    FUNCTION(ops, basis_in, mat_in, basis_out, mat_out);                       \
+    FUNCTION(ops, in, mat_in, out, mat_out);                                   \
   });
 
   ADD_DISPATCH(BasisOnTheFly<Subsets<uint32_t>>, plain::apply);

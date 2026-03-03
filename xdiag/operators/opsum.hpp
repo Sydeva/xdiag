@@ -123,6 +123,14 @@ XDIAG_API OpSum operator/(OpSum const &ops, double scalar);
 XDIAG_API OpSum operator/(OpSum const &ops, complex scalar);
 XDIAG_API OpSum operator/(OpSum const &ops, Scalar const &scalar);
 
+// Additive ops with Monomial on the left (Monomial → OpSum implicit conversion
+// only works for member operator+, not when Monomial is the left operand)
+XDIAG_API OpSum operator+(Monomial const &lhs, Monomial const &rhs);
+XDIAG_API OpSum operator-(Monomial const &lhs, Monomial const &rhs);
+XDIAG_API OpSum operator-(Monomial const &mono); // unary negation
+XDIAG_API OpSum operator+(Monomial const &lhs, OpSum const &rhs);
+XDIAG_API OpSum operator-(Monomial const &lhs, OpSum const &rhs);
+
 // Algebra products: Op * OpSum, Monomial * OpSum
 XDIAG_API OpSum operator*(Op const &lhs, OpSum const &rhs);
 XDIAG_API OpSum operator*(Monomial const &lhs, OpSum const &rhs);

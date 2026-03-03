@@ -27,6 +27,11 @@ set(XDIAG_TEST_SOURCES
   operators/test_op.cpp
   operators/test_opsum.cpp
   operators/test_rewrite.cpp
+  operators/logic/test_combine_matrix_ops.cpp
+  operators/logic/test_normal_order.cpp
+  operators/logic/test_matrix_algebra.cpp
+  operators/logic/test_spinhalf_implementation_algebra.cpp
+  operators/qns/test_nup_ndn.cpp
 
   blocks/spinhalf/test_spinhalf.cpp
   blocks/spinhalf/testcases_spinhalf.cpp

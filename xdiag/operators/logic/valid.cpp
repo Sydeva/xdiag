@@ -5,77 +5,52 @@
 #include "valid.hpp"
 
 #include <set>
-#include <string>
 
 #include <xdiag/operators/logic/types.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 #include <xdiag/utils/logger.hpp>
 
 namespace xdiag {
 
 void check_valid(Op const &op) try {
   std::string type = op.type();
-  if (is_known_type(type)) {
-    if ((type == "Sz") || (type == "S+") || (type == "S-") ||
-        (type == "Cdagup") || (type == "Cup") || (type == "Cdagdn") ||
-        (type == "Cdn") || (type == "Ntot") || (type == "Nup") ||
-        (type == "Ndn") || (type == "Nupdn")) {
-      must_not_have_matrix(op);
-      must_have_sites(op);
-      must_have_nsites(op, 1);
-    } else if ((type == "Hop") || (type == "Hopup") || (type == "Hopdn") ||
-               (type == "SzSz") || (type == "SdotS") || (type == "Exchange") ||
-               (type == "NtotNtot") || (type == "NupdnNupdn") ||
-               (type == "tJSzSz") || (type == "tJSdotS") ||
-               (type == "NupNdn") || (type == "NupNup") || (type == "NdnNdn") ||
-               (type == "NdnNup")) {
-      must_not_have_matrix(op);
-      must_have_sites(op);
-      must_have_nsites(op, 2);
-    } else if (type == "ScalarChirality") {
-      must_not_have_matrix(op);
-      must_have_sites(op);
-      must_have_nsites(op, 3);
-      must_have_disjoint_sites(op);
-    } else if ((type == "HubbardU") || (type == "Id")) {
-      must_not_have_matrix(op);
-      must_not_have_sites(op);
-    } else if (type == "Matrix") {
-      must_have_matrix(op);
-      must_have_disjoint_sites(op);
-    } else {
-      XDIAG_THROW(
-          "Logic error checking validity of Op (this is a bug, please report)");
-    }
-  } else {
-    XDIAG_THROW(fmt::format("Unknown Op type: \"{}\", got Op:\n{}\nXDiag "
-                            "recognizes the following Op types:\n{}",
-                            type, to_string(op), known_types_string()));
-  }
-}
-XDIAG_CATCH
 
-void check_valid(OpSum const &ops) try {
-  for (auto const &[coeff, mono] : ops) {
-    for (auto const &op : mono) {
-      check_valid(op);
-    }
+  if (!is_known_type(type)) {
+    XDIAG_THROW(fmt::format("Op type \"{}\" is unknown. Known types: {}",
+                            type, known_types_string()));
   }
-}
-XDIAG_CATCH
 
-void check_valid(Op const &op, int64_t nsites) try {
-  check_valid(op);
+  auto const &info = info_of_type(type);
+
+  if (info.site_required && !op.hassites()) {
+    XDIAG_THROW(fmt::format(
+        "Op of type \"{}\" must have sites defined, got Op:\n{}", type,
+        to_string(op)));
+  }
+
   if (op.hassites()) {
-    must_have_sites_in_range(op, 0, nsites);
-  }
-}
-XDIAG_CATCH
-
-void check_valid(OpSum const &ops, int64_t nsites) try {
-  for (auto const &[coeff, mono] : ops) {
-    for (auto const &op : mono) {
-      check_valid(op, nsites);
+    if (info.nsites != undefined &&
+        (int64_t)op.sites().size() != info.nsites) {
+      XDIAG_THROW(fmt::format(
+          "Op of type \"{}\" must have exactly {} site(s), got {}. Op:\n{}",
+          type, info.nsites, op.sites().size(), to_string(op)));
     }
+    if (!info.allow_overlapping) {
+      auto const &sites = op.sites();
+      auto s = std::set<int64_t>(sites.begin(), sites.end());
+      if (s.size() != sites.size()) {
+        XDIAG_THROW(fmt::format(
+            "Op of type \"{}\" must have distinct sites, got Op:\n{}", type,
+            to_string(op)));
+      }
+    }
+  }
+
+  if (info.matrix_required && !op.hasmatrix()) {
+    XDIAG_THROW(fmt::format(
+        "Op of type \"{}\" must have a matrix defined, got Op:\n{}", type,
+        to_string(op)));
   }
 }
 XDIAG_CATCH
@@ -100,9 +75,9 @@ XDIAG_CATCH
 
 void must_have_nsites(Op const &op, int64_t n) try {
   if (op.hassites()) {
-    if (op.sites().size() != n) {
+    if ((int64_t)op.sites().size() != n) {
       XDIAG_THROW(fmt::format(
-          "Op of type \"{}\" must have exactly {} sites defined, got Op:\n{}",
+          "Op of type \"{}\" must have exactly {} site(s), got Op:\n{}",
           op.type(), n, to_string(op)));
     }
   } else {
@@ -116,8 +91,8 @@ XDIAG_CATCH
 void must_have_disjoint_sites(Op const &op) try {
   if (op.hassites()) {
     auto const &sites = op.sites();
-    auto set = std::set<int64_t>(sites.begin(), sites.end());
-    if (set.size() != sites.size()) {
+    auto s = std::set<int64_t>(sites.begin(), sites.end());
+    if (s.size() != sites.size()) {
       XDIAG_THROW(fmt::format(
           "Op of type \"{}\" must have strictly disjoint sites, got Op:\n{}",
           op.type(), to_string(op)));
@@ -133,10 +108,10 @@ XDIAG_CATCH
 void must_have_sites_in_range(Op const &op, int64_t l, int64_t u) try {
   if (op.hassites()) {
     for (auto s : op.sites()) {
-      if ((s < 0) || (s >= u)) {
+      if ((s < l) || (s >= u)) {
         XDIAG_THROW(fmt::format(
-            "Op of type \"{}\" has site with index {}, but the "
-            "indices must lie in the interval [{}, {}). Got Op:\n{}",
+            "Op of type \"{}\" has site {}, but sites must lie in [{}, {}). "
+            "Got Op:\n{}",
             op.type(), s, l, u, to_string(op)));
       }
     }
