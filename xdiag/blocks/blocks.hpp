@@ -8,7 +8,7 @@
 #include <string>
 #include <variant>
 
-#include <xdiag/blocks/spinhalf/spinhalf.hpp>
+#include <xdiag/blocks/spinhalf.hpp>
 
 namespace xdiag {
 using Block = std::variant<Spinhalf>;

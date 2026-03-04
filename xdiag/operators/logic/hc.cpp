@@ -12,7 +12,7 @@
 namespace xdiag {
 
 Op hc(Op const &op) try {
-  check_valid(op);
+  operators::check_valid(op);
 
   auto const &info = info_of_type(op.type());
 

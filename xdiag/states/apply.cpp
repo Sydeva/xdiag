@@ -22,11 +22,11 @@ template <typename op_t> State apply(op_t const &ops, State const &v) try {
   }
 
   // ops is zero
-  if (isapprox(ops, OpSum())) {
+  if (isapprox(OpSum(ops), OpSum())) {
     return State();
   }
 
-  auto blockr = block(ops, v.block());
+  auto blockr = block(OpSum(ops), v.block());
   bool real = isreal(ops) && isreal(v);
   auto w = State(blockr, real, v.ncols());
   apply(ops, v, w);
@@ -39,11 +39,11 @@ void apply(op_t const &ops, State const &v, State &w) try {
 
   if (!isvalid(v)) {
     w = State();
-  } else if (isapprox(ops, OpSum())) { // ops is zero
+  } else if (isapprox(OpSum(ops), OpSum())) { // ops is zero
     w = State();
   } else {
 
-    if (!blocks_match(ops, v.block(), w.block())) {
+    if (!blocks_match(OpSum(ops), v.block(), w.block())) {
       XDIAG_THROW(
           "Cannot apply OpSum to State. The resulting state is not in "
           "the correct symmetry sector. Please check the quantum numbers "

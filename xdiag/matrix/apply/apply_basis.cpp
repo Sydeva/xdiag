@@ -5,21 +5,21 @@
 #include "apply.hpp"
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/basis/dispatcher.hpp>
 #include <xdiag/basis/plain/apply.hpp>
 #include <xdiag/basis/plain/basis_onthefly.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
+#include <xdiag/matrix/implementation/dispatcher.hpp>
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrix {
 
 template <typename mat_t>
-void apply(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
-           mat_t const &mat_in, std::shared_ptr<Basis> const &basis_out,
-           mat_t &mat_out) try {
+void apply_basis(OpSum const &ops, std::shared_ptr<Basis> const &basis_in,
+                 mat_t const &mat_in, std::shared_ptr<Basis> const &basis_out,
+                 mat_t &mat_out) try {
   using namespace combinatorics;
   using namespace bits;
 
@@ -55,4 +55,4 @@ INSTANTIATE_XDIAG_BASIS_APPLY(arma::cx_vec);
 INSTANTIATE_XDIAG_BASIS_APPLY(arma::mat);
 INSTANTIATE_XDIAG_BASIS_APPLY(arma::cx_mat);
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrix

@@ -6,28 +6,28 @@
 
 #include <xdiag/basis/plain/implementation/apply_diag.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
-#include <xdiag/bits/popcount.hpp>
+#include <xdiag/bits/nonzero.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag::basis::plain {
 
 template <typename coeff_t, class basis_t, class fill_f>
-void apply_szsz(Coeff const &c, Op const &op, basis_t const &basis,
-                fill_f fill) try {
+void apply_sz(Coeff const &c, Op const &op, basis_t const &basis,
+              fill_f fill) try {
   using bit_t = typename basis_t::bit_t;
 
-  coeff_t J = c.scalar().as<coeff_t>();
-  coeff_t val_same = J / 4.0;
-  coeff_t val_diff = -J / 4.0;
-
+  coeff_t H = c.scalar().as<coeff_t>();
+  int64_t s = op[0];
   bit_t mask = bit_t();
-  bits::set_bit(mask, op[0]);
-  bits::set_bit(mask, op[1]);
+  bits::set_bit(mask, s);
+
+  coeff_t val_up = H / 2.;
+  coeff_t val_dn = -H / 2.;
 
   apply_diag(
       basis,
-      [&](bit_t spins) {
-        return bits::popcount(spins & mask) & 1 ? val_diff : val_same;
+      [&](bit_t spins) -> coeff_t {
+        return bits::nonzero(spins & mask) ? val_up : val_dn;
       },
       fill);
 }

@@ -7,7 +7,7 @@
 #include <cstdint>
 
 #include <xdiag/blocks/blocks.hpp>
-#include <xdiag/blocks/spinhalf/spinhalf.hpp>
+#include <xdiag/blocks/spinhalf.hpp>
 #include <xdiag/symmetries/permutation.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>
 #include <xdiag/symmetries/representation.hpp>

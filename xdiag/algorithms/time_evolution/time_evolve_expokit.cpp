@@ -4,15 +4,15 @@
 
 #include "time_evolve_expokit.hpp"
 
-#include <xdiag/math/dot.hpp>
-#include <xdiag/math/norm.hpp>
-#include <xdiag/states/norm.hpp>
 #include <xdiag/algebra/sparse/apply.hpp>
 #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/time_evolution/zahexpv.hpp>
 #include <xdiag/blocks/apply.hpp>
+#include <xdiag/math/dot.hpp>
+#include <xdiag/math/norm.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
+#include <xdiag/states/norm.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/timing.hpp>
 
@@ -37,28 +37,32 @@ TimeEvolveExpokitResult time_evolve_expokit(OpSum const &ops, State state,
 }
 XDIAG_CATCH
 
-template <typename idx_t, typename coeff_t>
-TimeEvolveExpokitResult
-time_evolve_expokit(CSRMatrix<idx_t, coeff_t> const &ops, State state,
-                    double time, double precision, int64_t m, double anorm,
-                    int64_t nnorm) try {
-  return time_evolve_expokit<CSRMatrix<idx_t, coeff_t>>(
-      ops, state, time, precision, m, anorm, nnorm);
-}
-XDIAG_CATCH
+// template <typename idx_t, typename coeff_t>
+// TimeEvolveExpokitResult
+// time_evolve_expokit(CSRMatrix<idx_t, coeff_t> const &ops, State state,
+//                     double time, double precision, int64_t m, double anorm,
+//                     int64_t nnorm) try {
+//   return time_evolve_expokit<CSRMatrix<idx_t, coeff_t>>(
+//       ops, state, time, precision, m, anorm, nnorm);
+// }
+// XDIAG_CATCH
 
-template TimeEvolveExpokitResult
-time_evolve_expokit(CSRMatrix<int32_t, double> const &, State, double, double,
-                    int64_t, double, int64_t);
-template TimeEvolveExpokitResult
-time_evolve_expokit(CSRMatrix<int32_t, complex> const &, State, double, double,
-                    int64_t, double, int64_t);
-template TimeEvolveExpokitResult
-time_evolve_expokit(CSRMatrix<int64_t, double> const &, State, double, double,
-                    int64_t, double, int64_t);
-template TimeEvolveExpokitResult
-time_evolve_expokit(CSRMatrix<int64_t, complex> const &, State, double, double,
-                    int64_t, double, int64_t);
+// template TimeEvolveExpokitResult
+// time_evolve_expokit(CSRMatrix<int32_t, double> const &, State, double,
+// double,
+//                     int64_t, double, int64_t);
+// template TimeEvolveExpokitResult
+// time_evolve_expokit(CSRMatrix<int32_t, complex> const &, State, double,
+// double,
+//                     int64_t, double, int64_t);
+// template TimeEvolveExpokitResult
+// time_evolve_expokit(CSRMatrix<int64_t, double> const &, State, double,
+// double,
+//                     int64_t, double, int64_t);
+// template TimeEvolveExpokitResult
+// time_evolve_expokit(CSRMatrix<int64_t, complex> const &, State, double,
+// double,
+//                     int64_t, double, int64_t);
 
 template <typename op_t>
 TimeEvolveExpokitInplaceResult
@@ -135,27 +139,30 @@ time_evolve_expokit_inplace(OpSum const &ops, State &state, double time,
 }
 XDIAG_CATCH
 
-template <typename idx_t, typename coeff_t>
-TimeEvolveExpokitInplaceResult
-time_evolve_expokit_inplace(CSRMatrix<idx_t, coeff_t> const &ops, State &state,
-                            double time, double precision, int64_t m,
-                            double anorm, int64_t nnorm) try {
-  return time_evolve_expokit_inplace<CSRMatrix<idx_t, coeff_t>>(
-      ops, state, time, precision, m, anorm, nnorm);
-}
-XDIAG_CATCH
+// template <typename idx_t, typename coeff_t>
+// TimeEvolveExpokitInplaceResult
+// time_evolve_expokit_inplace(CSRMatrix<idx_t, coeff_t> const &ops, State
+// &state,
+//                             double time, double precision, int64_t m,
+//                             double anorm, int64_t nnorm) try {
+//   return time_evolve_expokit_inplace<CSRMatrix<idx_t, coeff_t>>(
+//       ops, state, time, precision, m, anorm, nnorm);
+// }
+// XDIAG_CATCH
 
-template TimeEvolveExpokitInplaceResult
-time_evolve_expokit_inplace(CSRMatrix<int32_t, double> const &, State &, double,
-                            double, int64_t, double, int64_t);
-template TimeEvolveExpokitInplaceResult
-time_evolve_expokit_inplace(CSRMatrix<int32_t, complex> const &, State &,
-                            double, double, int64_t, double, int64_t);
-template TimeEvolveExpokitInplaceResult
-time_evolve_expokit_inplace(CSRMatrix<int64_t, double> const &, State &, double,
-                            double, int64_t, double, int64_t);
-template TimeEvolveExpokitInplaceResult
-time_evolve_expokit_inplace(CSRMatrix<int64_t, complex> const &, State &,
-                            double, double, int64_t, double, int64_t);
+// template TimeEvolveExpokitInplaceResult
+// time_evolve_expokit_inplace(CSRMatrix<int32_t, double> const &, State &,
+// double,
+//                             double, int64_t, double, int64_t);
+// template TimeEvolveExpokitInplaceResult
+// time_evolve_expokit_inplace(CSRMatrix<int32_t, complex> const &, State &,
+//                             double, double, int64_t, double, int64_t);
+// template TimeEvolveExpokitInplaceResult
+// time_evolve_expokit_inplace(CSRMatrix<int64_t, double> const &, State &,
+// double,
+//                             double, int64_t, double, int64_t);
+// template TimeEvolveExpokitInplaceResult
+// time_evolve_expokit_inplace(CSRMatrix<int64_t, complex> const &, State &,
+//                             double, double, int64_t, double, int64_t);
 
 } // namespace xdiag

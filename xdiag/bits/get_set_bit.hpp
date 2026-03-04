@@ -30,7 +30,7 @@ constexpr uint64_t bextr(uint64_t src, uint32_t start, uint32_t len) noexcept {
 
 // get_bit
 template <class bit_t>
-constexpr inline bit_t get_bit(bit_t x, uint32_t n) noexcept {
+constexpr inline bool get_bit(bit_t x, uint32_t n) noexcept {
 #if defined(__BMI__) && defined(USE_BEXTR)
   return bextr(x, n, 1);
 #else
@@ -61,6 +61,15 @@ template <class bit_t> constexpr void set_bit(bit_t &x, int64_t b) {
 template <class chunk_t, int64_t nchunks>
 inline void set_bit(Bitset<chunk_t, nchunks> &bits, int64_t n) {
   return bits.set(n);
+}
+
+template <class bit_t> constexpr void set_bit(bit_t &x, int64_t b, bool val) {
+  bit_t mask = bit_t(1) << b;
+  x ^= (-bit_t(val) ^ x) & mask;
+}
+template <class chunk_t, int64_t nchunks>
+inline void set_bit(Bitset<chunk_t, nchunks> &bits, int64_t n, bool val) {
+  return bits.set(n, val);
 }
 
 } // namespace xdiag::bits

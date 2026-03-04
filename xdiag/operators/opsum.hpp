@@ -30,8 +30,10 @@ public:
   using iterator_t = std::vector<Term>::const_iterator;
 
   XDIAG_API OpSum() = default;
-  XDIAG_API OpSum(Op const &op);
-  XDIAG_API OpSum(Monomial const &mono);
+  XDIAG_API explicit OpSum(Op const &op);
+  XDIAG_API explicit OpSum(Monomial const &mono);
+  XDIAG_API OpSum(Scalar const &coeff, Op const &op);
+  XDIAG_API OpSum(Scalar const &coeff, Monomial const &mono);
   XDIAG_API OpSum(Coeff const &coeff, Op const &op);
   XDIAG_API OpSum(Coeff const &coeff, Monomial const &mono);
   XDIAG_API OpSum(std::string const &coeff, Op const &op);
@@ -44,12 +46,16 @@ public:
   // Vector space: addition and subtraction
   XDIAG_API OpSum &operator+=(OpSum const &ops);
   XDIAG_API OpSum &operator+=(Op const &op);
+  XDIAG_API OpSum &operator+=(Monomial const &mono);
   XDIAG_API OpSum operator+(OpSum const &ops) const;
   XDIAG_API OpSum operator+(Op const &op) const;
+  XDIAG_API OpSum operator+(Monomial const &mono) const;
   XDIAG_API OpSum &operator-=(OpSum const &ops);
   XDIAG_API OpSum &operator-=(Op const &op);
+  XDIAG_API OpSum &operator-=(Monomial const &mono);
   XDIAG_API OpSum operator-(OpSum const &ops) const;
   XDIAG_API OpSum operator-(Op const &op) const;
+  XDIAG_API OpSum operator-(Monomial const &mono) const;
   XDIAG_API OpSum operator-() const;
 
   // Scalar scaling (multiplies each coefficient by the scalar)
@@ -97,20 +103,24 @@ XDIAG_API OpSum operator*(double coeff, Op const &op);
 XDIAG_API OpSum operator*(complex coeff, Op const &op);
 XDIAG_API OpSum operator*(std::string const &coeff, Op const &op);
 XDIAG_API OpSum operator*(Coeff const &coeff, Op const &op);
+XDIAG_API OpSum operator*(Scalar const &coeff, Op const &op);
 XDIAG_API OpSum operator*(Op const &op, double coeff);
 XDIAG_API OpSum operator*(Op const &op, complex coeff);
 XDIAG_API OpSum operator*(Op const &op, std::string const &coeff);
 XDIAG_API OpSum operator*(Op const &op, Coeff const &coeff);
+XDIAG_API OpSum operator*(Op const &op, Scalar const &coeff);
 
 // Coeff/scalar * Monomial, Monomial * Coeff/scalar  →  single-term OpSum
 XDIAG_API OpSum operator*(double coeff, Monomial const &mono);
 XDIAG_API OpSum operator*(complex coeff, Monomial const &mono);
 XDIAG_API OpSum operator*(std::string const &coeff, Monomial const &mono);
 XDIAG_API OpSum operator*(Coeff const &coeff, Monomial const &mono);
+XDIAG_API OpSum operator*(Scalar const &coeff, Monomial const &mono);
 XDIAG_API OpSum operator*(Monomial const &mono, double coeff);
 XDIAG_API OpSum operator*(Monomial const &mono, complex coeff);
 XDIAG_API OpSum operator*(Monomial const &mono, std::string const &coeff);
 XDIAG_API OpSum operator*(Monomial const &mono, Coeff const &coeff);
+XDIAG_API OpSum operator*(Monomial const &mono, Scalar const &coeff);
 
 // scalar * OpSum, OpSum * scalar  →  scaled copy
 XDIAG_API OpSum operator*(double scalar, OpSum const &ops);

@@ -54,14 +54,28 @@ std::optional<int64_t> nup(Op const &op) try {
 }
 XDIAG_CATCH
 
+std::optional<int64_t> nup(Monomial const &mono) try {
+  int64_t total_nup = 0;
+  for (auto op : mono) {
+    auto n = nup(op);
+    if (n) {
+      total_nup += *n;
+    } else {
+      return std::nullopt;
+    }
+  }
+  return total_nup;
+}
+XDIAG_CATCH
+
 std::optional<int64_t> nup(OpSum const &ops) try {
   if (ops.size() == 0) {
     return 0;
   } else {
     // Compute nup for every Op
     std::vector<std::optional<int64_t>> nups;
-    for (auto [cpl, op] : ops) {
-      nups.push_back(nup(op));
+    for (auto [cpl, mono] : ops) {
+      nups.push_back(nup(mono));
     }
 
     // Check if all elements are the same
@@ -88,14 +102,28 @@ std::optional<int64_t> ndn(Op const &op) try {
 }
 XDIAG_CATCH
 
+std::optional<int64_t> ndn(Monomial const &mono) try {
+  int64_t total_ndn = 0;
+  for (auto op : mono) {
+    auto n = ndn(op);
+    if (n) {
+      total_ndn += *n;
+    } else {
+      return std::nullopt;
+    }
+  }
+  return total_ndn;
+}
+XDIAG_CATCH
+
 std::optional<int64_t> ndn(OpSum const &ops) try {
   if (ops.size() == 0) {
     return 0;
   } else {
     // Compute nup for every Op
     std::vector<std::optional<int64_t>> ndns;
-    for (auto [cpl, op] : ops) {
-      ndns.push_back(ndn(op));
+    for (auto [cpl, mono] : ops) {
+      ndns.push_back(ndn(mono));
     }
 
     // Check if all elements are the same

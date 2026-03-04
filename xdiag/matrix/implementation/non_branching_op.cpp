@@ -4,12 +4,17 @@
 
 #include "non_branching_op.hpp"
 
+#include <limits>
 #include <tuple>
+#include <type_traits>
 #include <vector>
-#include <xdiag/bits/bitops.hpp>
-#include <xdiag/common.hpp>
 
-namespace xdiag::operators {
+#include <xdiag/bits/bitset.hpp>
+#include <xdiag/bits/get_set_bit.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
+
+namespace xdiag::basis {
 
 template <typename coeff_t>
 static bool is_non_branching_matrix(arma::Mat<coeff_t> const &mat,
@@ -34,6 +39,11 @@ NonBranchingOp<bit_t, coeff_t>::NonBranchingOp(
     double precision) try
     : sites_(sites), mask_(0), diagonal_(true) {
 
+  if (sites.size() > std::numeric_limits<cbit_t>::digits) {
+    XDIAG_THROW(
+        "Number of sites in NonBranchingOp too large for given bit type");
+  }
+
   if (!is_non_branching_matrix(matrix, precision)) {
     XDIAG_THROW("Trying to create a NonBranchingOp from a matrix which is "
                 "branching (i.e. more than one entry per row/column)");
@@ -41,7 +51,7 @@ NonBranchingOp<bit_t, coeff_t>::NonBranchingOp(
 
   // Set mask
   for (int64_t s : sites) {
-    mask_ |= ((bit_t)1 << s);
+    bits::set_bit(mask_, s);
   }
   mask_ = ~mask_;
 
@@ -56,10 +66,10 @@ NonBranchingOp<bit_t, coeff_t>::NonBranchingOp(
 
   // Set arrays where state is mapped to
   non_zero_term_ = std::vector<bool>(dim, false);
-  state_applied_ = std::vector<bit_t>(dim, 0);
+  state_applied_ = std::vector<cbit_t>(dim);
   coeff_ = std::vector<coeff_t>(dim, 0.);
-  for (bit_t in = 0; in < dim; ++in) {
-    for (bit_t out = 0; out < dim; ++out) {
+  for (cbit_t in = 0; in < dim; ++in) {
+    for (cbit_t out = 0; out < dim; ++out) {
       if (std::abs(matrix(out, in)) > precision) {
         non_zero_term_[in] = true;
         state_applied_[in] = out;
@@ -70,7 +80,7 @@ NonBranchingOp<bit_t, coeff_t>::NonBranchingOp(
   }
 
   // Determine if diagonal
-  for (bit_t i = 0; i < dim; ++i) {
+  for (cbit_t i = 0; i < dim; ++i) {
     if ((non_zero_term_[i]) && (state_applied_[i] != i)) {
       diagonal_ = false;
       break;
@@ -85,46 +95,39 @@ bool NonBranchingOp<bit_t, coeff_t>::isdiagonal() const {
 }
 
 template <typename bit_t, typename coeff_t>
-bool NonBranchingOp<bit_t, coeff_t>::non_zero_term(bit_t local_state) const {
+bool NonBranchingOp<bit_t, coeff_t>::non_zero_term(cbit_t local_state) const {
   return non_zero_term_[local_state];
 }
 template <typename bit_t, typename coeff_t>
-coeff_t NonBranchingOp<bit_t, coeff_t>::coeff(bit_t local_state) const {
+coeff_t NonBranchingOp<bit_t, coeff_t>::coeff(cbit_t local_state) const {
   return coeff_[local_state];
 }
 
 template <typename bit_t, typename coeff_t>
-std::pair<bit_t, coeff_t>
-NonBranchingOp<bit_t, coeff_t>::state_coeff(bit_t local_state) const {
+std::pair<typename NonBranchingOp<bit_t, coeff_t>::cbit_t, coeff_t>
+NonBranchingOp<bit_t, coeff_t>::state_coeff(cbit_t local_state) const {
   return {state_applied_[local_state], coeff_[local_state]};
 }
 
 template <typename bit_t, typename coeff_t>
-bit_t NonBranchingOp<bit_t, coeff_t>::extract(bit_t state) const {
-  bit_t local_state = 0;
+typename NonBranchingOp<bit_t, coeff_t>::cbit_t
+NonBranchingOp<bit_t, coeff_t>::extract(bit_t state) const {
+  cbit_t local_state = 0;
   for (int64_t i = 0; i < (int64_t)sites_.size(); ++i) {
-    local_state |= bits::gbit(state, sites_[i]) << i;
+    bits::set_bit(local_state, i, bits::get_bit(state, sites_[i]));
   }
   return local_state;
 }
 
 template <typename bit_t, typename coeff_t>
-bit_t NonBranchingOp<bit_t, coeff_t>::deposit(bit_t local_state,
+bit_t NonBranchingOp<bit_t, coeff_t>::deposit(cbit_t local_state,
                                               bit_t state) const {
   state &= mask_; // clear bits on site
   for (int64_t i = 0; i < (int64_t)sites_.size(); ++i) {
-    state |= bits::gbit(local_state, i) << sites_[i];
-    // Log("c: {}", BSTR(state));
+    bits::set_bit(state, sites_[i], bits::get_bit(local_state, i));
   }
   return state;
 }
-
-template class NonBranchingOp<uint16_t, double>;
-template class NonBranchingOp<uint32_t, double>;
-template class NonBranchingOp<uint64_t, double>;
-template class NonBranchingOp<uint16_t, complex>;
-template class NonBranchingOp<uint32_t, complex>;
-template class NonBranchingOp<uint64_t, complex>;
 
 template <typename coeff_t>
 static std::vector<arma::Mat<coeff_t>>
@@ -216,9 +219,9 @@ XDIAG_CATCH
 
 template <typename bit_t, typename coeff_t>
 std::vector<NonBranchingOp<bit_t, coeff_t>>
-non_branching_ops(Coupling const &cpl, Op const &op, double precision) try {
+non_branching_ops(Coeff const &cpl, Op const &op, double precision) try {
   if (cpl.isstring()) {
-    XDIAG_THROW("Cannot convert Op to NonBranchingOps. Coupling found to be a "
+    XDIAG_THROW("Cannot convert Op to NonBranchingOps. Coeff found to be a "
                 "string. To convert it to a NonBranchingOp the coupling must "
                 "be either a real or complex number.");
   }
@@ -250,18 +253,25 @@ non_branching_ops(Coupling const &cpl, Op const &op, double precision) try {
 }
 XDIAG_CATCH
 
-template std::vector<NonBranchingOp<uint16_t, double>>
-non_branching_ops<uint16_t, double>(Coupling const &, Op const &, double);
-template std::vector<NonBranchingOp<uint32_t, double>>
-non_branching_ops<uint32_t, double>(Coupling const &, Op const &, double);
-template std::vector<NonBranchingOp<uint64_t, double>>
-non_branching_ops<uint64_t, double>(Coupling const &, Op const &, double);
+#define INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BIT_TYPE, NUMBER_TYPE)        \
+  template class NonBranchingOp<BIT_TYPE, NUMBER_TYPE>;                        \
+  template std::vector<NonBranchingOp<BIT_TYPE, NUMBER_TYPE>>                  \
+  non_branching_ops<BIT_TYPE, NUMBER_TYPE>(Coeff const &, Op const &, double);
 
-template std::vector<NonBranchingOp<uint16_t, complex>>
-non_branching_ops<uint16_t, complex>(Coupling const &, Op const &, double);
-template std::vector<NonBranchingOp<uint32_t, complex>>
-non_branching_ops<uint32_t, complex>(Coupling const &, Op const &, double);
-template std::vector<NonBranchingOp<uint64_t, complex>>
-non_branching_ops<uint64_t, complex>(Coupling const &, Op const &, double);
+using namespace bits;
 
-} // namespace xdiag::operators
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(uint32_t, double);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(uint64_t, double);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetDynamic, double);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic2, double);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic4, double);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic8, double);
+
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(uint32_t, complex);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(uint64_t, complex);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetDynamic, complex);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic2, complex);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic4, complex);
+INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic8, complex);
+
+} // namespace xdiag::basis

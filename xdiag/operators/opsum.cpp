@@ -18,6 +18,10 @@ namespace xdiag {
 
 OpSum::OpSum(Op const &op) : terms_({{Coeff(1.0), Monomial(op)}}) {}
 OpSum::OpSum(Monomial const &mono) : terms_({{Coeff(1.0), mono}}) {}
+OpSum::OpSum(Scalar const &coeff, Op const &op)
+    : terms_({{Coeff(coeff), Monomial(op)}}) {}
+OpSum::OpSum(Scalar const &coeff, Monomial const &mono)
+    : terms_({{Coeff(coeff), mono}}) {}
 OpSum::OpSum(Coeff const &coeff, Op const &op)
     : terms_({{coeff, Monomial(op)}}) {}
 OpSum::OpSum(Coeff const &coeff, Monomial const &mono)
@@ -104,6 +108,11 @@ XDIAG_CATCH
 OpSum &OpSum::operator+=(Op const &op) try { return operator+=(OpSum(op)); }
 XDIAG_CATCH
 
+OpSum &OpSum::operator+=(Monomial const &mono) try {
+  return operator+=(OpSum(mono));
+}
+XDIAG_CATCH
+
 OpSum OpSum::operator+(OpSum const &ops) const try {
   OpSum result = *this;
   result += ops;
@@ -112,6 +121,11 @@ OpSum OpSum::operator+(OpSum const &ops) const try {
 XDIAG_CATCH
 
 OpSum OpSum::operator+(Op const &op) const try { return operator+(OpSum(op)); }
+XDIAG_CATCH
+
+OpSum OpSum::operator+(Monomial const &mono) const try {
+  return operator+(OpSum(mono));
+}
 XDIAG_CATCH
 
 OpSum &OpSum::operator-=(OpSum const &ops) try {
@@ -124,6 +138,11 @@ XDIAG_CATCH
 OpSum &OpSum::operator-=(Op const &op) try { return operator-=(OpSum(op)); }
 XDIAG_CATCH
 
+OpSum &OpSum::operator-=(Monomial const &mono) try {
+  return operator-=(OpSum(mono));
+}
+XDIAG_CATCH
+
 OpSum OpSum::operator-(OpSum const &ops) const try {
   OpSum result = *this;
   result -= ops;
@@ -132,6 +151,11 @@ OpSum OpSum::operator-(OpSum const &ops) const try {
 XDIAG_CATCH
 
 OpSum OpSum::operator-(Op const &op) const try { return operator-(OpSum(op)); }
+XDIAG_CATCH
+
+OpSum OpSum::operator-(Monomial const &mono) const try {
+  return operator-(OpSum(mono));
+}
 XDIAG_CATCH
 
 OpSum OpSum::operator-() const try {
@@ -232,10 +256,12 @@ OpSum operator*(std::string const &coeff, Op const &op) {
   return OpSum(Coeff(coeff), op);
 }
 OpSum operator*(Coeff const &coeff, Op const &op) { return OpSum(coeff, op); }
+OpSum operator*(Scalar const &coeff, Op const &op) { return OpSum(coeff, op); }
 OpSum operator*(Op const &op, double coeff) { return coeff * op; }
 OpSum operator*(Op const &op, complex coeff) { return coeff * op; }
 OpSum operator*(Op const &op, std::string const &coeff) { return coeff * op; }
 OpSum operator*(Op const &op, Coeff const &coeff) { return coeff * op; }
+OpSum operator*(Op const &op, Scalar const &coeff) { return coeff * op; }
 
 // Coeff/scalar * Monomial
 OpSum operator*(double coeff, Monomial const &mono) {
@@ -250,12 +276,19 @@ OpSum operator*(std::string const &coeff, Monomial const &mono) {
 OpSum operator*(Coeff const &coeff, Monomial const &mono) {
   return OpSum(coeff, mono);
 }
+OpSum operator*(Scalar const &coeff, Monomial const &mono) {
+  return OpSum(coeff, mono);
+}
+
 OpSum operator*(Monomial const &mono, double coeff) { return coeff * mono; }
 OpSum operator*(Monomial const &mono, complex coeff) { return coeff * mono; }
 OpSum operator*(Monomial const &mono, std::string const &coeff) {
   return coeff * mono;
 }
 OpSum operator*(Monomial const &mono, Coeff const &coeff) {
+  return coeff * mono;
+}
+OpSum operator*(Monomial const &mono, Scalar const &coeff) {
   return coeff * mono;
 }
 
@@ -308,9 +341,9 @@ OpSum operator*(Monomial const &lhs, OpSum const &rhs) {
 
 // --- I/O ---
 
-// Returns the visible (uncolored) width of a coefficient for alignment purposes.
-// ANSI escape codes in the styled string are invisible, so we must not use
-// the styled string's byte length for padding.
+// Returns the visible (uncolored) width of a coefficient for alignment
+// purposes. ANSI escape codes in the styled string are invisible, so we must
+// not use the styled string's byte length for padding.
 static size_t coeff_visible_width(Coeff const &c) {
   if (c.isscalar()) {
     return to_string(c.scalar()).size(); // scalar output has no ANSI codes
@@ -340,10 +373,11 @@ std::ostream &operator<<(std::ostream &out, OpSum const &ops) {
   // Max visible width determines the padding column
   size_t cw = *std::max_element(cwidths.begin(), cwidths.end());
 
-  // Right-align using explicit space padding (not fmt width, which counts bytes)
+  // Right-align using explicit space padding (not fmt width, which counts
+  // bytes)
   for (size_t i = 0; i < cstrs.size(); ++i) {
-    out << "  " << std::string(cw - cwidths[i], ' ') << cstrs[i]
-        << "  " << mstrs[i] << "\n";
+    out << "  " << std::string(cw - cwidths[i], ' ') << cstrs[i] << "  "
+        << mstrs[i] << "\n";
   }
 
   // Named parameters section

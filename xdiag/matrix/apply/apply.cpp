@@ -20,7 +20,7 @@ void apply(op_t const &ops, Block const &block_in, mat_t const &vec_in,
   utils::visit_same_type(
       block_in, block_out,
       [&](auto const &bin, auto const &bout) {
-        apply_block(ops, bin, vec_in, bout, vec_out);
+        apply_block(OpSum(ops), bin, vec_in, bout, vec_out);
       },
       "Type mismatch of Block types");
 }
@@ -40,6 +40,13 @@ INSTANTIATE_XDIAG_APPLY(Op, vec)
 INSTANTIATE_XDIAG_APPLY(Op, cx_vec)
 INSTANTIATE_XDIAG_APPLY(Op, mat)
 INSTANTIATE_XDIAG_APPLY(Op, cx_mat)
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(monomial)
+INSTANTIATE_XDIAG_APPLY(Monomial, vec)
+INSTANTIATE_XDIAG_APPLY(Monomial, cx_vec)
+INSTANTIATE_XDIAG_APPLY(Monomial, mat)
+INSTANTIATE_XDIAG_APPLY(Monomial, cx_mat)
 // END_INSTANTIATION_GROUP
 
 // BEGIN_INSTANTIATION_GROUP(opsum)

@@ -14,7 +14,7 @@ namespace xdiag::basis::plain {
 
 template <typename coeff_t, class basis_t, class fill_f>
 void apply_exchange(Coeff const &c, Op const &op, basis_t const &basis_in,
-                    basis_t const &basis_out, fill_f fill) {
+                    basis_t const &basis_out, fill_f fill) try{
   using bit_t = typename basis_t::bit_t;
 
   coeff_t J = c.scalar().as<coeff_t>();
@@ -46,5 +46,6 @@ void apply_exchange(Coeff const &c, Op const &op, basis_t const &basis_in,
         fill);
   }
 }
-
+XDIAG_CATCH
+  
 } // namespace xdiag::basis::plain

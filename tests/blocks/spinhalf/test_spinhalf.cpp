@@ -7,7 +7,7 @@
 #include "testcases_spinhalf.hpp"
 
 #include <xdiag/algorithms/sparse_diag.hpp>
-#include <xdiag/blocks/spinhalf/spinhalf.hpp>
+#include <xdiag/blocks/spinhalf.hpp>
 #include <xdiag/operators/logic/algebra.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/normal_order.hpp>
@@ -17,15 +17,6 @@
 
 TEST_CASE("spinhalf", "[blocks]") try {
   using namespace xdiag;
-  auto b = Spinhalf(3);
-  for (auto s : b) {
-    Log("{}", to_string(s));
-  }
-
-  auto b2 = Spinhalf(4, 2);
-  for (auto s : b2) {
-    Log("{}", to_string(s));
-  }
 
   // OpSum ops = complex(0.0, 1.0) * (Op("SdotS", {0, 1}) * Op("SdotS", {1, 2})
   // -
@@ -43,11 +34,12 @@ TEST_CASE("spinhalf", "[blocks]") try {
 
   // XDIAG_SHOW(isapprox(o1, o2));
 
-  auto ops = testcases::HBchain(4, 1.0);
-  Log("hello");
+  int nsites = 10;
+  auto block = Spinhalf(nsites);
+  auto ops = testcases::HBchain(nsites, 1.0);
   Log.set_verbosity(2);
 
-  double e0 = eigval0(ops, b2);
+  double e0 = eigval0(ops, block);
   Log("e0: {}", e0);
 
 } catch (xdiag::Error e) {

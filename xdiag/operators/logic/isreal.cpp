@@ -14,7 +14,7 @@
 namespace xdiag {
 
 bool isreal(Op const &op) try {
-  check_valid(op);
+  operators::check_valid(op);
 
   std::string type = op.type();
   if (op.hasmatrix()) {

@@ -25,36 +25,80 @@ void matrix(OpSum const &ops, basis_t const &basis_in, basis_t const &basis_out,
 }
 XDIAG_CATCH
 
-using namespace combinatorics;
-template void matrix(OpSum const &, BasisOnTheFly<Subsets<uint32_t>> const &,
-                     BasisOnTheFly<Subsets<uint32_t>> const &, double *);
-template void matrix(OpSum const &, BasisOnTheFly<Subsets<uint32_t>> const &,
-                     BasisOnTheFly<Subsets<uint32_t>> const &, complex *);
-template void matrix(OpSum const &, BasisOnTheFly<Subsets<uint64_t>> const &,
-                     BasisOnTheFly<Subsets<uint64_t>> const &, double *);
-template void matrix(OpSum const &, BasisOnTheFly<Subsets<uint64_t>> const &,
-                     BasisOnTheFly<Subsets<uint64_t>> const &, complex *);
-
-template void matrix(OpSum const &,
-                     BasisOnTheFly<Combinations<uint32_t>> const &,
-                     BasisOnTheFly<Combinations<uint32_t>> const &, double *);
-template void matrix(OpSum const &,
-                     BasisOnTheFly<Combinations<uint32_t>> const &,
-                     BasisOnTheFly<Combinations<uint32_t>> const &, complex *);
-template void matrix(OpSum const &,
-                     BasisOnTheFly<Combinations<uint64_t>> const &,
-                     BasisOnTheFly<Combinations<uint64_t>> const &, double *);
-template void matrix(OpSum const &,
-                     BasisOnTheFly<Combinations<uint64_t>> const &,
-                     BasisOnTheFly<Combinations<uint64_t>> const &, complex *);
-
-template void matrix(OpSum const &, BasisOnTheFly<LinTable<uint32_t>> const &,
-                     BasisOnTheFly<LinTable<uint32_t>> const &, double *);
-template void matrix(OpSum const &, BasisOnTheFly<LinTable<uint32_t>> const &,
-                     BasisOnTheFly<LinTable<uint32_t>> const &, complex *);
-template void matrix(OpSum const &, BasisOnTheFly<LinTable<uint64_t>> const &,
-                     BasisOnTheFly<LinTable<uint64_t>> const &, double *);
-template void matrix(OpSum const &, BasisOnTheFly<LinTable<uint64_t>> const &,
-                     BasisOnTheFly<LinTable<uint64_t>> const &, complex *);
-
 } // namespace xdiag::basis::plain
+using namespace arma;
+using namespace xdiag::combinatorics;
+using namespace xdiag::basis;
+using namespace xdiag::bits;
+
+// Macro for declaring a single apply instantiation
+#define INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BASIS_TYPE, ENUM_TYPE, INT_TYPE,  \
+                                             COEFF_TYPE)                       \
+  template void xdiag::basis::plain::matrix(                                   \
+      OpSum const &, BASIS_TYPE<ENUM_TYPE<INT_TYPE>> const &,                  \
+      BASIS_TYPE<ENUM_TYPE<INT_TYPE>> const &, COEFF_TYPE *);
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_subsets_uint32_t)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Subsets, uint32_t, double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Subsets, uint32_t, complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_subsets_uint64_t)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Subsets, uint64_t, double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Subsets, uint64_t, complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_uint32_t)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, uint32_t,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, uint32_t,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_uint64_t)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, uint64_t,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, uint64_t,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_dynamic)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetDynamic,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetDynamic,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_static_2)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetStatic2,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetStatic2,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_static_4)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetStatic4,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetStatic4,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_combinations_bitset_static_8)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetStatic8,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, BitsetStatic8,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_lintable_uint32_t)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, uint32_t,
+                                     double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, Combinations, uint32_t,
+                                     complex);
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(onthefly_lintable_uint64_t)
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, LinTable, uint64_t, double);
+INSTANITATE_XDIAG_BASIS_PLAIN_MATRIX(BasisOnTheFly, LinTable, uint64_t,
+                                     complex);
+// END_INSTANTIATION_GROUP

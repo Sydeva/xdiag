@@ -11,27 +11,26 @@
 #include <xdiag/utils/format.hpp>
 #include <xdiag/utils/logger.hpp>
 
-namespace xdiag {
+namespace xdiag::operators {
 
 void check_valid(Op const &op) try {
   std::string type = op.type();
 
   if (!is_known_type(type)) {
-    XDIAG_THROW(fmt::format("Op type \"{}\" is unknown. Known types: {}",
-                            type, known_types_string()));
+    XDIAG_THROW(fmt::format("Op type \"{}\" is unknown. Known types: {}", type,
+                            known_types_string()));
   }
 
   auto const &info = info_of_type(type);
 
   if (info.site_required && !op.hassites()) {
-    XDIAG_THROW(fmt::format(
-        "Op of type \"{}\" must have sites defined, got Op:\n{}", type,
-        to_string(op)));
+    XDIAG_THROW(
+        fmt::format("Op of type \"{}\" must have sites defined, got Op:\n{}",
+                    type, to_string(op)));
   }
 
   if (op.hassites()) {
-    if (info.nsites != undefined &&
-        (int64_t)op.sites().size() != info.nsites) {
+    if (info.nsites != undefined && (int64_t)op.sites().size() != info.nsites) {
       XDIAG_THROW(fmt::format(
           "Op of type \"{}\" must have exactly {} site(s), got {}. Op:\n{}",
           type, info.nsites, op.sites().size(), to_string(op)));
@@ -48,9 +47,23 @@ void check_valid(Op const &op) try {
   }
 
   if (info.matrix_required && !op.hasmatrix()) {
-    XDIAG_THROW(fmt::format(
-        "Op of type \"{}\" must have a matrix defined, got Op:\n{}", type,
-        to_string(op)));
+    XDIAG_THROW(
+        fmt::format("Op of type \"{}\" must have a matrix defined, got Op:\n{}",
+                    type, to_string(op)));
+  }
+}
+XDIAG_CATCH
+
+void check_valid(Monomial const &mono) try {
+  for (auto const &op : mono) {
+    check_valid(op);
+  }
+}
+XDIAG_CATCH
+
+void check_valid(OpSum const &ops) try {
+  for (auto const &[cpl, mono] : ops) {
+    check_valid(mono);
   }
 }
 XDIAG_CATCH
@@ -141,4 +154,4 @@ void must_not_have_matrix(Op const &op) try {
 }
 XDIAG_CATCH
 
-} // namespace xdiag
+} // namespace xdiag::operators

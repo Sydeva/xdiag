@@ -1,0 +1,74 @@
+// SPDX-FileCopyrightText: 2026 Alexander Wietek <awietek@pks.mpg.de>
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include <utility>
+
+#include <xdiag/basis/plain/implementation/apply_offdiag.hpp>
+#include <xdiag/bits/get_set_bit.hpp>
+#include <xdiag/bits/nonzero.hpp>
+#include <xdiag/utils/error.hpp>
+
+namespace xdiag::basis::plain {
+
+// Scalar chirality term: J S*(S x S)
+
+template <typename coeff_t, class basis_t, class fill_f>
+void apply_scalar_chirality(Coeff const &c, Op const &op,
+                            basis_t const &basis_in, basis_t const &basis_out,
+                            fill_f fill) try {
+  using bit_t = typename basis_t::bit_t;
+
+  complex J = c.scalar().as<complex>();
+  coeff_t Jquarter = 0.;
+  coeff_t Jquarter_conj = 0.;
+  if constexpr (isreal<coeff_t>()) {
+    XDIAG_THROW("Scalar chirality term cannot be used with real coefficients");
+  } else {
+    Jquarter = complex(0, -0.25) * J;
+    Jquarter_conj = xdiag::conj(Jquarter);
+  }
+
+  bit_t mask = bit_t();
+  int64_t s1 = op[0];
+  int64_t s2 = op[1];
+  int64_t s3 = op[2];
+  bits::set_bit(mask, s1);
+  bits::set_bit(mask, s2);
+  bits::set_bit(mask, s3);
+
+  // scalar chirality annihilates 000 and 111
+  auto non_zero_term = [&](bit_t spins) -> bool {
+    bit_t threespins = spins & mask;
+    return bits::nonzero(threespins) && (threespins != mask);
+  };
+
+  // rotate three sites cyclic
+  auto term_action_cyclic = [&](bit_t spins) -> std::pair<bit_t, coeff_t> {
+    bit_t threespins_cyclic = bit_t();
+    bits::set_bit(threespins_cyclic, s2, bits::get_bit(spins, s1));
+    bits::set_bit(threespins_cyclic, s3, bits::get_bit(spins, s2));
+    bits::set_bit(threespins_cyclic, s1, bits::get_bit(spins, s3));
+    bit_t spins_void = spins & (~mask);
+    bit_t spins_cyclic = spins_void | threespins_cyclic;
+    return {spins_cyclic, Jquarter};
+  };
+
+  // rotate three sites acyclic
+  auto term_action_acyclic = [&](bit_t spins) -> std::pair<bit_t, coeff_t> {
+    bit_t threespins_acyclic = bit_t();
+    bits::set_bit(threespins_acyclic, s3, bits::get_bit(spins, s1));
+    bits::set_bit(threespins_acyclic, s1, bits::get_bit(spins, s2));
+    bits::set_bit(threespins_acyclic, s2, bits::get_bit(spins, s3));
+    bit_t spins_void = spins & (~mask);
+    bit_t spins_acyclic = spins_void | threespins_acyclic;
+    return {spins_acyclic, Jquarter_conj};
+  };
+  apply_offdiag(basis_in, basis_out, non_zero_term, term_action_cyclic, fill);
+  apply_offdiag(basis_in, basis_out, non_zero_term, term_action_acyclic, fill);
+}
+XDIAG_CATCH
+
+} // namespace xdiag::basis::plain
