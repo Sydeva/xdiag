@@ -6,12 +6,12 @@
 
 #include <xdiag/math/dot.hpp>
 #include <xdiag/states/norm.hpp>
-#include <xdiag/algebra/sparse/apply.hpp>
-#include <xdiag/algebra/sparse/logic.hpp>
+// #include <xdiag/algebra/sparse/apply.hpp>
+// #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/lanczos/lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos_convergence.hpp>
 #include <xdiag/algorithms/time_evolution/exp_sym_v.hpp>
-#include <xdiag/blocks/apply.hpp>
+#include <xdiag/matrix/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/isreal.hpp>
@@ -47,22 +47,27 @@ XDIAG_CATCH
 //                int64_t max_iterations, double deflation_tol) try {
 
 //   return evolve_lanczos<CSRMatrix<idx_t, coeff_t>>(
-//       H, psi, tau, precision, shift, normalize, max_iterations, deflation_tol);
+//       H, psi, tau, precision, shift, normalize, max_iterations,
+//       deflation_tol);
 // }
 // XDIAG_CATCH
 
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, double> const &,
-//                                             State, double, double, double, bool,
-//                                             int64_t, double);
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, complex> const &,
-//                                             State, double, double, double, bool,
-//                                             int64_t, double);
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, double> const &,
-//                                             State, double, double, double, bool,
-//                                             int64_t, double);
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, complex> const &,
-//                                             State, double, double, double, bool,
-//                                             int64_t, double);
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, double> const
+// &,
+//                                             State, double, double, double,
+//                                             bool, int64_t, double);
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, complex> const
+// &,
+//                                             State, double, double, double,
+//                                             bool, int64_t, double);
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, double> const
+// &,
+//                                             State, double, double, double,
+//                                             bool, int64_t, double);
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, complex> const
+// &,
+//                                             State, double, double, double,
+//                                             bool, int64_t, double);
 
 template <typename op_t>
 static EvolveLanczosResult
@@ -90,20 +95,25 @@ XDIAG_CATCH
 //                double precision, double shift, bool normalize,
 //                int64_t max_iterations, double deflation_tol) try {
 //   return evolve_lanczos<CSRMatrix<idx_t, coeff_t>>(
-//       H, psi, tau, precision, shift, normalize, max_iterations, deflation_tol);
+//       H, psi, tau, precision, shift, normalize, max_iterations,
+//       deflation_tol);
 // }
 // XDIAG_CATCH
 
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, double> const &,
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, double> const
+// &,
 //                                             State, complex, double, double,
 //                                             bool, int64_t, double);
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, complex> const &,
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int32_t, complex> const
+// &,
 //                                             State, complex, double, double,
 //                                             bool, int64_t, double);
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, double> const &,
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, double> const
+// &,
 //                                             State, complex, double, double,
 //                                             bool, int64_t, double);
-// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, complex> const &,
+// template EvolveLanczosResult evolve_lanczos(CSRMatrix<int64_t, complex> const
+// &,
 //                                             State, complex, double, double,
 //                                             bool, int64_t, double);
 
@@ -177,7 +187,8 @@ XDIAG_CATCH
 //                        bool normalize, int64_t max_iterations,
 //                        double deflation_tol) try {
 //   return evolve_lanczos_inplace<CSRMatrix<idx_t, coeff_t>>(
-//       H, psi, tau, precision, shift, normalize, max_iterations, deflation_tol);
+//       H, psi, tau, precision, shift, normalize, max_iterations,
+//       deflation_tol);
 // }
 // XDIAG_CATCH
 
@@ -258,7 +269,8 @@ XDIAG_CATCH
 //                        bool normalize, int64_t max_iterations,
 //                        double deflation_tol) try {
 //   return evolve_lanczos_inplace<CSRMatrix<idx_t, coeff_t>>(
-//       H, psi, tau, precision, shift, normalize, max_iterations, deflation_tol);
+//       H, psi, tau, precision, shift, normalize, max_iterations,
+//       deflation_tol);
 // }
 // XDIAG_CATCH
 

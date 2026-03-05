@@ -6,7 +6,7 @@
 
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrix {
 
 void Dispatcher::dispatch(typename Dispatcher::pointer_t const &a,
                           typename Dispatcher::pointer_t const &b) const try {
@@ -22,4 +22,4 @@ void Dispatcher::dispatch(typename Dispatcher::pointer_t const &a,
 }
 XDIAG_CATCH
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrix

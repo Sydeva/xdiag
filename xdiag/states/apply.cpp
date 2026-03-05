@@ -5,7 +5,7 @@
 #include "apply.hpp"
 
 #include <xdiag/armadillo.hpp>
-#include <xdiag/blocks/apply.hpp>
+#include <xdiag/matrix/apply.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/isreal.hpp>
 #include <xdiag/operators/qns/block.hpp>

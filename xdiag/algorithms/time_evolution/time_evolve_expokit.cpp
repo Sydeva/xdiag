@@ -4,12 +4,12 @@
 
 #include "time_evolve_expokit.hpp"
 
-#include <xdiag/algebra/sparse/apply.hpp>
-#include <xdiag/algebra/sparse/logic.hpp>
+// #include <xdiag/algebra/sparse/apply.hpp>
+// #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/time_evolution/zahexpv.hpp>
-#include <xdiag/blocks/apply.hpp>
 #include <xdiag/math/dot.hpp>
 #include <xdiag/math/norm.hpp>
+#include <xdiag/matrix/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/states/norm.hpp>

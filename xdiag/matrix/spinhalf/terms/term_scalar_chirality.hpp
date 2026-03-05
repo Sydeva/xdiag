@@ -6,19 +6,19 @@
 
 #include <utility>
 
-#include <xdiag/basis/plain/implementation/apply_offdiag.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/nonzero.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_offdiag.hpp>
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::basis::plain {
+namespace xdiag::matrix::spinhalf {
 
 // Scalar chirality term: J S*(S x S)
 
 template <typename coeff_t, class basis_t, class fill_f>
-void apply_scalar_chirality(Coeff const &c, Op const &op,
-                            basis_t const &basis_in, basis_t const &basis_out,
-                            fill_f fill) try {
+void term_scalar_chirality(Coeff const &c, Op const &op,
+                           basis_t const &basis_in, basis_t const &basis_out,
+                           fill_f fill) try {
   using bit_t = typename basis_t::bit_t;
 
   complex J = c.scalar().as<complex>();
@@ -66,9 +66,9 @@ void apply_scalar_chirality(Coeff const &c, Op const &op,
     bit_t spins_acyclic = spins_void | threespins_acyclic;
     return {spins_acyclic, Jquarter_conj};
   };
-  apply_offdiag(basis_in, basis_out, non_zero_term, term_action_cyclic, fill);
-  apply_offdiag(basis_in, basis_out, non_zero_term, term_action_acyclic, fill);
+  term_offdiag(basis_in, basis_out, non_zero_term, term_action_cyclic, fill);
+  term_offdiag(basis_in, basis_out, non_zero_term, term_action_acyclic, fill);
 }
 XDIAG_CATCH
 
-} // namespace xdiag::basis::plain
+} // namespace xdiag::matrix::spinhalf

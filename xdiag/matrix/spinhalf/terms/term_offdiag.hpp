@@ -5,16 +5,16 @@
 #pragma once
 
 #include <cstdint>
-#include <xdiag/basis/plain/basis_onthefly.hpp>
+#include <xdiag/basis/basis_onthefly.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrix::spinhalf {
 
 template <typename enumeration_t, typename non_zero_term_f,
           typename term_action_f, typename fill_f>
-void apply_offdiag(BasisOnTheFly<enumeration_t> const &basis_in,
-                   BasisOnTheFly<enumeration_t> const &basis_out,
-                   non_zero_term_f non_zero_term, term_action_f term_action,
-                   fill_f fill) {
+void term_offdiag(basis::BasisOnTheFly<enumeration_t> const &basis_in,
+                  basis::BasisOnTheFly<enumeration_t> const &basis_out,
+                  non_zero_term_f non_zero_term, term_action_f term_action,
+                  fill_f fill) {
 
   // OpenMP parallel implementation
 #ifdef _OPENMP
@@ -53,4 +53,4 @@ void apply_offdiag(BasisOnTheFly<enumeration_t> const &basis_in,
 #endif
 }
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrix::spinhalf

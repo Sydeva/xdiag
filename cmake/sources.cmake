@@ -14,7 +14,12 @@ set(XDIAG_SOURCES
   math/arma_to_cx.cpp
   math/dot.cpp
   math/norm.cpp
-  
+
+  matrix/apply.cpp
+  matrix/utils/dispatcher.cpp
+  matrix/utils/non_branching_op.cpp
+  matrix/spinhalf/apply.cpp
+
   bits/bitset.cpp
   bits/bitvector.cpp
   bits/bitarray.cpp
@@ -31,19 +36,10 @@ set(XDIAG_SOURCES
   combinatorics/bounded_partitions/schaefer_table.cpp
 
   basis/basis.cpp
-  basis/dispatcher.cpp
-  basis/apply.cpp
-  # basis/matrix.cpp
-  basis/non_branching_op.cpp
-  basis/plain/basis_onthefly.cpp
-  basis/plain/apply.cpp
-  # basis/plain/matrix.cpp
+  basis/basis_onthefly.cpp
   
   blocks/blocks.cpp
-  blocks/apply_block.cpp
-  blocks/apply.cpp
   blocks/spinhalf.cpp
-  blocks/compile.cpp
 
   states/product_state.cpp
   states/random_state.cpp

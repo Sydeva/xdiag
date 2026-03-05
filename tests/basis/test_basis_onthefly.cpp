@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "../../catch.hpp"
+#include "../catch.hpp"
 
 #include <cstdint>
 #include <memory>
 
-#include <xdiag/basis/apply.hpp>
-#include <xdiag/basis/plain/basis_onthefly.hpp>
+#include <xdiag/basis/basis_onthefly.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
+#include <xdiag/matrix/apply.hpp>
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/logger.hpp>
 

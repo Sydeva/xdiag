@@ -4,13 +4,12 @@
 
 #include "eigvals_lanczos.hpp"
 
-#include <xdiag/algebra/sparse/apply.hpp>
-#include <xdiag/algebra/sparse/logic.hpp>
+// #include <xdiag/algebra/sparse/apply.hpp>
+// #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/lanczos/lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos_convergence.hpp>
-#include <xdiag/blocks/apply.hpp>
-#include <xdiag/blocks/apply_block.hpp>
 #include <xdiag/math/dot.hpp>
+#include <xdiag/matrix/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/isreal.hpp>

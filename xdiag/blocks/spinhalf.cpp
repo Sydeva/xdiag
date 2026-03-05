@@ -4,7 +4,7 @@
 
 #include "spinhalf.hpp"
 
-#include <xdiag/basis/plain/basis_onthefly.hpp>
+#include <xdiag/basis/basis_onthefly.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>

@@ -20,7 +20,7 @@ set(XDIAG_TEST_SOURCES
   combinatorics/test_bounded_partitions.cpp
   combinatorics/test_schaefer_table.cpp
 
-  basis/plain/test_basis_onthefly.cpp
+  basis/test_basis_onthefly.cpp
   
   operators/test_coeff.cpp
   operators/test_monomial.cpp

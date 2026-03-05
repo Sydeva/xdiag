@@ -5,13 +5,13 @@
 #pragma once
 
 #include <cstdint>
-#include <xdiag/basis/plain/basis_onthefly.hpp>
+#include <xdiag/basis/basis_onthefly.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrix::spinhalf {
 
 template <typename enumeration_t, typename term_coeff_f, typename fill_f>
-void apply_diag(BasisOnTheFly<enumeration_t> const &basis,
-                term_coeff_f term_coeff, fill_f fill) {
+void term_diag(basis::BasisOnTheFly<enumeration_t> const &basis,
+               term_coeff_f term_coeff, fill_f fill) {
 
   // OpenMP parallel implementation
 #ifdef _OPENMP
@@ -44,4 +44,4 @@ void apply_diag(BasisOnTheFly<enumeration_t> const &basis,
 #endif
 }
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrix::spinhalf

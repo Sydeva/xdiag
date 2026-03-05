@@ -1,0 +1,64 @@
+// SPDX-FileCopyrightText: 2026 Alexander Wietek <awietek@pks.mpg.de>
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include <xdiag/operators/logic/algebra.hpp>
+#include <xdiag/operators/logic/normal_order.hpp>
+#include <xdiag/operators/logic/valid.hpp>
+#include <xdiag/operators/opsum.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
+
+#include <xdiag/matrix/spinhalf/terms/term_exchange.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_matrix.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_scalar_chirality.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_spsm.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_sz.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_szsz.hpp>
+#include <xdiag/matrix/utils/term_identity.hpp>
+
+namespace xdiag::matrix::spinhalf {
+
+template <typename coeff_t, typename basis_t, typename fill_f>
+void matrix_generic(OpSum const &ops, basis_t const &basis_in,
+                    basis_t const &basis_out, fill_f fill) try {
+
+  // Get OpSum into format that can be processed
+  operators::check_valid(ops);
+  auto algebra = operators::spinhalf_implementation_algebra();
+  auto ops_compiled = normal_order(ops.plain(), algebra, basis_in.nsites());
+
+  for (auto const &[c, monomial] : ops_compiled) {
+    assert(monomial.size() == 1); // required for properly compiled ops
+
+    Op op = monomial[0];
+    std::string type = op.type();
+
+    if (type == "Id") {
+      matrix::term_identity<coeff_t>(c, basis_in, fill);
+    } else if (type == "Exchange") {
+      spinhalf::term_exchange<coeff_t>(c, op, basis_in, basis_out, fill);
+    } else if (type == "SzSz") {
+      spinhalf::term_szsz<coeff_t>(c, op, basis_in, fill);
+    } else if (type == "Sz") {
+      spinhalf::term_sz<coeff_t>(c, op, basis_in, fill);
+    } else if (type == "S+") {
+      spinhalf::term_spsm<coeff_t>(c, op, basis_in, basis_out, fill);
+    } else if (type == "S-") {
+      spinhalf::term_spsm<coeff_t>(c, op, basis_in, basis_out, fill);
+    } else if (type == "ScalarChirality") {
+      spinhalf::term_scalar_chirality<coeff_t>(c, op, basis_in, basis_out,
+                                               fill);
+    } else if (type == "Matrix") {
+      spinhalf::term_matrix<coeff_t>(c, op, basis_in, basis_out, fill);
+    } else {
+      XDIAG_THROW(
+          fmt::format("Unknown Op type for Spinhalf basis \"{}\"", type));
+    }
+  }
+}
+XDIAG_CATCH
+
+} // namespace xdiag::matrix::spinhalf

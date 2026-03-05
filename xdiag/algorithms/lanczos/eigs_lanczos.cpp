@@ -4,14 +4,13 @@
 
 #include "eigs_lanczos.hpp"
 
-#include <xdiag/algebra/sparse/apply.hpp>
-#include <xdiag/algebra/sparse/logic.hpp>
+// #include <xdiag/algebra/sparse/apply.hpp>
+// #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/algorithms/lanczos/eigvals_lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos.hpp>
 #include <xdiag/algorithms/lanczos/lanczos_convergence.hpp>
-#include <xdiag/blocks/apply.hpp>
-#include <xdiag/blocks/apply_block.hpp>
 #include <xdiag/math/dot.hpp>
+#include <xdiag/matrix/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/isreal.hpp>
@@ -195,24 +194,28 @@ XDIAG_CATCH
 //              int64_t neigvals, double precision, int64_t max_iterations,
 //              double deflation_tol, int64_t random_seed);
 
-// template EigsLanczosResult eigs_lanczos(CSRMatrix<int32_t, double> const &ops,
-//                                         State const &state0, int64_t neigvals,
-//                                         double precision,
-//                                         int64_t max_iterations,
-//                                         double deflation_tol);
-// template EigsLanczosResult eigs_lanczos(CSRMatrix<int32_t, complex> const &ops,
-//                                         State const &state0, int64_t neigvals,
-//                                         double precision,
-//                                         int64_t max_iterations,
-//                                         double deflation_tol);
-// template EigsLanczosResult eigs_lanczos(CSRMatrix<int64_t, double> const &ops,
-//                                         State const &state0, int64_t neigvals,
-//                                         double precision,
-//                                         int64_t max_iterations,
-//                                         double deflation_tol);
-// template EigsLanczosResult eigs_lanczos(CSRMatrix<int64_t, complex> const &ops,
-//                                         State const &state0, int64_t neigvals,
-//                                         double precision,
-//                                         int64_t max_iterations,
-//                                         double deflation_tol);
+// template EigsLanczosResult eigs_lanczos(CSRMatrix<int32_t, double> const
+// &ops,
+//                                         State const &state0, int64_t
+//                                         neigvals, double precision, int64_t
+//                                         max_iterations, double
+//                                         deflation_tol);
+// template EigsLanczosResult eigs_lanczos(CSRMatrix<int32_t, complex> const
+// &ops,
+//                                         State const &state0, int64_t
+//                                         neigvals, double precision, int64_t
+//                                         max_iterations, double
+//                                         deflation_tol);
+// template EigsLanczosResult eigs_lanczos(CSRMatrix<int64_t, double> const
+// &ops,
+//                                         State const &state0, int64_t
+//                                         neigvals, double precision, int64_t
+//                                         max_iterations, double
+//                                         deflation_tol);
+// template EigsLanczosResult eigs_lanczos(CSRMatrix<int64_t, complex> const
+// &ops,
+//                                         State const &state0, int64_t
+//                                         neigvals, double precision, int64_t
+//                                         max_iterations, double
+//                                         deflation_tol);
 } // namespace xdiag

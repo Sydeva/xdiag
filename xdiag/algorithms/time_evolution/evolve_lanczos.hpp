@@ -7,9 +7,9 @@
 #include <cstdint>
 #include <string>
 
-#include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
 #include <xdiag/armadillo.hpp>
 #include <xdiag/math/complex.hpp>
+#include <xdiag/matrix/sparse_matrix_types.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/states/state.hpp>
 #include <xdiag/utils/xdiag_api.hpp>

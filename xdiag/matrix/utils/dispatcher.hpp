@@ -8,11 +8,11 @@
 #include <memory>
 #include <xdiag/basis/basis.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrix {
 
 class Dispatcher {
 public:
-  using pointer_t = std::shared_ptr<Basis>;
+  using pointer_t = std::shared_ptr<basis::Basis>;
   using func_t = std::function<void(pointer_t const &, pointer_t const &)>;
   Dispatcher() = default;
 
@@ -30,4 +30,4 @@ private:
   std::unordered_map<std::size_t, func_t> table_;
 };
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrix

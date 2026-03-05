@@ -10,10 +10,10 @@
 #include <xdiag/parallel/omp/omp_utils.hpp>
 #endif
 
-namespace xdiag::basis {
+namespace xdiag::matrix {
 
 template <typename coeff_t, class basis_t, class fill_f>
-void apply_identity(Coeff const &coeff, basis_t const &basis, fill_f fill) try {
+void term_identity(Coeff const &coeff, basis_t const &basis, fill_f fill) try {
   coeff_t s = coeff.scalar().as<coeff_t>();
 #ifdef _OPENMP
 #pragma omp parallel
@@ -30,4 +30,4 @@ void apply_identity(Coeff const &coeff, basis_t const &basis, fill_f fill) try {
 }
 XDIAG_CATCH
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrix

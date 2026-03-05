@@ -26,6 +26,7 @@ public:
   BasisOnTheFly(enumeration_t const &enumeration);
 
   int64_t size() const;
+  int64_t nsites() const;
   int64_t index(bit_t bits) const;
   iterator_t begin() const;
   iterator_t end() const;

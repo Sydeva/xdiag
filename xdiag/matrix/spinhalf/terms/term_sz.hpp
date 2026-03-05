@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include <xdiag/basis/plain/implementation/apply_diag.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/nonzero.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_diag.hpp>
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::basis::plain {
+namespace xdiag::matrix::spinhalf {
 
 template <typename coeff_t, class basis_t, class fill_f>
-void apply_sz(Coeff const &c, Op const &op, basis_t const &basis,
-              fill_f fill) try {
+void term_sz(Coeff const &c, Op const &op, basis_t const &basis,
+             fill_f fill) try {
   using bit_t = typename basis_t::bit_t;
 
   coeff_t H = c.scalar().as<coeff_t>();
@@ -24,7 +24,7 @@ void apply_sz(Coeff const &c, Op const &op, basis_t const &basis,
   coeff_t val_up = H / 2.;
   coeff_t val_dn = -H / 2.;
 
-  apply_diag(
+  term_diag(
       basis,
       [&](bit_t spins) -> coeff_t {
         return bits::nonzero(spins & mask) ? val_up : val_dn;
@@ -33,4 +33,4 @@ void apply_sz(Coeff const &c, Op const &op, basis_t const &basis,
 }
 XDIAG_CATCH
 
-} // namespace xdiag::basis::plain
+} // namespace xdiag::matrix::spinhalf

@@ -6,16 +6,16 @@
 
 #include <utility>
 
-#include <xdiag/basis/plain/implementation/apply_offdiag.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/nonzero.hpp>
+#include <xdiag/matrix/spinhalf/terms/term_offdiag.hpp>
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::basis::plain {
+namespace xdiag::matrix::spinhalf {
 
 template <typename coeff_t, class basis_t, class fill_f>
-void apply_spsm(Coeff const &c, Op const &op, basis_t const &basis_in,
-                basis_t const &basis_out, fill_f fill) try {
+void term_spsm(Coeff const &c, Op const &op, basis_t const &basis_in,
+               basis_t const &basis_out, fill_f fill) try {
   using bit_t = typename basis_t::bit_t;
 
   coeff_t J = c.scalar().as<coeff_t>();
@@ -31,7 +31,7 @@ void apply_spsm(Coeff const &c, Op const &op, basis_t const &basis_in,
       bit_t spins_flip = spins | mask;
       return {spins_flip, J};
     };
-    apply_offdiag(basis_in, basis_out, non_zero_term, term_action, fill);
+    term_offdiag(basis_in, basis_out, non_zero_term, term_action, fill);
   } else { // op.type() == "S-"
     auto non_zero_term = [&](bit_t spins) {
       return bits::nonzero(spins & mask);
@@ -40,9 +40,9 @@ void apply_spsm(Coeff const &c, Op const &op, basis_t const &basis_in,
       bit_t spins_flip = spins ^ mask;
       return {spins_flip, J};
     };
-    apply_offdiag(basis_in, basis_out, non_zero_term, term_action, fill);
+    term_offdiag(basis_in, basis_out, non_zero_term, term_action, fill);
   }
 }
 XDIAG_CATCH
 
-} // namespace xdiag::basis::plain
+} // namespace xdiag::matrix::spinhalf
