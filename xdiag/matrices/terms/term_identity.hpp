@@ -6,9 +6,7 @@
 #include <cstdint>
 #include <xdiag/operators/coeff.hpp>
 
-#ifdef _OPENMP
-#include <xdiag/parallel/omp/omp_utils.hpp>
-#endif
+#include <xdiag/matrices/fill_functions.hpp>
 
 namespace xdiag::matrices {
 

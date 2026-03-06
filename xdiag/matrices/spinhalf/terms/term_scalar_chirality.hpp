@@ -8,7 +8,7 @@
 
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/nonzero.hpp>
-#include <xdiag/matrices/spinhalf/terms/term_offdiag.hpp>
+#include <xdiag/matrices/terms/term_offdiag.hpp>
 #include <xdiag/utils/error.hpp>
 
 namespace xdiag::matrices::spinhalf {

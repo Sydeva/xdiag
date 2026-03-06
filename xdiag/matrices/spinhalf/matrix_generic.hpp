@@ -17,7 +17,7 @@
 #include <xdiag/matrices/spinhalf/terms/term_spsm.hpp>
 #include <xdiag/matrices/spinhalf/terms/term_sz.hpp>
 #include <xdiag/matrices/spinhalf/terms/term_szsz.hpp>
-#include <xdiag/matrices/utils/term_identity.hpp>
+#include <xdiag/matrices/terms/term_identity.hpp>
 
 namespace xdiag::matrices::spinhalf {
 

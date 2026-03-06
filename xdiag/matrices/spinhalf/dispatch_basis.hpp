@@ -10,7 +10,7 @@
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/combinations/lin_table.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
-#include <xdiag/matrices/utils/dispatcher.hpp>
+#include <xdiag/matrices/dispatcher.hpp>
 
 namespace xdiag::matrices::spinhalf {
 

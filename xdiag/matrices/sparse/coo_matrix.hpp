@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <xdiag/algebra/sparse/sparse_matrix_types.hpp>
 #include <xdiag/blocks/blocks.hpp>
+#include <xdiag/matrices/sparse/sparse_matrix_types.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
 

@@ -6,8 +6,9 @@
 
 #include <cstdint>
 #include <xdiag/basis/basis_onthefly.hpp>
+#include <xdiag/matrices/fill_functions.hpp>
 
-namespace xdiag::matrices::spinhalf {
+namespace xdiag::matrices {
 
 template <typename enumeration_t, typename term_coeff_f, typename fill_f>
 void term_diag(basis::BasisOnTheFly<enumeration_t> const &basis,
@@ -29,7 +30,7 @@ void term_diag(basis::BasisOnTheFly<enumeration_t> const &basis,
 
     for (auto it = begin; it != end; ++it, ++idx) {
       auto coeff = term_coeff(*it);
-      fill(idx, idx, coeff);
+      XDIAG_FILL(idx, idx, coeff);
     }
   }
 
@@ -44,4 +45,4 @@ void term_diag(basis::BasisOnTheFly<enumeration_t> const &basis,
 #endif
 }
 
-} // namespace xdiag::matrices::spinhalf
+} // namespace xdiag::matrices

@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <xdiag/common.hpp>
-#include <xdiag/operators/logic/block.hpp>
-#include <xdiag/operators/logic/real.hpp>
-#include <xdiag/operators/logic/valid.hpp>
+#include <xdiag/operators/logic/isreal.hpp>
 #include <xdiag/operators/opsum.hpp>
+#include <xdiag/operators/qns/blocks_match.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag {
 
@@ -41,9 +41,6 @@ inline void check_valid_sparse_matrix(OpSum const &ops, block_t const &block_in,
     }
   }
 
-  int64_t nsites = block_in.nsites();
-  check_valid(ops, nsites);
-
   int64_t m = block_out.size();
   int64_t n = block_in.size();
   if ((m > std::numeric_limits<idx_t>::max()) ||
@@ -54,4 +51,5 @@ inline void check_valid_sparse_matrix(OpSum const &ops, block_t const &block_in,
   }
 }
 XDIAG_CATCH
+
 } // namespace xdiag

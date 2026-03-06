@@ -6,8 +6,9 @@
 
 #include <cstdint>
 #include <xdiag/basis/basis_onthefly.hpp>
+#include <xdiag/matrices/fill_functions.hpp>
 
-namespace xdiag::matrices::spinhalf {
+namespace xdiag::matrices {
 
 template <typename enumeration_t, typename non_zero_term_f,
           typename term_action_f, typename fill_f>
@@ -34,7 +35,7 @@ void term_offdiag(basis::BasisOnTheFly<enumeration_t> const &basis_in,
       if (non_zero_term(spins_in)) {
         auto [spins_out, coeff] = term_action(spins_in);
         auto idx_out = basis_out.index(spins_out);
-        fill(idx_in, idx_out, coeff);
+        XDIAG_FILL(idx_in, idx_out, coeff);
       }
     }
   }
@@ -53,4 +54,4 @@ void term_offdiag(basis::BasisOnTheFly<enumeration_t> const &basis_in,
 #endif
 }
 
-} // namespace xdiag::matrices::spinhalf
+} // namespace xdiag::matrices

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <xdiag/matrices/spinhalf/terms/term_diag.hpp>
-#include <xdiag/matrices/spinhalf/terms/term_offdiag.hpp>
-#include <xdiag/matrices/utils/non_branching_op.hpp>
+#include <xdiag/matrices/terms/non_branching_op.hpp>
+#include <xdiag/matrices/terms/term_diag.hpp>
+#include <xdiag/matrices/terms/term_offdiag.hpp>
 
 namespace xdiag::matrices::spinhalf {
 

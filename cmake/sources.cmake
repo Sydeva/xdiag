@@ -17,8 +17,12 @@ set(XDIAG_SOURCES
 
   matrices/apply.cpp
   matrices/matrix.cpp
-  matrices/utils/dispatcher.cpp
-  matrices/utils/non_branching_op.cpp
+  matrices/sparse/coo_matrix.cpp
+  matrices/sparse/csr_matrix.cpp
+  matrices/sparse/csc_matrix.cpp
+  matrices/dispatcher.cpp
+  matrices/kernels.cpp
+  matrices/terms/non_branching_op.cpp
 
   bits/bitset.cpp
   bits/bitvector.cpp

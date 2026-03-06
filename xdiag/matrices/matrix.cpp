@@ -6,9 +6,9 @@
 
 #include <xdiag/armadillo.hpp>
 #include <xdiag/math/complex.hpp>
+#include <xdiag/matrices/kernels.hpp>
 #include <xdiag/matrices/spinhalf/dispatch_basis.hpp>
-#include <xdiag/matrices/spinhalf/matrix_generic.hpp>
-#include <xdiag/matrices/utils/fill_functions.hpp>
+#include <xdiag/matrices/spinhalf/matrix_policy.hpp>
 #include <xdiag/operators/monomial.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
@@ -31,17 +31,33 @@
 //     kernel can fill it without owning the storage.
 //
 // Layer 2 — Basis type (runtime dispatch via dispatch_basis):
-//   matrix(OpSum, Spinhalf, Spinhalf, coeff_t*)
+//   matrix(OpSum, Spinhalf, Spinhalf, coeff_t*)   [public: used by Julia wrapper]
 //     dispatch_basis resolves the shared_ptr<Basis> stored in each Spinhalf
 //     to a concrete BasisOnTheFly<...> type via a type-id lookup table, then
 //     calls the lambda with the concrete basis objects.
 //
-// Kernel — matrix_generic<coeff_t>(ops, basis_in, basis_out, fill_f):
-//     The innermost lambda closes over the raw matrix pointer and calls
-//     fill_matrix, which performs mat[idx_out + idx_in*m] += val, building
-//     the dense matrix in column-major order.
+// Kernel — spinhalf::matrix<basis_t, coeff_t>(ops, basis_in, basis_out, mat)
+//     Defined in spinhalf/kernels.cpp; only declared here. Each basis_t
+//     specialisation is compiled in its own translation unit (instantiation
+//     groups), keeping this file free of heavy template instantiation.
 
 namespace xdiag {
+
+template <typename coeff_t>
+void matrix(OpSum const &ops, Spinhalf const &block_in,
+            Spinhalf const &block_out, coeff_t *mat) try {
+  // Layer 2: unwrap the basis pointer; the lambda receives the concrete
+  // BasisOnTheFly<...> type, allowing matrix_generic to be instantiated
+  // at compile time for each basis specialization.
+  // Layer 2: unwrap the basis pointer to a concrete BasisOnTheFly<...> type.
+  matrices::spinhalf::dispatch_basis(
+      block_in, block_out, [&](auto const &basis_in, auto const &basis_out) {
+        // Kernel: definition is in kernels.cpp, instantiated per basis type.
+        matrices::matrix<matrices::spinhalf::MatrixPolicy>(
+            ops, basis_in, basis_out, mat);
+      });
+}
+XDIAG_CATCH
 
 template <typename op_t>
 arma::mat matrix(op_t const &op, Block const &blocki) try {
@@ -91,41 +107,17 @@ arma::cx_mat matrixC(op_t const &op, Block const &block_in,
 }
 XDIAG_CATCH
 
-template <typename coeff_t>
-void matrix(OpSum const &ops, Spinhalf const &block_in,
-            Spinhalf const &block_out, coeff_t *mat) try {
-  // Layer 2: unwrap the basis pointer; the lambda receives the concrete
-  // BasisOnTheFly<...> type, allowing matrix_generic to be instantiated
-  // at compile time for each basis specialization.
-  matrices::spinhalf::dispatch_basis(
-      block_in, block_out, [&](auto const &basis_in, auto const &basis_out) {
-        int64_t m = basis_out.size();
-        // Kernel: fill_matrix accumulates mat[idx_out + idx_in*m] += val,
-        // building the dense matrix in column-major order.
-        matrices::spinhalf::matrix_generic<coeff_t>(
-            ops, basis_in, basis_out,
-            [&](int64_t idx_in, int64_t idx_out, coeff_t val) {
-              matrices::fill_matrix(mat, m, idx_in, idx_out, val);
-            });
-      });
-}
-XDIAG_CATCH
+#define INSTANTIATE_XDIAG_MATRIX(OP_TYPE)                                      \
+  template arma::mat matrix(OP_TYPE const &, Block const &);                   \
+  template arma::cx_mat matrixC(OP_TYPE const &, Block const &);               \
+  template arma::mat matrix(OP_TYPE const &op, Block const &, Block const &);  \
+  template arma::cx_mat matrixC(OP_TYPE const &, Block const &, Block const &);
 
-template arma::mat matrix(Op const &, Block const &);
-template arma::mat matrix(Monomial const &, Block const &);
-template arma::mat matrix(OpSum const &, Block const &);
+INSTANTIATE_XDIAG_MATRIX(Op);
+INSTANTIATE_XDIAG_MATRIX(Monomial);
+INSTANTIATE_XDIAG_MATRIX(OpSum);
 
-template arma::cx_mat matrixC(Op const &, Block const &);
-template arma::cx_mat matrixC(Monomial const &, Block const &);
-template arma::cx_mat matrixC(OpSum const &, Block const &);
-
-template arma::mat matrix(Op const &op, Block const &, Block const &);
-template arma::mat matrix(Monomial const &op, Block const &, Block const &);
-template arma::mat matrix(OpSum const &op, Block const &, Block const &);
-
-template arma::cx_mat matrixC(Op const &op, Block const &, Block const &);
-template arma::cx_mat matrixC(Monomial const &op, Block const &, Block const &);
-template arma::cx_mat matrixC(OpSum const &op, Block const &, Block const &);
+#undef INSTANTIATE_XDIAG_MATRIX
 
 template void matrix(OpSum const &, Spinhalf const &, Spinhalf const &,
                      double *);
