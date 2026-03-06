@@ -7,7 +7,7 @@
 // #include <xdiag/algebra/sparse/apply.hpp>
 // #include <xdiag/algebra/sparse/logic.hpp>
 #include <xdiag/math/norm.hpp>
-#include <xdiag/matrix/apply.hpp>
+#include <xdiag/matrices/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/random/hash.hpp>
 #include <xdiag/utils/timing.hpp>
@@ -169,18 +169,21 @@ double norm_estimate(OpSum const &ops, Block const &block,
 XDIAG_CATCH
 
 // template <typename idx_t, typename coeff_t>
-// double norm_estimate(CSRMatrix<idx_t, coeff_t> const &ops, Block const &block,
+// double norm_estimate(CSRMatrix<idx_t, coeff_t> const &ops, Block const
+// &block,
 //                      int64_t n_max_attempts, uint64_t seed) try {
 //   return norm_estimate<CSRMatrix<idx_t, coeff_t>>(ops, block, n_max_attempts,
 //                                                   seed);
 // }
 // XDIAG_CATCH
 
-// template double norm_estimate(CSRMatrix<int32_t, double> const &, Block const &,
+// template double norm_estimate(CSRMatrix<int32_t, double> const &, Block const
+// &,
 //                               int64_t, uint64_t);
 // template double norm_estimate(CSRMatrix<int32_t, complex> const &,
 //                               Block const &, int64_t, uint64_t);
-// template double norm_estimate(CSRMatrix<int64_t, double> const &, Block const &,
+// template double norm_estimate(CSRMatrix<int64_t, double> const &, Block const
+// &,
 //                               int64_t, uint64_t);
 // template double norm_estimate(CSRMatrix<int64_t, complex> const &,
 //                               Block const &, int64_t, uint64_t);

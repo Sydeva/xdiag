@@ -1,0 +1,40 @@
+// SPDX-FileCopyrightText: 2026 Alexander Wietek <awietek@pks.mpg.de>
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include <xdiag/basis/basis_onthefly.hpp>
+#include <xdiag/bits/bitset.hpp>
+#include <xdiag/blocks/spinhalf.hpp>
+#include <xdiag/combinatorics/combinations/combinations.hpp>
+#include <xdiag/combinatorics/combinations/lin_table.hpp>
+#include <xdiag/combinatorics/subsets/subsets.hpp>
+#include <xdiag/matrices/utils/dispatcher.hpp>
+
+namespace xdiag::matrices::spinhalf {
+
+template <typename func_t>
+void dispatch_basis(xdiag::Spinhalf const &block_in,
+                    xdiag::Spinhalf const &block_out, func_t fn) {
+  using namespace basis;
+  using namespace combinatorics;
+  using namespace bits;
+
+  matrices::Dispatcher d;
+#define ADD(B) d.add<B>([&](B const &bin, B const &bout) { fn(bin, bout); });
+  ADD(BasisOnTheFly<Subsets<uint32_t>>)
+  ADD(BasisOnTheFly<Subsets<uint64_t>>)
+  ADD(BasisOnTheFly<Combinations<uint32_t>>)
+  ADD(BasisOnTheFly<Combinations<uint64_t>>)
+  ADD(BasisOnTheFly<LinTable<uint32_t>>)
+  ADD(BasisOnTheFly<LinTable<uint64_t>>)
+  ADD(BasisOnTheFly<Combinations<BitsetDynamic>>)
+  ADD(BasisOnTheFly<Combinations<BitsetStatic2>>)
+  ADD(BasisOnTheFly<Combinations<BitsetStatic4>>)
+  ADD(BasisOnTheFly<Combinations<BitsetStatic8>>)
+#undef ADD
+  d.dispatch(block_in.basis(), block_out.basis());
+}
+
+} // namespace xdiag::matrices::spinhalf

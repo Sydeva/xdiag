@@ -14,7 +14,7 @@
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrices {
 
 template <typename coeff_t>
 static bool is_non_branching_matrix(arma::Mat<coeff_t> const &mat,
@@ -274,4 +274,4 @@ INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic2, complex);
 INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic4, complex);
 INSTANTIATE_XDIAG_BASIS_NON_BRANCHING_OP(BitsetStatic8, complex);
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrices

@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <xdiag/matrix/spinhalf/terms/term_diag.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_offdiag.hpp>
-#include <xdiag/matrix/utils/non_branching_op.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_diag.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_offdiag.hpp>
+#include <xdiag/matrices/utils/non_branching_op.hpp>
 
-namespace xdiag::matrix::spinhalf {
+namespace xdiag::matrices::spinhalf {
 
 template <typename coeff_t, class basis_t, class fill_f>
 void term_matrix(Coeff const &c, Op const &op, basis_t const &basis_in,
@@ -16,7 +16,7 @@ void term_matrix(Coeff const &c, Op const &op, basis_t const &basis_in,
   using bit_t = typename basis_t::bit_t;
 
   // Decompose into sum of non-branching operators
-  auto ops_nb = basis::non_branching_ops<bit_t, coeff_t>(c, op);
+  auto ops_nb = matrices::non_branching_ops<bit_t, coeff_t>(c, op);
 
   // Loop over sum of non-branching operators
   for (auto const &op_nb : ops_nb) {
@@ -44,4 +44,4 @@ void term_matrix(Coeff const &c, Op const &op, basis_t const &basis_in,
   } // for (auto const &op_nb : ops_nb)
 }
 
-} // namespace xdiag::matrix::spinhalf
+} // namespace xdiag::matrices::spinhalf

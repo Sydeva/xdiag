@@ -8,7 +8,7 @@
 #include <memory>
 #include <xdiag/basis/basis.hpp>
 
-namespace xdiag::matrix {
+namespace xdiag::matrices {
 
 class Dispatcher {
 public:
@@ -30,4 +30,4 @@ private:
   std::unordered_map<std::size_t, func_t> table_;
 };
 
-} // namespace xdiag::matrix
+} // namespace xdiag::matrices

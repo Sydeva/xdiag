@@ -8,7 +8,7 @@
 
 #include <xdiag/armadillo.hpp>
 #include <xdiag/blocks/blocks.hpp>
-#include <xdiag/matrix/sparse_matrix_types.hpp>
+#include <xdiag/matrices/sparse_matrix_types.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/states/state.hpp>
 #include <xdiag/utils/xdiag_api.hpp>

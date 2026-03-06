@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <xdiag/basis/basis_onthefly.hpp>
 
-namespace xdiag::matrix::spinhalf {
+namespace xdiag::matrices::spinhalf {
 
 template <typename enumeration_t, typename non_zero_term_f,
           typename term_action_f, typename fill_f>
@@ -53,4 +53,4 @@ void term_offdiag(basis::BasisOnTheFly<enumeration_t> const &basis_in,
 #endif
 }
 
-} // namespace xdiag::matrix::spinhalf
+} // namespace xdiag::matrices::spinhalf

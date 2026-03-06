@@ -12,7 +12,7 @@
 #include <xdiag/operators/coeff.hpp>
 #include <xdiag/operators/op.hpp>
 
-namespace xdiag::basis {
+namespace xdiag::matrices {
 
 template <typename bit_t, typename coeff_t> class NonBranchingOp {
 public:
@@ -42,4 +42,4 @@ template <typename bit_t, typename coeff_t>
 std::vector<NonBranchingOp<bit_t, coeff_t>>
 non_branching_ops(Coeff const &c, Op const &op, double precision = 1e-12);
 
-} // namespace xdiag::basis
+} // namespace xdiag::matrices

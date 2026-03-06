@@ -9,7 +9,7 @@
 
 #include <xdiag/armadillo.hpp>
 
-namespace xdiag::matrix {
+namespace xdiag::matrices {
 
 template <typename coeff_t>
 constexpr void fill_matrix(coeff_t *mat, int64_t m, int64_t idx_in,
@@ -58,4 +58,4 @@ constexpr void fill_apply(arma::Mat<coeff_t> const &mat_in,
   }
 }
 
-} // namespace xdiag::matrix
+} // namespace xdiag::matrices

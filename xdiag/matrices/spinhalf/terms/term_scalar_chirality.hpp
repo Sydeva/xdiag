@@ -8,10 +8,10 @@
 
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/nonzero.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_offdiag.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_offdiag.hpp>
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::matrix::spinhalf {
+namespace xdiag::matrices::spinhalf {
 
 // Scalar chirality term: J S*(S x S)
 
@@ -71,4 +71,4 @@ void term_scalar_chirality(Coeff const &c, Op const &op,
 }
 XDIAG_CATCH
 
-} // namespace xdiag::matrix::spinhalf
+} // namespace xdiag::matrices::spinhalf

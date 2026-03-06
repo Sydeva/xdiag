@@ -15,10 +15,10 @@ set(XDIAG_SOURCES
   math/dot.cpp
   math/norm.cpp
 
-  matrix/apply.cpp
-  matrix/utils/dispatcher.cpp
-  matrix/utils/non_branching_op.cpp
-  matrix/spinhalf/apply.cpp
+  matrices/apply.cpp
+  matrices/matrix.cpp
+  matrices/utils/dispatcher.cpp
+  matrices/utils/non_branching_op.cpp
 
   bits/bitset.cpp
   bits/bitvector.cpp

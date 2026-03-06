@@ -6,10 +6,10 @@
 
 #include <xdiag/bits/get_set_bit.hpp>
 #include <xdiag/bits/nonzero.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_diag.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_diag.hpp>
 #include <xdiag/utils/error.hpp>
 
-namespace xdiag::matrix::spinhalf {
+namespace xdiag::matrices::spinhalf {
 
 template <typename coeff_t, class basis_t, class fill_f>
 void term_sz(Coeff const &c, Op const &op, basis_t const &basis,
@@ -33,4 +33,4 @@ void term_sz(Coeff const &c, Op const &op, basis_t const &basis,
 }
 XDIAG_CATCH
 
-} // namespace xdiag::matrix::spinhalf
+} // namespace xdiag::matrices::spinhalf

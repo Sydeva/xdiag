@@ -9,7 +9,7 @@
 #include <xdiag/algorithms/time_evolution/zahexpv.hpp>
 #include <xdiag/math/dot.hpp>
 #include <xdiag/math/norm.hpp>
-#include <xdiag/matrix/apply.hpp>
+#include <xdiag/matrices/apply.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/states/norm.hpp>

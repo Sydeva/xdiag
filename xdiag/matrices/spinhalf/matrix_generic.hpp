@@ -11,15 +11,15 @@
 #include <xdiag/utils/error.hpp>
 #include <xdiag/utils/format.hpp>
 
-#include <xdiag/matrix/spinhalf/terms/term_exchange.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_matrix.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_scalar_chirality.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_spsm.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_sz.hpp>
-#include <xdiag/matrix/spinhalf/terms/term_szsz.hpp>
-#include <xdiag/matrix/utils/term_identity.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_exchange.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_matrix.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_scalar_chirality.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_spsm.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_sz.hpp>
+#include <xdiag/matrices/spinhalf/terms/term_szsz.hpp>
+#include <xdiag/matrices/utils/term_identity.hpp>
 
-namespace xdiag::matrix::spinhalf {
+namespace xdiag::matrices::spinhalf {
 
 template <typename coeff_t, typename basis_t, typename fill_f>
 void matrix_generic(OpSum const &ops, basis_t const &basis_in,
@@ -37,7 +37,7 @@ void matrix_generic(OpSum const &ops, basis_t const &basis_in,
     std::string type = op.type();
 
     if (type == "Id") {
-      matrix::term_identity<coeff_t>(c, basis_in, fill);
+      matrices::term_identity<coeff_t>(c, basis_in, fill);
     } else if (type == "Exchange") {
       spinhalf::term_exchange<coeff_t>(c, op, basis_in, basis_out, fill);
     } else if (type == "SzSz") {
@@ -61,4 +61,4 @@ void matrix_generic(OpSum const &ops, basis_t const &basis_in,
 }
 XDIAG_CATCH
 
-} // namespace xdiag::matrix::spinhalf
+} // namespace xdiag::matrices::spinhalf
