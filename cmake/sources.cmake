@@ -20,6 +20,7 @@ set(XDIAG_SOURCES
   matrices/sparse/coo_matrix.cpp
   matrices/sparse/csr_matrix.cpp
   matrices/sparse/csc_matrix.cpp
+  matrices/sparse/apply.cpp
   matrices/dispatcher.cpp
   matrices/kernels.cpp
   matrices/terms/non_branching_op.cpp

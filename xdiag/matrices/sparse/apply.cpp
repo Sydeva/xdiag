@@ -4,6 +4,9 @@
 
 #include "apply.hpp"
 
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -212,30 +215,18 @@ static void apply(CSRMatrix<idx_t, coeff_csr_t> const &A,
         m, n, vec_in.n_rows, vec_out.n_rows))
   }
 
-  if (i0 == 0) {
+  // Shift data/col pointers by i0 so the inner loop body is identical for
+  // both 0-based (i0==0) and 1-based (i0==1) storage.
+  const coeff_csr_t *D = A.data.memptr() - i0;
+  const idx_t *C = A.col.memptr() - i0;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(static)
 #endif
-    for (idx_t i = 0; i < m; i++) {
-      coeff_vec_t zi = 0.0;
-      idx_t j;
-      for (idx_t ckey = A.rowptr[i]; ckey < A.rowptr[i + 1]; ckey++) {
-        zi += (coeff_vec_t)A.data[ckey] * vec_in[A.col[ckey]];
-      }
-      vec_out[i] = zi;
-    }
-  } else { //  (i0 == 1)
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-    for (idx_t i = 0; i < m; i++) {
-      coeff_vec_t zi = 0.0;
-      idx_t j;
-      for (idx_t idx = A.rowptr[i]; idx < A.rowptr[i + 1]; idx++) {
-        zi += (coeff_vec_t)A.data[idx - 1] * vec_in[A.col[idx - 1] - 1];
-      }
-      vec_out[i] = zi;
-    }
+  for (idx_t i = 0; i < m; i++) {
+    coeff_vec_t zi = 0.0;
+    for (idx_t jj = A.rowptr[i]; jj < A.rowptr[i + 1]; jj++)
+      zi += (coeff_vec_t)D[jj] * vec_in[C[jj] - i0];
+    vec_out[i] = zi;
   }
 }
 XDIAG_CATCH
@@ -311,39 +302,20 @@ static void apply(CSRMatrix<idx_t, coeff_csr_t> const &A,
     x[vec] = X + vec * n;
   }
 
-  if (i0 == 0) {
+  const coeff_csr_t *D = A.data.memptr() - i0;
+  const idx_t *C = A.col.memptr() - i0;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
-    for (idx_t i = 0; i < m; i++) { // loop over rows
-      coeff_mat_t *y = Y + i;
-      for (idx_t vec = 0; vec < nvec; vec++) {
-        y[vec * m] = 0.;
-      }
-      for (idx_t jj = A.rowptr[i]; jj < A.rowptr[i + 1]; jj++) {
-        coeff_mat_t val = (coeff_mat_t)A.data[jj];
-        idx_t j = A.col[jj];
-        for (idx_t vec = 0; vec < nvec; vec++) {
-          y[vec * m] += val * x[vec][j];
-        }
-      }
-    }
-  } else { // i0 == 1
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
-#endif
-    for (idx_t i = 0; i < m; i++) { // loop over rows
-      coeff_mat_t *y = Y + i;
-      for (idx_t vec = 0; vec < nvec; vec++) {
-        y[vec * m] = 0.;
-      }
-      for (idx_t jj = A.rowptr[i]; jj < A.rowptr[i + 1]; jj++) {
-        coeff_mat_t val = (coeff_mat_t)A.data[jj - 1];
-        idx_t j = A.col[jj - 1] - 1;
-        for (idx_t vec = 0; vec < nvec; vec++) {
-          y[vec * m] += val * x[vec][j];
-        }
-      }
+  for (idx_t i = 0; i < m; i++) { // loop over rows
+    coeff_mat_t *y = Y + i;
+    for (idx_t vec = 0; vec < nvec; vec++)
+      y[vec * m] = 0.;
+    for (idx_t jj = A.rowptr[i]; jj < A.rowptr[i + 1]; jj++) {
+      coeff_mat_t val = (coeff_mat_t)D[jj];
+      idx_t j = C[jj] - i0;
+      for (idx_t vec = 0; vec < nvec; vec++)
+        y[vec * m] += val * x[vec][j];
     }
   }
 }
