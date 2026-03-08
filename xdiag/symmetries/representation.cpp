@@ -8,6 +8,9 @@
 #include <iomanip>
 #include <numeric>
 
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/to_string_generic.hpp>
+
 namespace xdiag {
 
 template <typename T>

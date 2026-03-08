@@ -33,6 +33,10 @@ set(XDIAG_TEST_SOURCES
   operators/logic/test_spinhalf_implementation_algebra.cpp
   operators/qns/test_nup_ndn.cpp
 
+  symmetries/test_permutation.cpp
+  symmetries/test_permutation_group.cpp
+  symmetries/test_representation.cpp
+  
   blocks/spinhalf/test_spinhalf.cpp
   blocks/spinhalf/testcases_spinhalf.cpp
 
@@ -61,9 +65,6 @@ set(XDIAG_TEST_SOURCES
   # symmetries/operations/test_symmetry_operations.cpp
   # symmetries/operations/test_representative_list_omp.cpp
   # symmetries/test_fermi_sign.cpp
-  # symmetries/test_permutation.cpp
-  # symmetries/test_permutation_group.cpp
-  # symmetries/test_representation.cpp
 
   # operators/test_op.cpp
   # operators/test_opsum.cpp

@@ -5,8 +5,8 @@
 #include "file_toml.hpp"
 
 #include <fstream>
-#include <xdiag/common.hpp>
 #include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag {
 

@@ -5,14 +5,13 @@
 #pragma once
 #ifdef XDIAG_USE_HDF5
 
+#include <hdf5.h>
 #include <map>
 #include <string>
 #include <vector>
 
-#include <hdf5.h>
-
-#include <xdiag/common.hpp>
 #include <xdiag/io/hdf5/file_h5_handler.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 

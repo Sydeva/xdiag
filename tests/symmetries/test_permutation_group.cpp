@@ -6,11 +6,10 @@
 
 #include <iostream>
 
-#include <xdiag/combinatorics/subsets.hpp>
 #include <xdiag/io/file_toml.hpp>
-#include <xdiag/symmetries/operations/symmetry_operations.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>
 #include <xdiag/utils/logger.hpp>
+#include <xdiag/config.hpp>
 
 TEST_CASE("permutation_group", "[symmetries]") try {
   using namespace xdiag;

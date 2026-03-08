@@ -10,17 +10,20 @@
 
 #include <xdiag/armadillo.hpp>
 #include <xdiag/symmetries/permutation.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
+// Finite group of site permutations with precomputed inverse and multiplication
+// table. Permutations are stored column-major in a (nsites x size) matrix so
+// that each permutation's entries are contiguous in memory.
 class PermutationGroup {
 public:
-  using iterator_t = std::vector<Permutation>::const_iterator;
-
   XDIAG_API PermutationGroup() = default;
   XDIAG_API explicit PermutationGroup(
       std::vector<Permutation> const &permutations);
-  XDIAG_API explicit PermutationGroup(arma::Mat<int64_t> const &matrix);
+  XDIAG_API explicit PermutationGroup(
+      arma::Mat<int64_t> const &matrix); // nsites x n_permutations, cols=perms
   XDIAG_API PermutationGroup(int64_t *ptr, int64_t n_permutations,
                              int64_t nsites);
 
@@ -30,15 +33,13 @@ public:
   XDIAG_API int64_t size() const;
   XDIAG_API int64_t nsites() const;
 
-  XDIAG_API Permutation const &operator[](int64_t sym) const;
+  XDIAG_API Permutation operator[](int64_t sym) const;
+  XDIAG_API int64_t const *ptr(int64_t sym) const; // pointer to sym-th column
   XDIAG_API int64_t inv(int64_t sym) const;
   XDIAG_API int64_t multiply(int64_t s1, int64_t s2) const;
 
-  XDIAG_API iterator_t begin() const;
-  XDIAG_API iterator_t end() const;
-
 private:
-  std::vector<Permutation> permutations_;
+  arma::Mat<int64_t> permutations_; // nsites x n_permutations
   std::vector<int64_t> inv_;
   arma::Mat<int64_t> multiply_;
 };

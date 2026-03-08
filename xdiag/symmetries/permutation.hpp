@@ -9,9 +9,12 @@
 #include <vector>
 
 #include <xdiag/armadillo.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
+// Permutation of n sites: bijection {0,...,n-1} -> {0,...,n-1} stored as p[i].
+// Composition: (p1 * p2)[i] = p1[p2[i]], i.e. p2 is applied first.
 class Permutation {
 public:
   XDIAG_API Permutation() = default;
@@ -20,7 +23,7 @@ public:
   XDIAG_API explicit Permutation(std::vector<int32_t> const &array);
   XDIAG_API explicit Permutation(std::vector<int64_t> const &array);
   XDIAG_API explicit Permutation(arma::Col<int64_t> const &array);
-  XDIAG_API Permutation(int64_t *ptr, int64_t size);
+  XDIAG_API Permutation(int64_t const *ptr, int64_t size);
 
   XDIAG_API int64_t size() const;
   XDIAG_API int64_t operator[](int64_t i) const;
@@ -30,8 +33,6 @@ public:
   XDIAG_API Permutation &operator*=(Permutation const &rhs);
   XDIAG_API bool operator==(Permutation const &rhs) const;
   XDIAG_API bool operator!=(Permutation const &rhs) const;
-
-  template <typename bit_t> bit_t apply(bit_t state) const;
 
 private:
   std::vector<int64_t> array_;

@@ -6,6 +6,21 @@ set(XDIAG_SOURCES
   utils/read_vectors.cpp
   utils/split.cpp
 
+  io/read.cpp
+  io/file_toml.cpp
+  io/file_h5.cpp
+  io/toml/file_toml_handler.cpp
+  io/toml/value.cpp
+  io/toml/std_vector.cpp
+  io/toml/arma_vector.cpp
+  io/toml/arma_matrix.cpp
+  io/toml/operators.cpp
+  io/hdf5/file_h5_handler.cpp
+  io/hdf5/file_h5_subview.cpp
+  io/hdf5/utils.cpp
+  io/hdf5/write.cpp
+  io/hdf5/types.cpp
+  
   math/ipow.cpp
   math/binomial.cpp
   math/scalar.cpp
@@ -77,7 +92,11 @@ set(XDIAG_SOURCES
   operators/qns/nup_ndn.cpp
   operators/qns/block.cpp
   operators/qns/blocks_match.cpp
- 
+
+  symmetries/permutation.cpp
+  symmetries/permutation_group.cpp
+  symmetries/representation.cpp
+  
   algorithms/lanczos/lanczos_convergence.cpp
   algorithms/lanczos/tmatrix.cpp
   algorithms/lanczos/eigvals_lanczos.cpp
@@ -122,20 +141,6 @@ set(XDIAG_SOURCES
   
   # algebra/sparse/csc_matrix.cpp
   
-  # io/read.cpp
-  # io/file_toml.cpp
-  # io/file_h5.cpp
-  # io/toml/file_toml_handler.cpp
-  # io/toml/value.cpp
-  # io/toml/std_vector.cpp
-  # io/toml/arma_vector.cpp
-  # io/toml/arma_matrix.cpp
-  # io/toml/operators.cpp
-  # io/hdf5/file_h5_handler.cpp
-  # io/hdf5/file_h5_subview.cpp
-  # io/hdf5/utils.cpp
-  # io/hdf5/write.cpp
-  # io/hdf5/types.cpp
   
   # basis/spinhalf/basis_spinhalf.cpp
   # basis/spinhalf/basis_sz.cpp
@@ -159,9 +164,6 @@ set(XDIAG_SOURCES
   # blocks/electron.cpp
   # blocks/tj.cpp
 
-  # symmetries/permutation.cpp
-  # symmetries/permutation_group.cpp
-  # symmetries/representation.cpp
   # symmetries/operations/symmetry_operations.cpp	
   # symmetries/operations/representative_lookup_table.cpp	
   # symmetries/operations/fermi_sign.cpp

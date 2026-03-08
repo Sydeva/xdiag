@@ -4,7 +4,9 @@
 
 #include "read.hpp"
 
-#include <xdiag/utils/vector.hpp>
+#include <xdiag/math/vector.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag {
 Permutation read_permutation(FileToml file, std::string tag) try {

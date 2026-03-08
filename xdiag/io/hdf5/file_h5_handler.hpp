@@ -5,11 +5,11 @@
 #pragma once
 #ifdef XDIAG_USE_HDF5
 
+#include <hdf5.h>
 #include <string>
 
-#include <hdf5.h>
-#include <xdiag/common.hpp>
 #include <xdiag/io/hdf5/file_h5_subview.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag::hdf5 {
 

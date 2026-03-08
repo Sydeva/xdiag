@@ -11,20 +11,18 @@
 
 #include <xdiag/armadillo.hpp>
 #include <xdiag/extern/toml++/toml.hpp>
-
 #include <xdiag/io/toml/arma_matrix.hpp>
 #include <xdiag/io/toml/arma_vector.hpp>
 #include <xdiag/io/toml/operators.hpp>
 #include <xdiag/io/toml/std_vector.hpp>
 #include <xdiag/io/toml/value.hpp>
-
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
 #include <xdiag/symmetries/permutation.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>
 #include <xdiag/symmetries/representation.hpp>
-#include <xdiag/utils/logger.hpp>
-#include <xdiag/utils/type_string.hpp>
+#include <xdiag/utils/error.hpp>
+#include <xdiag/utils/format.hpp>
 
 namespace xdiag::io {
 
@@ -432,7 +430,7 @@ template <> void FileTomlHandler::operator= <Op>(Op const &op) try {
 XDIAG_CATCH
 
 template <> void FileTomlHandler::operator= <OpSum>(OpSum const &ops) try {
-  if (ops.constants().size() > 0) {
+  if (ops.params().size() > 0) {
     table_.insert_or_assign(key_, toml_table(ops));
   } else {
     table_.insert_or_assign(key_, toml_array(ops));

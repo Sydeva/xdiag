@@ -6,11 +6,11 @@
 
 #include <istream>
 #include <string>
-
-#include <xdiag/common.hpp>
+#include <vector>
 
 #include <xdiag/extern/toml++/toml.hpp>
 #include <xdiag/io/toml/file_toml_handler.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 

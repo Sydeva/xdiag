@@ -7,30 +7,8 @@
 #include <iostream>
 #include <random>
 
-#include <xdiag/combinatorics/subsets.hpp>
 #include <xdiag/symmetries/permutation.hpp>
 #include <xdiag/utils/logger.hpp>
-
-template <typename bit_t> void test_permutation_apply(int64_t nsites) {
-
-  using namespace xdiag;
-  std::random_device rd;
-  std::mt19937 g(rd());
-  for (int64_t i = 0; i < 20; ++i) {
-    auto id = Permutation(nsites);
-    auto a = id.array();
-    std::shuffle(a.begin(), a.end(), g);
-    auto p = Permutation(a);
-
-    for (auto state : combinatorics::Subsets<bit_t>(nsites)) {
-      bit_t tstate = 0;
-      for (int64_t site = 0; site < nsites; ++site) {
-        tstate |= ((state >> site) & 1) << p[site];
-      }
-      REQUIRE(tstate == p.apply(state));
-    }
-  }
-}
 
 TEST_CASE("permutation", "[symmetries]") {
   using namespace xdiag;
@@ -38,7 +16,7 @@ TEST_CASE("permutation", "[symmetries]") {
 
   std::random_device rd;
   std::mt19937 g(rd());
- 
+
   // Test if identity is correct
   for (int64_t nsites = 1; nsites < 8; ++nsites) {
     std::vector<int64_t> pv(nsites);
@@ -72,11 +50,6 @@ TEST_CASE("permutation", "[symmetries]") {
       auto pinv = inv(p);
       REQUIRE(p * pinv == id);
     }
-
-    // Test applying permutations to state
-    test_permutation_apply<uint16_t>(nsites);
-    test_permutation_apply<uint32_t>(nsites);
-    test_permutation_apply<uint64_t>(nsites);
   }
 
   Log("done");

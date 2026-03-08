@@ -11,9 +11,12 @@
 #include <xdiag/armadillo.hpp>
 #include <xdiag/math/vector.hpp>
 #include <xdiag/symmetries/permutation_group.hpp>
+#include <xdiag/utils/xdiag_api.hpp>
 
 namespace xdiag {
 
+// 1-D irreducible representation of a PermutationGroup.
+// Characters c(g) are complex (or real) scalars satisfying c(g)*c(h) = c(gh).
 class Representation {
 public:
   XDIAG_API Representation() = default;

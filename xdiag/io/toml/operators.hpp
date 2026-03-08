@@ -5,16 +5,16 @@
 #pragma once
 
 #include <xdiag/extern/toml++/toml.hpp>
-#include <xdiag/operators/coupling.hpp>
+#include <xdiag/math/matrix.hpp>
+#include <xdiag/math/scalar.hpp>
+#include <xdiag/operators/coeff.hpp>
 #include <xdiag/operators/op.hpp>
 #include <xdiag/operators/opsum.hpp>
-#include <xdiag/utils/matrix.hpp>
-#include <xdiag/utils/scalar.hpp>
 
 namespace xdiag::io {
 
 Scalar scalar(toml::node const &node);
-Coupling coupling(toml::node const &node);
+Coeff coeff(toml::node const &node);
 Matrix matrix(toml::node const &node);
 
 Op op(toml::node const &node);
