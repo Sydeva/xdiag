@@ -96,6 +96,7 @@ set(XDIAG_SOURCES
   symmetries/permutation.cpp
   symmetries/permutation_group.cpp
   symmetries/representation.cpp
+  symmetries/cyclic_group.cpp
   
   algorithms/lanczos/lanczos_convergence.cpp
   algorithms/lanczos/tmatrix.cpp
