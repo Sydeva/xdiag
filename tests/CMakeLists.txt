@@ -41,8 +41,8 @@ set(XDIAG_TEST_SOURCES
   blocks/spinhalf/test_spinhalf.cpp
   blocks/spinhalf/testcases_spinhalf.cpp
 
-  # io/test_file_toml.cpp
-  # io/test_file_h5.cpp
+  io/test_file_toml.cpp
+  io/test_file_h5.cpp
 
   # algebra/test_matrix.cpp
   # algebra/test_sparse_matrix.cpp

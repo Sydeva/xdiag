@@ -162,22 +162,22 @@ OpSum opsum(toml::node const &node) try {
     auto interactions = (*table).at_path("Interactions").node();
     if (interactions) {
       auto ops = opsum(*interactions);
-      auto constants = (*table).at_path("Constants").as_table();
-      if (constants) {
-        for (auto [key, val] : *constants) {
+      auto params = (*table).at_path("Params").as_table();
+      if (params) {
+        for (auto [key, val] : *params) {
           Scalar s = scalar(val);
           std::string k(key.str());
           ops[k] = s;
         }
       } else {
-        XDIAG_THROW("Invalid OpSum format. Constants must be a table under the "
-                    "key \"Constants\"");
+        XDIAG_THROW("Invalid OpSum format. Params must be a table under the "
+                    "key \"Params\"");
       }
       return ops;
     } else {
       XDIAG_THROW(
           "Invalid OpSum format. Interactions must be in a table under the key "
-          "\"Interactions\" and constants under a key \"Constants\"");
+          "\"Interactions\" and params under a key \"Params\"");
     }
 
   } else {

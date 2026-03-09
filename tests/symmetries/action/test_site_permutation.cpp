@@ -115,6 +115,24 @@ TEST_CASE("site_permutation", "[symmetries]") try {
     }
   }
 
+  // apply with BitsetDynamic: must be constructed with explicit size
+  {
+    auto group = cyclic_group(4);
+    auto sp = SitePermutation(group);
+    BitsetDynamic bits_in(4); // 4-bit dynamic bitset
+    bits_in.set(0);           // set site 0
+    REQUIRE(sp.apply(0, bits_in).test(0) == true);
+    REQUIRE(sp.apply(1, bits_in).test(1) == true);
+    REQUIRE(sp.apply(2, bits_in).test(2) == true);
+    REQUIRE(sp.apply(3, bits_in).test(3) == true);
+    // inverse recovery
+    for (int64_t sym = 0; sym < group.size(); ++sym) {
+      auto permuted = sp.apply(sym, bits_in);
+      auto recovered = sp.apply(group.inv(sym), permuted);
+      REQUIRE(recovered == bits_in);
+    }
+  }
+
   // apply with BitsetStatic1 (Bitset<uint64_t, 1>, 64-bit storage): bit permutation
   {
     auto group = cyclic_group(4);

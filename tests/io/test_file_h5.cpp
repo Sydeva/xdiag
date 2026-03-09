@@ -4,9 +4,10 @@
 
 #include "../catch.hpp"
 
+#include <xdiag/config.hpp>
 #include <xdiag/extern/armadillo/armadillo>
-#include <xdiag/common.hpp>
 #include <xdiag/io/file_h5.hpp>
+#include <xdiag/utils/error.hpp>
 
 #ifdef XDIAG_USE_HDF5
 TEST_CASE("file_h5", "[io][hdf5]") {
@@ -24,7 +25,7 @@ TEST_CASE("file_h5", "[io][hdf5]") {
   fl["a/b/c/mat"] = mat;
 }
 
-TEST_CASE("file_h5_append", "[io][hdf5]"){
+TEST_CASE("file_h5_append", "[io][hdf5]") {
   using namespace xdiag;
   using namespace arma;
 
@@ -37,11 +38,9 @@ TEST_CASE("file_h5_append", "[io][hdf5]"){
 
   fid["A"] = A;
   fid["A"].col(2) = a;
-
-
 }
 
-TEST_CASE("fiile_h5_slicing", "[io][hdf5]"){
+TEST_CASE("fiile_h5_slicing", "[io][hdf5]") {
   using namespace arma;
   using namespace xdiag;
 
@@ -55,9 +54,6 @@ TEST_CASE("fiile_h5_slicing", "[io][hdf5]"){
   fid["sub_cube"] = sub_cube;
 
   fid["cubie"].slice(3) = sub_cube;
-
 }
 
-
 #endif
-

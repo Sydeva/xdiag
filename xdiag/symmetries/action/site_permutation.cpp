@@ -4,6 +4,8 @@
 
 #include "site_permutation.hpp"
 
+#include <type_traits>
+
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 #include <xdiag/bits/get_set_bit.hpp>
@@ -24,7 +26,12 @@ bool SitePermutation::operator!=(SitePermutation const &rhs) const {
 
 template <typename bit_t>
 bit_t SitePermutation::apply(int64_t sym, bit_t const &bits) const {
-  bit_t bitsr{};
+  bit_t bitsr;
+  if constexpr (std::is_same_v<bit_t, bits::BitsetDynamic>) {
+    bitsr = bits::BitsetDynamic(nsites_);
+  } else {
+    bitsr = bit_t{};
+  }
   const int64_t *permutation = group_.ptr(sym);
   for (int64_t i = 0; i < nsites_; ++i) {
     bits::set_bit(bitsr, permutation[i], bits::get_bit(bits, i));

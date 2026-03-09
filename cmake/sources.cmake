@@ -29,6 +29,7 @@ set(XDIAG_SOURCES
   math/arma_to_cx.cpp
   math/dot.cpp
   math/norm.cpp
+  math/isapprox.cpp
 
   matrices/apply.cpp
   matrices/matrix.cpp
