@@ -42,6 +42,7 @@ public:
   int64_t n() const;
   int64_t k() const;
   int64_t size() const;
+  int64_t bitwidth() const; // number of bits needed to represent state (=n)
 
   bit_t operator[](int64_t idx) const;
   inline int64_t index(bit_t bits) const {

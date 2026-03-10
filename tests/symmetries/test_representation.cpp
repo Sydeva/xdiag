@@ -15,7 +15,7 @@ TEST_CASE("representation", "[symmetries]") try {
   for (int64_t n = 3; n < 8; ++n) {
     for (int64_t k = 0; k < n; ++k) {
       auto irrep = cyclic_group_irrep(n, k);
-      auto chars_hc = arma::conj(irrep.characters().as<arma::cx_vec>());
+      arma::cx_vec chars_hc = arma::conj(irrep.characters().as<arma::cx_vec>());
       auto irrep_hc = Representation(irrep.group(), arma::cx_vec(chars_hc));
       REQUIRE((irrep * irrep_hc).isreal());
     }

@@ -58,6 +58,7 @@ public:
   int64_t total() const;
   int64_t bound() const;
   int64_t size() const;
+  int64_t bitwidth() const;
 
   bitarray_t operator[](int64_t idx) const;
 

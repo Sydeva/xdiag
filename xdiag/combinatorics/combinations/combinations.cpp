@@ -34,6 +34,9 @@ template <class bit_t> int64_t Combinations<bit_t>::k() const { return k_; }
 template <class bit_t> int64_t Combinations<bit_t>::size() const {
   return size_;
 };
+template <class bit_t> int64_t Combinations<bit_t>::bitwidth() const {
+  return n_;
+};
 
 template <class bit_t>
 bit_t Combinations<bit_t>::operator[](int64_t idx) const {
@@ -90,7 +93,9 @@ INSTANTIATE_COMBINATIONS_FOR_NCHUNKS(uint64_t)
 template <class bit_t>
 CombinationsIterator<bit_t>::CombinationsIterator(int64_t n, int64_t k,
                                                   int64_t idx)
-    : current_(nth_combination<bit_t>(n, k, idx)), idx_(idx), n_(n) {}
+    : current_(idx < math::binomial(n, k) ? nth_combination<bit_t>(n, k, idx)
+                                          : bit_t{}),
+      idx_(idx), n_(n) {}
 
 template <class bit_t>
 bool CombinationsIterator<bit_t>::operator==(

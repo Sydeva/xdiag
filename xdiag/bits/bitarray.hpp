@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include <xdiag/bits/bitmask.hpp>
+#include <xdiag/bits/bitset.hpp>
 
 namespace xdiag::bits {
 
@@ -42,6 +43,10 @@ public:
 
   // Default constructor, initializes all bits to 0
   BitArray() = default;
+
+  // Raw storage access (for use with BitVector)
+  explicit BitArray(bit_t raw) noexcept;
+  bit_t raw() const noexcept;
 
   // Get element at index (returns nbits-bit value).
   // Inlined so the compiler sees the compile-time constants nbits and
@@ -88,5 +93,23 @@ std::string to_string(BitArray<bit_t, nbits> const &bits,
 
 template <typename bit_t, int nbits>
 std::ostream &operator<<(std::ostream &out, BitArray<bit_t, nbits> const &bits);
+
+using BitArray1 = BitArray<uint64_t, 1>;
+using BitArray2 = BitArray<uint64_t, 2>;
+using BitArray3 = BitArray<uint64_t, 3>;
+using BitArray4 = BitArray<uint64_t, 4>;
+using BitArray5 = BitArray<uint64_t, 5>;
+using BitArray6 = BitArray<uint64_t, 6>;
+using BitArray7 = BitArray<uint64_t, 7>;
+using BitArray8 = BitArray<uint64_t, 8>;
+
+using BitArrayLong1 = BitArray<BitsetDynamic, 1>;
+using BitArrayLong2 = BitArray<BitsetDynamic, 2>;
+using BitArrayLong3 = BitArray<BitsetDynamic, 3>;
+using BitArrayLong4 = BitArray<BitsetDynamic, 4>;
+using BitArrayLong5 = BitArray<BitsetDynamic, 5>;
+using BitArrayLong6 = BitArray<BitsetDynamic, 6>;
+using BitArrayLong7 = BitArray<BitsetDynamic, 7>;
+using BitArrayLong8 = BitArray<BitsetDynamic, 8>;
 
 } // namespace xdiag::bits

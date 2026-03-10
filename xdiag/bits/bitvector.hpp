@@ -3,63 +3,116 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <iterator>
+#include <type_traits>
 
+#include <xdiag/bits/bit_zero_one.hpp>
+#include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
 
 namespace xdiag::bits {
 
-template <typename bit_t> class BitVectorReference;
-template <typename bit_t> class BitVectorIterator;
-template <typename bit_t> class BitVectorConstIterator;
+template <typename value_t> class BitVectorReference;
+template <typename value_t> class BitVectorIterator;
+template <typename value_t> class BitVectorConstIterator;
 
-// Dynamic vector of bit-packed integers.
+// Dynamic vector of bit-packed values.
 //
-// BitVector stores a variable number of small integers (each taking nbits bits)
-// in a dynamically allocated Bitset. Provides a std::vector-like interface with
-// random access, iterators, and bounds checking.
+// BitVector stores a variable number of values (each taking nbits bits)
+// packed into a BitsetDynamic (dynamic, always 64-bit chunks).
+// Provides a std::vector-like interface with random access and iterators.
 //
 // Template parameter:
-//   bit_t: Chunk type for underlying Bitset (uint8_t, uint16_t, uint32_t, uint64_t)
+//   value_t: Element type returned by operator[]. Supported types:
+//     - uint16_t, uint32_t, uint64_t  (nbits <= type width)
+//     - BitsetDynamic, BitsetStatic*   (multi-word values)
+//     - BitArray<bit_t, N>             (packed N-bit-per-site arrays;
+//                                       pass nbits = digits of bit_t)
 //
 // Example:
 //   BitVector<uint64_t> vec(100, 3);  // 100 elements, 3 bits each (values 0-7)
 //   vec[0] = 5;                       // Set first element to 5
-//   int64_t val = vec[0];             // Get first element (returns 5)
+//   uint64_t val = vec[0];            // Get first element (returns 5)
 //   for (auto x : vec) { ... }        // Iterate over elements
-template <typename bit_t> class BitVector {
+
+// --- Local type trait ---
+
+namespace detail {
+template <typename T> struct is_bitarray : std::false_type {};
+template <typename bit_t, int N>
+struct is_bitarray<BitArray<bit_t, N>> : std::true_type {};
+template <typename T>
+inline constexpr bool is_bitarray_v = is_bitarray<T>::value;
+} // namespace detail
+
+// --- Element access helpers (inline for operator[] performance) ---
+
+template <typename value_t>
+inline value_t get_element(BitsetDynamic const &storage, int64_t offset,
+                           int64_t nbits) noexcept {
+  if constexpr (std::is_integral_v<value_t>) {
+    return static_cast<value_t>(storage.get_range(offset, nbits));
+  } else if constexpr (detail::is_bitarray_v<value_t>) {
+    using raw_t = typename value_t::bit_t;
+    return value_t(get_element<raw_t>(storage, offset, nbits));
+  } else {
+    value_t result = bit_zero<value_t>(nbits);
+    for (int64_t b = 0; b < nbits; b += 64) {
+      int64_t w = std::min(int64_t(64), nbits - b);
+      result.set_range(b, w, storage.get_range(offset + b, w));
+    }
+    return result;
+  }
+}
+
+template <typename value_t>
+inline void set_element(BitsetDynamic &storage, int64_t offset, int64_t nbits,
+                        value_t const &val) noexcept {
+  if constexpr (std::is_integral_v<value_t>) {
+    storage.set_range(offset, nbits, static_cast<uint64_t>(val));
+  } else if constexpr (detail::is_bitarray_v<value_t>) {
+    using raw_t = typename value_t::bit_t;
+    set_element<raw_t>(storage, offset, nbits, val.raw());
+  } else {
+    for (int64_t b = 0; b < nbits; b += 64) {
+      int64_t w = std::min(int64_t(64), nbits - b);
+      storage.set_range(offset + b, w, val.get_range(b, w));
+    }
+  }
+}
+
+// --- BitVector ---
+
+template <typename value_t = uint64_t> class BitVector {
 public:
-  using value_type = bit_t;
-  using reference = BitVectorReference<bit_t>;
-  using const_reference = bit_t;
-  using iterator = BitVectorIterator<bit_t>;
-  using const_iterator = BitVectorConstIterator<bit_t>;
+  using value_type = value_t;
+  using reference = BitVectorReference<value_t>;
+  using const_reference = value_t;
+  using iterator = BitVectorIterator<value_t>;
+  using const_iterator = BitVectorConstIterator<value_t>;
 
   BitVector() = default;
   BitVector(int64_t size, int64_t nbits);
 
-  // Size information
   inline int64_t size() const noexcept { return size_; }
   inline int64_t nbits() const noexcept { return nbits_; }
   inline bool empty() const noexcept { return size_ == 0; }
 
-  // Element access (noexcept versions don't check bounds)
-  inline bit_t operator[](int64_t index) const noexcept {
-    return storage_.get_range(index * nbits_, nbits_);
+  inline value_t operator[](int64_t index) const noexcept {
+    return get_element<value_t>(storage_, index * nbits_, nbits_);
   }
-  inline BitVectorReference<bit_t> operator[](int64_t index) noexcept {
-    return BitVectorReference<bit_t>(nbits_, index, storage_);
+  inline BitVectorReference<value_t> operator[](int64_t index) noexcept {
+    return BitVectorReference<value_t>(nbits_, index, storage_);
   }
 
-  // Bounds-checked access (may throw)
-  bit_t at(int64_t index) const;
-  BitVectorReference<bit_t> at(int64_t index);
+  value_t at(int64_t index) const;
+  BitVectorReference<value_t> at(int64_t index);
 
-  inline bit_t front() const noexcept { return operator[](0); }
-  inline bit_t back() const noexcept { return operator[](size_ - 1); }
+  inline value_t front() const noexcept { return operator[](0); }
+  inline value_t back() const noexcept { return operator[](size_ - 1); }
 
-  // Iterators
   iterator begin() noexcept;
   iterator end() noexcept;
   const_iterator begin() const noexcept;
@@ -67,43 +120,53 @@ public:
   const_iterator cbegin() const noexcept;
   const_iterator cend() const noexcept;
 
-  bool operator==(BitVector<bit_t> const &rhs) const noexcept;
-  bool operator!=(BitVector<bit_t> const &rhs) const noexcept;
+  bool operator==(BitVector<value_t> const &rhs) const noexcept;
+  bool operator!=(BitVector<value_t> const &rhs) const noexcept;
 
 private:
   int64_t nbits_ = 0;
   int64_t size_ = 0;
-  Bitset<bit_t> storage_; // dynamically sized Bitset
+  BitsetDynamic storage_;
 };
 
-template <typename bit_t> class BitVectorReference {
+// --- BitVectorReference ---
+
+template <typename value_t> class BitVectorReference {
 public:
-  inline BitVectorReference(int64_t nbits, int64_t index,
-                            Bitset<bit_t> &storage)
-      : nbits_(nbits), index_(index), storage_(storage) {}
-  inline BitVectorReference &operator=(bit_t bits) {
-    storage_.set_range(index_ * nbits_, nbits_, bits);
-    return *this;
+  BitVectorReference(int64_t nbits, int64_t index, BitsetDynamic &storage);
+  BitVectorReference &operator=(value_t const &val);
+  operator value_t() const;
+
+  friend bool operator==(BitVectorReference const &lhs, value_t const &rhs) {
+    return static_cast<value_t>(lhs) == rhs;
   }
-  inline operator bit_t() const {
-    return storage_.get_range(index_ * nbits_, nbits_);
+  friend bool operator!=(BitVectorReference const &lhs, value_t const &rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator==(value_t const &lhs, BitVectorReference const &rhs) {
+    return lhs == static_cast<value_t>(rhs);
+  }
+  friend bool operator!=(value_t const &lhs, BitVectorReference const &rhs) {
+    return !(lhs == rhs);
   }
 
 private:
   int64_t nbits_;
   int64_t index_;
-  Bitset<bit_t> &storage_;
+  BitsetDynamic &storage_;
 };
 
-template <typename bit_t> class BitVectorConstIterator {
+// --- BitVectorConstIterator ---
+
+template <typename value_t> class BitVectorConstIterator {
 public:
   using iterator_category = std::random_access_iterator_tag;
-  using value_type = bit_t;
+  using value_type = value_t;
   using difference_type = int64_t;
-  using pointer = bit_t const *;
-  using reference = bit_t;
+  using pointer = value_t const *;
+  using reference = value_t;
 
-  BitVectorConstIterator(BitVector<bit_t> const *vec, int64_t index) noexcept;
+  BitVectorConstIterator(BitVector<value_t> const *vec, int64_t index) noexcept;
 
   reference operator*() const noexcept;
   reference operator[](difference_type n) const noexcept;
@@ -128,19 +191,21 @@ public:
   bool operator>=(BitVectorConstIterator const &other) const noexcept;
 
 private:
-  BitVector<bit_t> const *vec_;
+  BitVector<value_t> const *vec_;
   int64_t index_;
 };
 
-template <typename bit_t> class BitVectorIterator {
+// --- BitVectorIterator ---
+
+template <typename value_t> class BitVectorIterator {
 public:
   using iterator_category = std::random_access_iterator_tag;
-  using value_type = bit_t;
+  using value_type = value_t;
   using difference_type = int64_t;
-  using pointer = BitVectorReference<bit_t> *;
-  using reference = BitVectorReference<bit_t>;
+  using pointer = BitVectorReference<value_t> *;
+  using reference = BitVectorReference<value_t>;
 
-  BitVectorIterator(BitVector<bit_t> *vec, int64_t index) noexcept;
+  BitVectorIterator(BitVector<value_t> *vec, int64_t index) noexcept;
 
   reference operator*() const noexcept;
   reference operator[](difference_type n) const noexcept;
@@ -165,22 +230,22 @@ public:
   bool operator>=(BitVectorIterator const &other) const noexcept;
 
 private:
-  BitVector<bit_t> *vec_;
+  BitVector<value_t> *vec_;
   int64_t index_;
 };
 
-// Non-member operator+ for iterator + n
-template <typename bit_t>
-BitVectorConstIterator<bit_t>
-operator+(typename BitVectorConstIterator<bit_t>::difference_type n,
-          BitVectorConstIterator<bit_t> const &it) {
+// Non-member operator+ for n + iterator
+template <typename value_t>
+BitVectorConstIterator<value_t>
+operator+(typename BitVectorConstIterator<value_t>::difference_type n,
+          BitVectorConstIterator<value_t> const &it) {
   return it + n;
 }
 
-template <typename bit_t>
-BitVectorIterator<bit_t>
-operator+(typename BitVectorIterator<bit_t>::difference_type n,
-          BitVectorIterator<bit_t> const &it) {
+template <typename value_t>
+BitVectorIterator<value_t>
+operator+(typename BitVectorIterator<value_t>::difference_type n,
+          BitVectorIterator<value_t> const &it) {
   return it + n;
 }
 

@@ -87,6 +87,11 @@ int64_t BoundedPartitions<bitarray_t>::size() const {
 }
 
 template <typename bitarray_t>
+int64_t BoundedPartitions<bitarray_t>::bitwidth() const {
+  return n_ * nbits;
+}
+
+template <typename bitarray_t>
 auto BoundedPartitions<bitarray_t>::operator[](int64_t idx) const
     -> bitarray_t {
   return nth_bounded_partition<bitarray_t>(n_, total_, bound_, idx);

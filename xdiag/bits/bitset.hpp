@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Alexander Wietek <awietek@pks.mpg.de>
+// SPDX-FileCopyrightText: 2026 Alexander Wietek <awietek@pks.mpg.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -83,6 +83,7 @@ public:
     if (!length) {
       return;
     }
+    bits &= bitmask<chunk_t>(length); // mask to length bits
     int64_t end = start + length;
     int64_t startchunk = start >> chunkshift;
     int64_t startbit = start & chunkmask;

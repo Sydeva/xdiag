@@ -85,6 +85,11 @@ template <typename bitarray_t> int64_t SchaeferTable<bitarray_t>::size() const {
 }
 
 template <typename bitarray_t>
+int64_t SchaeferTable<bitarray_t>::bitwidth() const {
+  return bounded_partitions_.bitwidth();
+}
+
+template <typename bitarray_t>
 bitarray_t SchaeferTable<bitarray_t>::operator[](int64_t idx) const {
   return bounded_partitions_[idx];
 }

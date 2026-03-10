@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Alexander Wietek <awietek@pks.mpg.de>
+// SPDX-FileCopyrightText: 2026 Alexander Wietek <awietek@pks.mpg.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 

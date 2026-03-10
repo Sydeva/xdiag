@@ -20,6 +20,7 @@ public:
 
   XDIAG_API int64_t size() const;
   XDIAG_API int64_t nsites() const;
+  XDIAG_API PermutationGroup const& group() const;
   XDIAG_API bool operator==(SitePermutation const &rhs) const;
   XDIAG_API bool operator!=(SitePermutation const &rhs) const;
 

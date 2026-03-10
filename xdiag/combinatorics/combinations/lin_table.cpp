@@ -54,6 +54,10 @@ template <class bit_t> int64_t LinTable<bit_t>::size() const {
   return combinations_.size();
 }
 
+template <class bit_t> int64_t LinTable<bit_t>::bitwidth() const {
+  return combinations_.n();
+}
+
 template <class bit_t> bit_t LinTable<bit_t>::operator[](int64_t idx) const {
   return combinations_[idx];
 }

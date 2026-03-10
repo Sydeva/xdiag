@@ -53,6 +53,11 @@ int64_t BoundedMultisets<bitarray_t>::size() const {
 }
 
 template <typename bitarray_t>
+int64_t BoundedMultisets<bitarray_t>::bitwidth() const {
+  return n_ * nbits;
+}
+
+template <typename bitarray_t>
 auto BoundedMultisets<bitarray_t>::operator[](int64_t idx) const -> bitarray_t {
   return bits::unpack<bit_t, nbits>(idx, bound_);
 }

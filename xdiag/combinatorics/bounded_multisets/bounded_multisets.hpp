@@ -36,6 +36,8 @@ public:
   int64_t n() const;
   int64_t bound() const;
   int64_t size() const;
+  int64_t bitwidth() const;
+
   bitarray_t operator[](int64_t idx) const; // Sequence at index idx
   int64_t index(bitarray_t seq) const;      // Index of given sequence
   iterator_t begin() const;

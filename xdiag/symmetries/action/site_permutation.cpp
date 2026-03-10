@@ -17,6 +17,8 @@ SitePermutation::SitePermutation(PermutationGroup const &group)
 
 int64_t SitePermutation::size() const { return group_.size(); }
 int64_t SitePermutation::nsites() const { return group_.nsites(); }
+PermutationGroup const &SitePermutation::group() const { return group_; }
+
 bool SitePermutation::operator==(SitePermutation const &rhs) const {
   return group_ == rhs.group_;
 }

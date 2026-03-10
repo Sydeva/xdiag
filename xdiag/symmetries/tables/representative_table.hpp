@@ -4,22 +4,20 @@
 #include <cstdint>
 #include <vector>
 #include <xdiag/bits/bitvector.hpp>
-#include <xdiag/symmetries/group_action/group_action.hpp>
+#include <xdiag/symmetries/action/site_permutation.hpp>
+#include <xdiag/symmetries/representation.hpp>
 
 namespace xdiag::symmetries {
 
-template <typename state_iterator_tt> class RepresentativeTable {
+template <typename enumeration_tt> class RepresentativeTable {
 public:
-  using state_iterator_t = state_iterator_tt;
-  using bit_t = typename state_iterator_t::bit_t;
+  using enumeration_t = enumeration_tt;
+  using bit_t = typename enumeration_t::bit_t;
 
   RepresentativeTable() = default;
-  RepresentativeTable(state_iterator_t const &state_iterator,
-                      GroupAction const &group_action,
-                      std::vector<double> const &characters);
-  RepresentativeTable(state_iterator_t const &state_iterator,
-                      GroupAction const &group_action,
-                      std::vector<complex> const &characters);
+  RepresentativeTable(enumeration_t const &enumeration,
+                      SitePermutation const &action,
+                      Representation const &irrep);
 
   inline int64_t representative(int64_t idx) const {
     return representative_[representative_index_[idx]];
@@ -33,10 +31,10 @@ public:
   inline int64_t norm(int64_t idx) const {
     return norm_[representative_norm_index_[idx]];
   }
-
   int64_t size() const;
-  bool operator==(RepresentativeTable<state_iterator_t> const &rhs) const;
-  bool operator!=(RepresentativeTable<state_iterator_t> const &rhs) const;
+
+  bool operator==(RepresentativeTable<enumeration_t> const &rhs) const;
+  bool operator!=(RepresentativeTable<enumeration_t> const &rhs) const;
 
 private:
   bits::BitVector<bit_t> representative_;

@@ -13,6 +13,14 @@ namespace xdiag::bits {
 // get() and set() are defined inline in bitarray.hpp.
 
 template <typename bit_t, int nbits>
+BitArray<bit_t, nbits>::BitArray(bit_t raw) noexcept : bits_(raw) {}
+
+template <typename bit_t, int nbits>
+bit_t BitArray<bit_t, nbits>::raw() const noexcept {
+  return bits_;
+}
+
+template <typename bit_t, int nbits>
 bool BitArray<bit_t, nbits>::operator==(
     BitArray<bit_t, nbits> const &rhs) const noexcept {
   return bits_ == rhs.bits_;
@@ -110,9 +118,12 @@ INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(uint32_t)
 INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(uint64_t)
 // END_INSTANTIATION_GROUP
 
-// Bitset types
-// BEGIN_INSTANTIATION_GROUP(bitset)
+// BitArrayLong1..8 = BitArray<BitsetDynamic, 1..8>
+// BEGIN_INSTANTIATION_GROUP(bitarray_long)
 INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetDynamic)
+// END_INSTANTIATION_GROUP
+
+// BEGIN_INSTANTIATION_GROUP(bitset_static)
 INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic1)
 INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic2)
 INSTANTIATE_XDIAG_BITS_BITARRAY_FOR_NBITS(BitsetStatic4)

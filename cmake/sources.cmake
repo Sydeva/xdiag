@@ -99,6 +99,9 @@ set(XDIAG_SOURCES
   symmetries/representation.cpp
   symmetries/cyclic_group.cpp
   symmetries/action/site_permutation.cpp
+  symmetries/action/isrepresentative.cpp
+  symmetries/action/norm.cpp
+  # symmetries/tables/representative_table.cpp
   
   algorithms/lanczos/lanczos_convergence.cpp
   algorithms/lanczos/tmatrix.cpp

@@ -26,6 +26,7 @@ XDIAG_CATCH
 
 template <class bit_t> int64_t Subsets<bit_t>::n() const { return n_; }
 template <class bit_t> int64_t Subsets<bit_t>::size() const { return size_; }
+template <class bit_t> int64_t Subsets<bit_t>::bitwidth() const { return n_; }
 
 template <class bit_t> SubsetsIterator<bit_t> Subsets<bit_t>::begin() const {
   return SubsetsIterator<bit_t>((int64_t)0);

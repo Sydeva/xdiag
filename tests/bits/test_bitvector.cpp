@@ -16,227 +16,259 @@
 using namespace xdiag;
 using namespace xdiag::bits;
 
-template <typename bit_t> void test_bitvector_basic() {
+// --- Integral value_t (uint16_t, uint32_t, uint64_t) ---
+
+template <typename value_t> void test_bitvector_integral() {
   std::mt19937 rng(42);
 
-  for (int nbits = 1; nbits <= std::numeric_limits<bit_t>::digits; ++nbits) {
-    for (int size = 0; size < 100; ++size) {
-      auto vec = BitVector<bit_t>(size, nbits);
+  for (int64_t nbits = 1; nbits <= std::numeric_limits<value_t>::digits;
+       ++nbits) {
+    value_t mask = (nbits == std::numeric_limits<value_t>::digits)
+                       ? std::numeric_limits<value_t>::max()
+                       : bitmask<value_t>(nbits);
+    auto vec = BitVector<value_t>(20, nbits);
+    REQUIRE(vec.size() == 20);
+    REQUIRE(vec.nbits() == nbits);
+    REQUIRE(!vec.empty());
 
-      REQUIRE(vec.size() == size);
-      REQUIRE(vec.nbits() == nbits);
-      REQUIRE(vec.empty() == (size == 0));
+    std::vector<value_t> expected;
+    for (int i = 0; i < 20; ++i) {
+      value_t val =
+          std::uniform_int_distribution<value_t>(0, mask)(rng);
+      vec[i] = val;
+      expected.push_back(val);
+    }
+    for (int i = 0; i < 20; ++i)
+      REQUIRE(vec[i] == expected[i]);
 
-      std::uniform_int_distribution<bit_t> dist(0, bitmask<bit_t>(nbits));
-      for (int idx = 0; idx < size; ++idx) {
-        for (int r = 0; r < 4; ++r) {
-          bit_t bits = dist(rng);
-          vec[idx] = bits;
-          bit_t bits2 = vec[idx];
-          REQUIRE(bits == bits2);
-        }
+    // const iteration
+    int idx = 0;
+    for (auto v : (BitVector<value_t> const &)vec)
+      REQUIRE(v == expected[idx++]);
+  }
+
+  // empty vector
+  REQUIRE(BitVector<value_t>(0, 4).empty());
+
+  // at() bounds checking
+  {
+    auto vec = BitVector<value_t>(5, 8);
+    REQUIRE_THROWS(vec.at(-1));
+    REQUIRE_THROWS(vec.at(5));
+
+    // front/back
+    vec[0] = 1;
+    vec[4] = 7;
+    REQUIRE(vec.front() == 1);
+    REQUIRE(vec.back() == 7);
+  }
+
+  // operator== / !=
+  {
+    auto v1 = BitVector<value_t>(5, 8);
+    auto v2 = BitVector<value_t>(5, 8);
+    for (int i = 0; i < 5; ++i) {
+      v1[i] = i;
+      v2[i] = i;
+    }
+    REQUIRE(v1 == v2);
+    v2[2] = 99;
+    REQUIRE(v1 != v2);
+    REQUIRE(BitVector<value_t>(5, 4) != BitVector<value_t>(5, 5));
+  }
+}
+
+// --- BitsetDynamic ---
+
+void test_bitvector_bitset_dynamic() {
+  std::mt19937_64 rng(42);
+
+  for (int64_t nbits : {64, 128, 200}) {
+    auto vec = BitVector<BitsetDynamic>(10, nbits);
+    REQUIRE(vec.size() == 10);
+    REQUIRE(vec.nbits() == nbits);
+
+    std::vector<BitsetDynamic> expected;
+    for (int i = 0; i < 10; ++i) {
+      BitsetDynamic val(nbits);
+      for (int64_t b = 0; b < nbits; b += 64) {
+        int64_t w = std::min(int64_t(64), nbits - b);
+        val.set_range(b, w, rng()); // set_range masks to w bits internally
       }
+      vec[i] = val;
+      expected.push_back(val);
     }
+    for (int i = 0; i < 10; ++i)
+      REQUIRE(vec[i] == expected[i]);
+
+    // const iteration
+    int idx = 0;
+    for (auto v : (BitVector<BitsetDynamic> const &)vec)
+      REQUIRE(v == expected[idx++]);
+
+    // operator== / !=
+    auto v1 = BitVector<BitsetDynamic>(3, nbits);
+    auto v2 = BitVector<BitsetDynamic>(3, nbits);
+    for (int i = 0; i < 3; ++i) {
+      v1[i] = expected[i];
+      v2[i] = expected[i];
+    }
+    REQUIRE(v1 == v2);
+    v2[1] = BitsetDynamic(nbits); // zero
+    REQUIRE(v1 != v2);
   }
 }
 
-template <typename bit_t> void test_bitvector_element_access() {
-  std::mt19937 rng(42);
-  std::uniform_int_distribution<bit_t> dist(0, 255);
+// --- BitsetStatic* (BitsetStatic1/2/4/8) ---
 
-  // Test at() with bounds checking
-  auto vec = BitVector<bit_t>(10, 8);
+template <typename value_t> void test_bitvector_static_bitset() {
+  constexpr int64_t nbits = std::numeric_limits<value_t>::digits;
+  std::mt19937_64 rng(42);
 
+  auto vec = BitVector<value_t>(10, nbits);
+  REQUIRE(vec.size() == 10);
+  REQUIRE(vec.nbits() == nbits);
+
+  std::vector<value_t> expected;
   for (int i = 0; i < 10; ++i) {
-    bit_t val = dist(rng);
-    vec.at(i) = val;
-    REQUIRE(vec.at(i) == val);
-  }
-
-  // Test out of bounds throws
-  REQUIRE_THROWS(vec.at(-1));
-  REQUIRE_THROWS(vec.at(10));
-
-  // Test front() and back()
-  if (vec.size() > 0) {
-    vec[0] = 42;
-    vec[vec.size() - 1] = 99;
-    REQUIRE(vec.front() == 42);
-    REQUIRE(vec.back() == 99);
-  }
-}
-
-template <typename bit_t> void test_bitvector_iterators() {
-  std::mt19937 rng(42);
-
-  auto vec = BitVector<bit_t>(20, 8);
-  std::vector<bit_t> expected;
-
-  std::uniform_int_distribution<bit_t> dist(0, 255);
-
-  // Fill with random values
-  for (int i = 0; i < 20; ++i) {
-    bit_t val = dist(rng);
+    value_t val{};
+    for (int64_t b = 0; b < nbits; b += 64)
+      val.set_range(b, 64, rng());
     vec[i] = val;
     expected.push_back(val);
   }
+  for (int i = 0; i < 10; ++i)
+    REQUIRE(vec[i] == expected[i]);
 
-  // Test const iteration
-  {
-    std::vector<bit_t> result;
-    for (auto it = vec.cbegin(); it != vec.cend(); ++it) {
-      result.push_back(*it);
-    }
-    REQUIRE(result == expected);
-  }
-
-  // Test range-based for loop (const)
-  {
-    std::vector<bit_t> result;
-    BitVector<bit_t> const &cvec = vec;
-    for (auto val : cvec) {
-      result.push_back(val);
-    }
-    REQUIRE(result == expected);
-  }
-
-  // Test non-const iteration
-  {
-    for (auto it = vec.begin(); it != vec.end(); ++it) {
-      *it = (*it) ^ 1; // Flip lowest bit
-    }
-    for (size_t i = 0; i < expected.size(); ++i) {
-      REQUIRE(vec[i] == (expected[i] ^ 1));
-    }
-  }
-
-  // Test iterator arithmetic
-  {
-    auto it1 = vec.begin();
-    auto it2 = it1 + 5;
-    REQUIRE(it2 - it1 == 5);
-    REQUIRE(*it2 == vec[5]);
-
-    it2 += 3;
-    REQUIRE(*it2 == vec[8]);
-
-    it2 -= 2;
-    REQUIRE(*it2 == vec[6]);
-  }
-
-  // Test STL algorithm (std::find)
-  {
-    bit_t search_val = vec[10];
-    auto it = std::find(vec.begin(), vec.end(), search_val);
-    REQUIRE(it != vec.end());
-    REQUIRE(*it == search_val);
-  }
-}
-
-template <typename bit_t> void test_bitvector_comparison() {
-  auto vec1 = BitVector<bit_t>(10, 8);
-  auto vec2 = BitVector<bit_t>(10, 8);
-  auto vec3 = BitVector<bit_t>(10, 7); // different nbits
-
-  for (int i = 0; i < 10; ++i) {
-    vec1[i] = i;
-    vec2[i] = i;
-  }
-
-  REQUIRE(vec1 == vec2);
-  REQUIRE(!(vec1 != vec2));
-
-  vec2[5] = 99;
-  REQUIRE(vec1 != vec2);
-  REQUIRE(!(vec1 == vec2));
-
-  REQUIRE(vec1 != vec3); // different nbits
-}
-
-template <typename bit_t> void test_bitvector_max_nbits() {
-  // Test with maximum nbits (equal to chunk size)
-  constexpr int max_nbits = std::numeric_limits<bit_t>::digits;
-  constexpr bit_t max_value = std::numeric_limits<bit_t>::max();
-
-  auto vec = BitVector<bit_t>(100, max_nbits);
-
-  REQUIRE(vec.size() == 100);
-  REQUIRE(vec.nbits() == max_nbits);
-
-  std::mt19937 rng(42);
-  std::uniform_int_distribution<bit_t> dist(
-      std::numeric_limits<bit_t>::min(),
-      std::numeric_limits<bit_t>::max());
-
-  // Test setting and getting full-width values
-  for (int i = 0; i < 100; ++i) {
-    bit_t val = dist(rng);
-    vec[i] = val;
-    REQUIRE(vec[i] == val);
-  }
-
-  // Test with max value
-  vec[0] = max_value;
-  REQUIRE(vec[0] == max_value);
-
-  // Test with zero
-  vec[1] = 0;
-  REQUIRE(vec[1] == 0);
-
-  // Test iteration with max nbits
-  std::vector<bit_t> expected;
-  for (int i = 0; i < 50; ++i) {
-    bit_t val = dist(rng);
-    vec[i] = val;
-    expected.push_back(val);
-  }
-
+  // const iteration
   int idx = 0;
-  for (auto it = vec.begin(); it != vec.begin() + 50; ++it, ++idx) {
-    REQUIRE(*it == expected[idx]);
+  for (auto v : (BitVector<value_t> const &)vec)
+    REQUIRE(v == expected[idx++]);
+
+  // operator== / !=
+  auto v1 = BitVector<value_t>(3, nbits);
+  auto v2 = BitVector<value_t>(3, nbits);
+  for (int i = 0; i < 3; ++i) {
+    v1[i] = expected[i];
+    v2[i] = expected[i];
+  }
+  REQUIRE(v1 == v2);
+  v2[1] = value_t{};
+  REQUIRE(v1 != v2);
+}
+
+// --- BitArray<uint64_t, N> (BitArray1..8) ---
+
+template <typename value_t> void test_bitvector_bitarray() {
+  constexpr int64_t nbits = 64; // raw uint64_t storage per element
+  constexpr int N = value_t::nbits;
+  constexpr int64_t slots = nbits / N;
+  std::mt19937 rng(42);
+
+  auto vec = BitVector<value_t>(10, nbits);
+  REQUIRE(vec.size() == 10);
+  REQUIRE(vec.nbits() == nbits);
+
+  std::vector<std::vector<int>> exp(10);
+  for (int i = 0; i < 10; ++i) {
+    value_t elem = vec[i]; // zero element
+    for (int64_t s = 0; s < slots; ++s) {
+      int v =
+          std::uniform_int_distribution<int>(0, (1 << N) - 1)(rng);
+      elem.set(s, v);
+      exp[i].push_back(v);
+    }
+    vec[i] = elem;
+  }
+  for (int i = 0; i < 10; ++i) {
+    value_t elem = vec[i];
+    for (int64_t s = 0; s < slots; ++s)
+      REQUIRE(elem.get(s) == exp[i][s]);
   }
 
-  // Test that nbits > max_nbits throws in constructor
-  REQUIRE_THROWS(BitVector<bit_t>(10, max_nbits + 1));
+  // operator== / !=
+  {
+    auto v1 = BitVector<value_t>(3, nbits);
+    auto v2 = BitVector<value_t>(3, nbits);
+    REQUIRE(v1 == v2);
+    value_t one{};
+    one.set(0, 1);
+    v1[0] = one;
+    REQUIRE(v1 != v2);
+  }
+}
+
+// --- BitArray<BitsetDynamic, N> (BitArrayLong1..8) ---
+
+template <typename value_t> void test_bitvector_bitarray_long() {
+  // Use 64-bit BitsetDynamic storage per element
+  constexpr int64_t nbits = 64;
+  constexpr int N = value_t::nbits;
+  constexpr int64_t slots = nbits / N;
+  std::mt19937 rng(42);
+
+  auto vec = BitVector<value_t>(10, nbits);
+  REQUIRE(vec.size() == 10);
+  REQUIRE(vec.nbits() == nbits);
+
+  std::vector<std::vector<int>> exp(10);
+  for (int i = 0; i < 10; ++i) {
+    value_t elem = vec[i]; // zero element with 64-bit BitsetDynamic storage
+    for (int64_t s = 0; s < slots; ++s) {
+      int v =
+          std::uniform_int_distribution<int>(0, (1 << N) - 1)(rng);
+      elem.set(s, v);
+      exp[i].push_back(v);
+    }
+    vec[i] = elem;
+  }
+  for (int i = 0; i < 10; ++i) {
+    value_t elem = vec[i];
+    for (int64_t s = 0; s < slots; ++s)
+      REQUIRE(elem.get(s) == exp[i][s]);
+  }
 }
 
 TEST_CASE("bitvector", "[bits]") try {
-  Log("Testing bitvector basic operations");
+  Log("Testing bitvector");
 
-  SECTION("basic") {
-    test_bitvector_basic<uint8_t>();
-    test_bitvector_basic<uint16_t>();
-    test_bitvector_basic<uint32_t>();
-    test_bitvector_basic<uint64_t>();
+  SECTION("integral") {
+    test_bitvector_integral<uint16_t>();
+    test_bitvector_integral<uint32_t>();
+    test_bitvector_integral<uint64_t>();
   }
 
-  SECTION("element_access") {
-    test_bitvector_element_access<uint8_t>();
-    test_bitvector_element_access<uint16_t>();
-    test_bitvector_element_access<uint32_t>();
-    test_bitvector_element_access<uint64_t>();
+  SECTION("bitset_dynamic") { test_bitvector_bitset_dynamic(); }
+
+  SECTION("bitset_static") {
+    test_bitvector_static_bitset<BitsetStatic1>();
+    test_bitvector_static_bitset<BitsetStatic2>();
+    test_bitvector_static_bitset<BitsetStatic4>();
+    test_bitvector_static_bitset<BitsetStatic8>();
   }
 
-  SECTION("iterators") {
-    test_bitvector_iterators<uint8_t>();
-    test_bitvector_iterators<uint16_t>();
-    test_bitvector_iterators<uint32_t>();
-    test_bitvector_iterators<uint64_t>();
+  SECTION("bitarray") {
+    test_bitvector_bitarray<BitArray1>();
+    test_bitvector_bitarray<BitArray2>();
+    test_bitvector_bitarray<BitArray3>();
+    test_bitvector_bitarray<BitArray4>();
+    test_bitvector_bitarray<BitArray5>();
+    test_bitvector_bitarray<BitArray6>();
+    test_bitvector_bitarray<BitArray7>();
+    test_bitvector_bitarray<BitArray8>();
   }
 
-  SECTION("comparison") {
-    test_bitvector_comparison<uint8_t>();
-    test_bitvector_comparison<uint16_t>();
-    test_bitvector_comparison<uint32_t>();
-    test_bitvector_comparison<uint64_t>();
+  SECTION("bitarray_long") {
+    test_bitvector_bitarray_long<BitArrayLong1>();
+    test_bitvector_bitarray_long<BitArrayLong2>();
+    test_bitvector_bitarray_long<BitArrayLong3>();
+    test_bitvector_bitarray_long<BitArrayLong4>();
+    test_bitvector_bitarray_long<BitArrayLong5>();
+    test_bitvector_bitarray_long<BitArrayLong6>();
+    test_bitvector_bitarray_long<BitArrayLong7>();
+    test_bitvector_bitarray_long<BitArrayLong8>();
   }
 
-  SECTION("max_nbits") {
-    test_bitvector_max_nbits<uint8_t>();
-    test_bitvector_max_nbits<uint16_t>();
-    test_bitvector_max_nbits<uint32_t>();
-    test_bitvector_max_nbits<uint64_t>();
-  }
 } catch (xdiag::Error const &e) {
   error_trace(e);
 }

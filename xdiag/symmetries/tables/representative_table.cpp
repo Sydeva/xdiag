@@ -9,70 +9,74 @@
 #include <type_traits>
 
 #include <xdiag/bits/log2.hpp>
+#include <xdiag/bits/nbits.hpp>
 #include <xdiag/combinatorics/combinations/combinations.hpp>
 #include <xdiag/combinatorics/subsets/subsets.hpp>
+#include <xdiag/symmetries/action/isrepresentative.hpp>
+#include <xdiag/symmetries/action/norm.hpp>
+#include <xdiag/utils/error.hpp>
 
 namespace xdiag::symmetries {
 
-template <typename state_indexing_t, typename coeff_t>
+template <typename enumeration_t, typename coeff_t>
 static void representative_table_initialize(
-    state_indexing_t const &state_indexing, GroupAction const &group_action,
-    std::vector<coeff_t> const &characters,
-    bits::BitVector<typename state_indexing_t::bit_t> &representative,
-    bits::BitVector<typename state_indexing_t::bit_t> &representative_index,
-    bits::BitVector<typename state_indexing_t::bit_t> &representative_symmetry,
-    bits::BitVector<typename state_indexing_t::bit_t>
-        &representative_norm_index,
-    std::vector<double> norm) try {
-  using bit_t = typename state_indexing_t::bit_t;
+    enumeration_t const &enumeration, SitePermutation const &action,
+    arma::Col<coeff_t> const &characters,
+    bits::BitVector<typename enumeration_t::bit_t> &representative,
+    bits::BitVector<typename enumeration_t::bit_t> &representative_index,
+    bits::BitVector<typename enumeration_t::bit_t> &representative_symmetry,
+    bits::BitVector<typename enumeration_t::bit_t> &representative_norm_index,
+    std::vector<double> norms) try {
+  using bit_t = typename enumeration_t::bit_t;
   using bits::BitVector;
-
-  // Create vector holding the indices for each state yielding the
-  // representative
-  auto states = state_indexing.states();
-  int64_t nbits = states.n();
-  int64_t size = state_indexing.size();
-  try {
-    representative_index = BitVector<bit_t>(nbits, size);
-  } catch (...) {
-    XDIAG_THROW("Unable to allocate representative index array");
-  }
 
   // First pass, simply count number of representatives and number of different
   // norms
   int64_t nrepresentatives = 0;
-  for (auto state : states) {
-    if (is_representative(state, group_action)) {
-      double nrm = norm(state, group_action, characters);
+  for (auto state : enumeration) {
+    if (isrepresentative(state, action)) {
+      double nrm = norm(state, action, characters);
 
       if (std::fabs(nrm) > 1e-6) { // representative found
         ++nrepresentatives;
 
         // Check if norm already registered ...
-        auto it = std::find_if(norm.begin(), norm.end(), [&](double n) {
+        auto it = std::find_if(norms.begin(), norms.end(), [&](double n) {
           return std::fabs(n - nrm) < 1e-6;
         });
 
         // ... if not, register it
-        if (it == norm.end()) {
-          norm.push_back(nrm);
+        if (it == norms.end()) {
+          norms.push_back(nrm);
         }
       }
     }
   }
-  std::sort(norm.begin(), norm.end());
+  std::sort(norms.begin(), norms.end());
+
+  // Create vector holding the indices for each state yielding the
+  // representative
+  try {
+    int64_t size = enumeration.size();
+    int64_t nbits = bits::ceillog2(nrepresentatives);
+    representative_index = BitVector<bit_t>(size, nbits);
+  } catch (...) {
+    XDIAG_THROW("Unable to allocate representative index array");
+  }
 
   // Create vector holding the representatives and norm_index
   try {
-    representative = BitVector<bit_t>(nbits, nrepresentatives);
+    int64_t size = nrepresentatives;
+    int64_t nbits = enumeration.bitwidth();
+    representative = BitVector<bit_t>(size, nbits);
   } catch (...) {
     XDIAG_THROW("Unable to allocate representative array");
   }
 
-  int64_t nbits_for_norm = bits::ceillog2(norm.size());
   try {
-    representative_norm_index =
-        BitVector<bit_t>(nbits_for_norm, nrepresentatives);
+    int64_t size = nrepresentatives;
+    int64_t nbits = bits::ceillog2(norm.size());
+    representative_norm_index = BitVector<bit_t>(size, nbits);
   } catch (...) {
     XDIAG_THROW("Unable to allocate representative norm index array");
   }
@@ -80,20 +84,20 @@ static void representative_table_initialize(
   // Second pass, fill all vectors
   int64_t idx = 0;
   nrepresentatives = 0;
-  for (auto state : states) {
-    if (is_representative(state, group_action)) {
-      double nrm = norm(state, group_action, characters);
+  for (auto state : enumeration) {
+    if (isrepresentative(state, action)) {
+      double nrm = norm(state, action, characters);
 
       if (std::fabs(nrm) > 1e-6) { // representative found
         representative_index[idx] = nrepresentatives;
         representative[nrepresentatives] = state;
 
         // Get index of norm
-        auto it = std::find_if(norm.begin(), norm.end(), [&](double n) {
+        auto it = std::find_if(norms.begin(), norms.end(), [&](double n) {
           return std::fabs(n - nrm) < 1e-6;
         });
         representative_norm_index[nrepresentatives] =
-            std::distance(it, norm.begin());
+            std::distance(it, norms.begin());
         ++nrepresentatives;
       }
     }
@@ -102,7 +106,7 @@ static void representative_table_initialize(
 
   // Compute the symmetries that yield the representative and fill
   // non-representative representative_index
-  int64_t nbits_for_symmetry = bits::ceillog2(group_action.n_symmetries());
+  int64_t nbits_for_symmetry = bits::ceillog2(action.size());
   try {
     representative_symmetry =
         BitVector<bit_t>(nbits_for_symmetry, nrepresentatives);
@@ -110,12 +114,12 @@ static void representative_table_initialize(
     XDIAG_THROW("Unable to allocate representative symmetry array");
   }
 
-  auto const &group = group_action.permutation_group();
+  auto const &group = action.group();
   for (int64_t rep_idx = 0; rep_idx < representative.size(); ++rep_idx) {
     bit_t rep = representative[rep_idx];
-    for (int64_t sym = 0; sym < group_action.n_symmetries(); ++sym) {
-      bit_t state = group_action.apply(sym, rep);
-      int64_t idx = state_indexing.index(state);
+    for (int64_t sym = 0; sym < action.size(); ++sym) {
+      bit_t state = action.apply(sym, rep);
+      int64_t idx = enumeration.index(state);
       representative_index[idx] = rep_idx;
       representative_symmetry[idx] = group.inv(sym);
     }
@@ -123,35 +127,36 @@ static void representative_table_initialize(
 }
 XDIAG_CATCH
 
-template <typename state_indexing_t>
-RepresentativeTable<state_indexing_t>::RepresentativeTable(
-    state_indexing_t const &state_indexing, GroupAction const &group_action,
-    std::vector<double> const &characters) try {
-  representative_table_initialize(state_indexing, group_action, characters,
-                                  representative_, representative_index_,
-                                  representative_symmetry_,
-                                  representative_norm_index_, norm_);
+template <typename enumeration_t>
+RepresentativeTable<enumeration_t>::RepresentativeTable(
+    enumeration_t const &enumeration, SitePermutation const &action,
+    Representation const &irrep) try {
+  if (action.group() != irrep.group()) {
+    XDIAG_THROW("PermutationGroup of SitePermutation does not agree with group "
+                "or Representation");
+  }
+  if (isreal(irrep)) {
+    representative_table_initialize(
+        enumeration, action, irrep.characters().as<arma::vec>(),
+        representative_, representative_index_, representative_symmetry_,
+        representative_norm_index_, norm_);
+  } else {
+    representative_table_initialize(
+        enumeration, action, irrep.characters().as<arma::cx_vec>(),
+        representative_, representative_index_, representative_symmetry_,
+        representative_norm_index_, norm_);
+  }
 }
 XDIAG_CATCH
 
-template <typename state_indexing_t>
-RepresentativeTable<state_indexing_t>::RepresentativeTable(
-    state_indexing_t const &state_indexing, GroupAction const &group_action,
-    std::vector<complex> const &characters) try {
-  representative_table_initialize(state_indexing, group_action, characters,
-                                  representative_, representative_index_,
-                                  representative_symmetry_,
-                                  representative_norm_index_, norm_);
-}
-XDIAG_CATCH
-
-int64_t RepresentativeTable<state_indexing_t>::size() const {
+template <typename enumeration_t>
+int64_t RepresentativeTable<enumeration_t>::size() const {
   return representative_.size();
 }
 
-template <typename state_indexing_t>
-bool RepresentativeTable<state_indexing_t>::operator==(
-    RepresentativeTable<state_indexing_t> const &rhs) const {
+template <typename enumeration_t>
+bool RepresentativeTable<enumeration_t>::operator==(
+    RepresentativeTable<enumeration_t> const &rhs) const {
   return (representative_ == rhs.representative_) &&
          (representative_index_ == rhs.representative_index_) &&
          (representative_symmetry_ == rhs.representative_symmetry_) &&
@@ -159,9 +164,9 @@ bool RepresentativeTable<state_indexing_t>::operator==(
          (norm_ == rhs.norm_);
 }
 
-template <typename state_indexing_t>
-bool RepresentativeTable<state_indexing_t>::operator!=(
-    RepresentativeTable<state_indexing_t> const &rhs) const {
+template <typename enumeration_t>
+bool RepresentativeTable<enumeration_t>::operator!=(
+    RepresentativeTable<enumeration_t> const &rhs) const {
   return ~operator==(rhs);
 }
 
