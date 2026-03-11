@@ -31,7 +31,7 @@ int64_t count_bounded_partitions(int64_t n, int64_t total, int64_t bound) {
 template <typename bitarray_t>
 bitarray_t nth_bounded_partition(int64_t n, int64_t total, int64_t bound,
                                  int64_t idx) {
-  bitarray_t arr{};
+  bitarray_t arr = bits::make_bitarray<bitarray_t>(n);
   int64_t remaining = total;
   for (int64_t slot = n - 1; slot >= 0; --slot) {
     for (int64_t v = 0; v <= std::min(bound - 1, remaining); ++v) {

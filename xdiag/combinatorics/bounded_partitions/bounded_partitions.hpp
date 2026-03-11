@@ -28,8 +28,9 @@ template <typename bitarray_t> class BoundedPartitionsIterator;
 //     use seq.get(0), seq.get(1), seq.get(2);
 template <typename bitarray_t> class BoundedPartitions {
 public:
-  using bit_t = typename bitarray_t::bit_t;
-  static constexpr int nbits = bitarray_t::nbits;
+  using bit_t = bitarray_t; 
+  using raw_t = typename bitarray_t::bit_t;
+ static constexpr int nbits = bitarray_t::nbits;
   using iterator_t = BoundedPartitionsIterator<bitarray_t>;
 
   BoundedPartitions() = default;
@@ -57,7 +58,6 @@ private:
 
 template <typename bitarray_t> class BoundedPartitionsIterator {
 public:
-  using bit_t = typename bitarray_t::bit_t;
   static constexpr int nbits = bitarray_t::nbits;
 
   BoundedPartitionsIterator() = default;

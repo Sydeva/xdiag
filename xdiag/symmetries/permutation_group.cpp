@@ -201,7 +201,7 @@ bool PermutationGroup::operator==(PermutationGroup const &rhs) const {
       permutations_.n_cols != rhs.permutations_.n_cols) {
     return false;
   }
-  return arma::all(arma::all(permutations_ == rhs.permutations_));
+  return arma::all(arma::vectorise(permutations_ == rhs.permutations_));
 }
 
 bool PermutationGroup::operator!=(PermutationGroup const &rhs) const {

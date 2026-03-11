@@ -107,7 +107,7 @@ BoundedPartitionsIterator<bitarray_t>
 BoundedPartitions<bitarray_t>::begin() const {
   if (size_ == 0)
     return end();
-  bitarray_t first{};
+  bitarray_t first = bits::make_bitarray<bitarray_t>(n_);
   if (n_ > 0)
     fill_rlex_first(first, 0, n_ - 1, total_, bound_);
   return BoundedPartitionsIterator<bitarray_t>(n_, total_, bound_, 0, first);

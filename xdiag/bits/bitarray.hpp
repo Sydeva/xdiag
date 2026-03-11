@@ -86,6 +86,19 @@ private:
   bit_t bits_{};
 };
 
+// Create a BitArray with proper initialization for n_slots elements.
+// For integral/static bit_t: default construct (storage is fixed-size).
+// For BitsetDynamic bit_t: allocate n_slots * nbits bits initialized to zero.
+template <typename bitarray_t>
+inline bitarray_t make_bitarray(int64_t n_slots) {
+  using bit_t = typename bitarray_t::bit_t;
+  if constexpr (std::is_same_v<bit_t, BitsetDynamic>) {
+    return bitarray_t(bit_t(n_slots * bitarray_t::nbits));
+  } else {
+    return bitarray_t{};
+  }
+}
+
 template <typename bit_t, int nbits>
 std::string to_string(BitArray<bit_t, nbits> const &bits,
                       int64_t size = BitArray<bit_t, nbits>::maximum_size,

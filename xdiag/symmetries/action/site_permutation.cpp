@@ -46,6 +46,9 @@ bits::BitArray<bit_t, nbits>
 SitePermutation::apply(int64_t sym,
                        bits::BitArray<bit_t, nbits> const &bits) const {
   bits::BitArray<bit_t, nbits> bitsr;
+  if constexpr (std::is_same_v<bit_t, bits::BitsetDynamic>) {
+    bitsr = bits::BitArray<bit_t, nbits>(bit_t(nsites_ * nbits));
+  }
   const int64_t *permutation = group_.ptr(sym);
   for (int64_t i = 0; i < nsites_; ++i) {
     bitsr.set(permutation[i], bits.get(i));

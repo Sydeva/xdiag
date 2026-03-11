@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2025 Alexander Wietek <awietek@pks.mpg.de>
 //
 // SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
 #include <cstdint>
 #include <vector>
 #include <xdiag/bits/bitvector.hpp>
@@ -9,17 +12,32 @@
 
 namespace xdiag::symmetries {
 
+// RepresentativeTable maps every state in an enumeration to the lexicographically
+// smallest state in its symmetry orbit (the "representative") under a given
+// SitePermutation action and 1-D Representation (irrep).
+//
+// For each state at enumeration index idx, the table stores:
+//   representative(idx)         – the orbit representative (a bit state)
+//   index_of_representative(idx) – index of the representative in the rep list
+//   symmetry(idx)               – index s such that action.apply(s, state) ==
+//                                  representative(idx)
+//   norm(idx)                   – sqrt(|orbit|) weight for symmetry-adapted
+//                                  basis states (zero-norm states are excluded)
+//
+// Iteration (begin/end) yields the representatives in enumeration order.
+// The group of the SitePermutation must equal the group of the Representation.
 template <typename enumeration_tt> class RepresentativeTable {
 public:
   using enumeration_t = enumeration_tt;
   using bit_t = typename enumeration_t::bit_t;
+  using const_iterator = bits::BitVectorConstIterator<bit_t>;
 
   RepresentativeTable() = default;
   RepresentativeTable(enumeration_t const &enumeration,
                       SitePermutation const &action,
                       Representation const &irrep);
 
-  inline int64_t representative(int64_t idx) const {
+  inline bit_t representative(int64_t idx) const {
     return representative_[representative_index_[idx]];
   }
   inline int64_t index_of_representative(int64_t idx) const {
@@ -28,19 +46,22 @@ public:
   inline int64_t symmetry(int64_t idx) const {
     return representative_symmetry_[idx];
   }
-  inline int64_t norm(int64_t idx) const {
+  inline double norm(int64_t idx) const {
     return norm_[representative_norm_index_[idx]];
   }
   int64_t size() const;
+
+  const_iterator begin() const noexcept { return representative_.cbegin(); }
+  const_iterator end() const noexcept { return representative_.cend(); }
 
   bool operator==(RepresentativeTable<enumeration_t> const &rhs) const;
   bool operator!=(RepresentativeTable<enumeration_t> const &rhs) const;
 
 private:
   bits::BitVector<bit_t> representative_;
-  bits::BitVector<bit_t> representative_index_;
-  bits::BitVector<bit_t> representative_symmetry_;
-  bits::BitVector<bit_t> representative_norm_index_;
+  bits::BitVector<uint64_t> representative_index_;
+  bits::BitVector<uint64_t> representative_symmetry_;
+  bits::BitVector<uint64_t> representative_norm_index_;
   std::vector<double> norm_;
 };
 

@@ -59,12 +59,12 @@ int64_t BoundedMultisets<bitarray_t>::bitwidth() const {
 
 template <typename bitarray_t>
 auto BoundedMultisets<bitarray_t>::operator[](int64_t idx) const -> bitarray_t {
-  return bits::unpack<bit_t, nbits>(idx, bound_);
+  return bits::unpack<raw_t, nbits>(idx, bound_, n_);
 }
 
 template <typename bitarray_t>
 int64_t BoundedMultisets<bitarray_t>::index(bitarray_t seq) const {
-  return bits::pack<bit_t, nbits>(seq, bound_, n_);
+  return bits::pack<raw_t, nbits>(seq, bound_, n_);
 }
 
 template <typename bitarray_t>
@@ -95,7 +95,7 @@ BoundedMultisetsIterator<bitarray_t>::BoundedMultisetsIterator(int64_t n,
                                                                int64_t idx,
                                                                int64_t bound)
     : n_(n), idx_(idx), bound_(bound),
-      current_(bits::unpack<bit_t, nbits>(idx, bound)) {}
+      current_(bits::unpack<bit_t, nbits>(idx, bound, n)) {}
 
 template <typename bitarray_t>
 bool BoundedMultisetsIterator<bitarray_t>::operator==(
@@ -128,7 +128,7 @@ template <typename bitarray_t>
 BoundedMultisetsIterator<bitarray_t> &
 BoundedMultisetsIterator<bitarray_t>::operator+=(int64_t n) {
   idx_ += n;
-  current_ = bits::unpack<bit_t, nbits>(idx_, bound_);
+  current_ = bits::unpack<bit_t, nbits>(idx_, bound_, n_);
   return *this;
 }
 

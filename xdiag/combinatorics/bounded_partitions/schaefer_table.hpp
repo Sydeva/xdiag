@@ -47,7 +47,8 @@ namespace xdiag::combinatorics {
 
 template <typename bitarray_t> class SchaeferTable {
 public:
-  using bit_t = typename bitarray_t::bit_t;
+  using bit_t = bitarray_t;
+  using raw_t = typename bitarray_t::bit_t;
   static constexpr int nbits = bitarray_t::nbits;
   using iterator_t = BoundedPartitionsIterator<bitarray_t>;
 
