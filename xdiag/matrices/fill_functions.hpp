@@ -33,8 +33,8 @@ constexpr void fill_matrix(coeff_t *mat, int64_t m, int64_t idx_in,
 // ---------------------------------------------------------------------------
 
 template <typename coeff_t>
-constexpr void fill_apply(coeff_t const *vec_in, coeff_t *vec_out,
-                          int64_t idx_in, int64_t idx_out, coeff_t val) {
+inline void fill_apply(coeff_t const *vec_in, coeff_t *vec_out, int64_t idx_in,
+                       int64_t idx_out, coeff_t val) {
 #ifdef _OPENMP
   if constexpr (isreal<coeff_t>()) {
     coeff_t x = val * vec_in[idx_in];
@@ -42,8 +42,8 @@ constexpr void fill_apply(coeff_t const *vec_in, coeff_t *vec_out,
     vec_out[idx_out] += x;
   } else {
     complex x = val * vec_in[idx_in];
-    double *r = &reinterpret_cast<double(&)[2]>(vec_out[idx_out])[0];
-    double *i = &reinterpret_cast<double(&)[2]>(vec_out[idx_out])[1];
+    double *r = &reinterpret_cast<double (&)[2]>(vec_out[idx_out])[0];
+    double *i = &reinterpret_cast<double (&)[2]>(vec_out[idx_out])[1];
 #pragma omp atomic update
     *r += x.real();
 #pragma omp atomic update
