@@ -67,6 +67,24 @@ inline value_t get_element(BitsetDynamic const &storage, int64_t offset,
   }
 }
 
+// Atomic OR variant: valid when storage is zero-initialised and each bit
+// position is written by exactly one thread (disjoint-orbit guarantee).
+template <typename value_t>
+inline void set_element_atomic_or(BitsetDynamic &storage, int64_t offset,
+                                   int64_t nbits, value_t const &val) noexcept {
+  if constexpr (std::is_integral_v<value_t>) {
+    storage.set_range_atomic_or(offset, nbits, static_cast<uint64_t>(val));
+  } else if constexpr (detail::is_bitarray_v<value_t>) {
+    using raw_t = typename value_t::bit_t;
+    set_element_atomic_or<raw_t>(storage, offset, nbits, val.raw());
+  } else {
+    for (int64_t b = 0; b < nbits; b += 64) {
+      int64_t w = std::min(int64_t(64), nbits - b);
+      storage.set_range_atomic_or(offset + b, w, val.get_range(b, w));
+    }
+  }
+}
+
 template <typename value_t>
 inline void set_element(BitsetDynamic &storage, int64_t offset, int64_t nbits,
                         value_t const &val) noexcept {
@@ -109,6 +127,13 @@ public:
 
   value_t at(int64_t index) const;
   BitVectorReference<value_t> at(int64_t index);
+
+  // Parallel-safe write: OR the packed bits of val into element index.
+  // Requires zero-initialised storage and that each bit position is written
+  // by at most one thread (disjoint-orbit guarantee in RepresentativeTable).
+  inline void atomic_or_element(int64_t index, value_t const &val) noexcept {
+    set_element_atomic_or(storage_, index * nbits_, nbits_, val);
+  }
 
   inline value_t front() const noexcept { return operator[](0); }
   inline value_t back() const noexcept { return operator[](size_ - 1); }

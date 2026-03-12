@@ -4,6 +4,7 @@
 
 #pragma once
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <cstdint>
 #include <limits>
@@ -101,6 +102,30 @@ public:
       chunks_[endchunk] &= ~mask2;
       chunks_[endchunk] |= bits >> (nchunkbits - startbit);
     }
+  }
+
+  // Atomic OR-into-place variant of set_range. Valid when storage is
+  // zero-initialised and each bit position is written by exactly one thread
+  // (so the clear step is unnecessary and non-overlapping ORs are safe).
+  // Uses reinterpret_cast to std::atomic<chunk_t>*, which is well-defined for
+  // lock-free types on all major platforms (GCC, Clang, MSVC / x86-64, ARM64).
+  inline void set_range_atomic_or(int64_t start, int64_t length,
+                                   chunk_t bits) noexcept {
+    static_assert(std::atomic<chunk_t>::is_always_lock_free,
+                  "chunk_t must support lock-free atomics for parallel writes");
+    bits &= bitmask<chunk_t>(length);
+    if (!length)
+      return;
+    int64_t end = start + length;
+    int64_t startchunk = start >> chunkshift;
+    int64_t startbit   = start & chunkmask;
+    int64_t endchunk   = end >> chunkshift;
+    int64_t endbit     = end & chunkmask;
+    reinterpret_cast<std::atomic<chunk_t> *>(&chunks_[startchunk])
+        ->fetch_or(bits << startbit, std::memory_order_relaxed);
+    if (endchunk != startchunk && endbit != 0)
+      reinterpret_cast<std::atomic<chunk_t> *>(&chunks_[endchunk])
+          ->fetch_or(bits >> (nchunkbits - startbit), std::memory_order_relaxed);
   }
 
   inline chunk_t get_range(int64_t start, int64_t length) const noexcept {

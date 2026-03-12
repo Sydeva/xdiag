@@ -6,7 +6,13 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <numeric>
+#include <set>
 #include <type_traits>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <xdiag/bits/bitarray.hpp>
 #include <xdiag/bits/bitset.hpp>
@@ -38,6 +44,49 @@ static void representative_table_initialize(
 
   // First pass, simply count number of representatives and number of different
   // norms
+#ifdef _OPENMP
+  int nthreads = omp_get_max_threads();
+  std::vector<int64_t> nrepresentatives_for_thread(nthreads, 0);
+  std::vector<std::set<double>> norms_for_thread(nthreads);
+
+#pragma omp parallel
+  {
+    int num_thread = omp_get_thread_num();
+    int64_t size = enumeration.size();
+    auto begin = enumeration.begin() + num_thread * (size / nthreads);
+    auto end = (num_thread == nthreads - 1)
+                   ? enumeration.end()
+                   : enumeration.begin() + (num_thread + 1) * (size / nthreads);
+    for (auto it = begin; it != end; ++it) {
+      auto state = *it;
+      if (isrepresentative(state, action)) {
+        double nrm = norm(state, action, characters);
+        if (std::fabs(nrm) > 1e-6) { // representative found
+          ++nrepresentatives_for_thread[num_thread];
+          norms_for_thread[num_thread].insert(nrm);
+        }
+      }
+    }
+  }
+
+  // combine norms from different threads
+  std::set<double> norms_set;
+  for (auto const &s : norms_for_thread) {
+    norms_set.insert(s.begin(), s.end());
+  }
+  norms = std::vector<double>(norms_set.begin(), norms_set.end());
+
+  // get the offsets for nrepresentatives
+  std::vector<int64_t> nrepresentatives_for_thread_offset(nthreads, 0);
+  std::exclusive_scan(nrepresentatives_for_thread.begin(),
+                      nrepresentatives_for_thread.end(),
+                      nrepresentatives_for_thread_offset.begin(), 0);
+
+  // get the total number of representatives
+  int64_t nrepresentatives =
+      std::accumulate(nrepresentatives_for_thread.begin(),
+                      nrepresentatives_for_thread.end(), 0);
+#else
   int64_t nrepresentatives = 0;
   for (auto state : enumeration) {
     if (isrepresentative(state, action)) {
@@ -58,6 +107,7 @@ static void representative_table_initialize(
       }
     }
   }
+#endif
   std::sort(norms.begin(), norms.end());
 
   // --------------------------------------------------------------
@@ -102,42 +152,104 @@ static void representative_table_initialize(
   }
 
   // --------------------------------------------------------------
-  // Second pass, fill all vectors
+  // Second pass: fill representative[] and representative_norm_index[].
+  // Thread t writes to the contiguous range [rep_offset[t], rep_offset[t+1]).
+  // Adjacent thread ranges may share a 64-bit storage chunk in the BitVector,
+  // so we use atomic_or_element (OR into zero-initialised storage) which is
+  // safe because each element position is written by exactly one thread.
   // --------------------------------------------------------------
-  int64_t idx = 0;
-  nrepresentatives = 0;
-  for (auto state : enumeration) {
-    if (isrepresentative(state, action)) {
-      double nrm = norm(state, action, characters);
-
-      if (std::fabs(nrm) > 1e-6) { // representative found
-        representative_index[idx] = (uint64_t)nrepresentatives;
-        representative[nrepresentatives] = state;
-
-        // Get index of norm
-        auto it = std::find_if(norms.begin(), norms.end(), [&](double n) {
-          return std::fabs(n - nrm) < 1e-6;
-        });
-        representative_norm_index[nrepresentatives] =
-            (uint64_t)std::distance(norms.begin(), it);
-        ++nrepresentatives;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    int t = omp_get_thread_num();
+    int64_t size = enumeration.size();
+    int64_t i_begin = (int64_t)t * (size / nthreads);
+    int64_t i_end =
+        (t == nthreads - 1) ? size : (int64_t)(t + 1) * (size / nthreads);
+    auto it = enumeration.begin() + i_begin;
+    int64_t local_rep_idx = nrepresentatives_for_thread_offset[t];
+    for (int64_t i = i_begin; i < i_end; ++i, ++it) {
+      bit_t state = *it;
+      if (isrepresentative(state, action)) {
+        double nrm = norm(state, action, characters);
+        if (std::fabs(nrm) > 1e-6) {
+          representative.atomic_or_element(local_rep_idx, state);
+          auto it2 = std::find_if(norms.begin(), norms.end(), [&](double n) {
+            return std::fabs(n - nrm) < 1e-6;
+          });
+          representative_norm_index.atomic_or_element(
+              local_rep_idx,
+              (uint64_t)std::distance(norms.begin(), it2));
+          ++local_rep_idx;
+        }
       }
     }
-    ++idx;
   }
+#else
+  {
+    int64_t rep_idx = 0;
+    for (auto state : enumeration) {
+      if (isrepresentative(state, action)) {
+        double nrm = norm(state, action, characters);
+        if (std::fabs(nrm) > 1e-6) {
+          representative[rep_idx] = state;
+          auto it = std::find_if(norms.begin(), norms.end(), [&](double n) {
+            return std::fabs(n - nrm) < 1e-6;
+          });
+          representative_norm_index[rep_idx] =
+              (uint64_t)std::distance(norms.begin(), it);
+          ++rep_idx;
+        }
+      }
+    }
+  }
+#endif
 
-  // Compute the symmetries that yield the representative and fill
-  // non-representative representative_index
+  // --------------------------------------------------------------
+  // Third pass: expand each representative's orbit to fill
+  // representative_index[] and representative_symmetry[] for every state.
+  // Orbits are disjoint so each idx is written by exactly one rep_idx.
+  // When a representative has a non-trivial stabilizer, multiple symmetries
+  // map it to the same orbit member; we deduplicate via a per-thread `seen`
+  // list so each idx receives exactly one write (first symmetry wins).
+  // In the OMP path we use atomic_or_element (OR into zero-initialised
+  // storage) so concurrent writes to different rep_idx are race-free.
+  // --------------------------------------------------------------
   auto const &group = action.group();
-  for (int64_t rep_idx = 0; rep_idx < representative.size(); ++rep_idx) {
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    std::vector<int64_t> seen;
+    seen.reserve(action.size());
+#pragma omp for schedule(static)
+    for (int64_t rep_idx = 0; rep_idx < (int64_t)representative.size();
+         ++rep_idx) {
+      seen.clear();
+      bit_t rep = representative[rep_idx];
+      for (int64_t sym = 0; sym < action.size(); ++sym) {
+        bit_t state = action.apply(sym, rep);
+        int64_t idx = enumeration.index(state);
+        if (std::find(seen.begin(), seen.end(), idx) != seen.end())
+          continue;
+        seen.push_back(idx);
+        representative_index.atomic_or_element(idx, (uint64_t)rep_idx);
+        representative_symmetry.atomic_or_element(idx,
+                                                  (uint64_t)group.inv(sym));
+      }
+    }
+  }
+#else
+  for (int64_t rep_idx = 0; rep_idx < (int64_t)representative.size();
+       ++rep_idx) {
     bit_t rep = representative[rep_idx];
     for (int64_t sym = 0; sym < action.size(); ++sym) {
       bit_t state = action.apply(sym, rep);
       int64_t idx = enumeration.index(state);
-      representative_index[idx] = rep_idx;
-      representative_symmetry[idx] = group.inv(sym);
+      representative_index[idx] = (uint64_t)rep_idx;
+      representative_symmetry[idx] = (uint64_t)group.inv(sym);
     }
   }
+#endif
 }
 XDIAG_CATCH
 
@@ -191,7 +303,6 @@ using namespace xdiag::bits;
 
 #define INSTANTIATE_REPRESENTATIVE_TABLE(ENUMERATION_TYPE)                     \
   template class xdiag::symmetries::RepresentativeTable<ENUMERATION_TYPE>;
-
 
 // BEGIN_INSTANTIATION_GROUP(subsets)
 INSTANTIATE_REPRESENTATIVE_TABLE(Subsets<uint32_t>);
