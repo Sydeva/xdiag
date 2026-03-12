@@ -144,17 +144,10 @@ Bitset<chunk_t, nchunks>::operator<<=(int64_t shift) noexcept {
   } else {
     // Shift with bit offset
     int64_t complement_shift = nchunkbits - bit_shift;
-    // GCC 15 falsely warns that chunks_[i - chunk_shift - 1] may be out of
-    // bounds for nchunks==1.  The loop condition (i > chunk_shift) guarantees
-    // i >= chunk_shift+1, so the index is always >= 0.  This is a GCC
-    // analysis limitation, not a real bug.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-    for (int64_t i = size - 1; i > chunk_shift; --i) {
-      chunks_[i] = (chunks_[i - chunk_shift] << bit_shift) |
-                   (chunks_[i - chunk_shift - 1] >> complement_shift);
+    for (int64_t j = size - 1 - chunk_shift; j > 0; --j) {
+      chunks_[j + chunk_shift] =
+          (chunks_[j] << bit_shift) | (chunks_[j - 1] >> complement_shift);
     }
-#pragma GCC diagnostic pop
     chunks_[chunk_shift] = chunks_[0] << bit_shift;
     for (int64_t i = 0; i < chunk_shift; ++i) {
       chunks_[i] = 0;
