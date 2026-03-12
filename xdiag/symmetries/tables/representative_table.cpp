@@ -78,9 +78,9 @@ static void representative_table_initialize(
 
   // get the offsets for nrepresentatives
   std::vector<int64_t> nrepresentatives_for_thread_offset(nthreads, 0);
-  std::exclusive_scan(nrepresentatives_for_thread.begin(),
-                      nrepresentatives_for_thread.end(),
-                      nrepresentatives_for_thread_offset.begin(), 0);
+  std::partial_sum(nrepresentatives_for_thread.begin(),
+                   nrepresentatives_for_thread.end() - 1,
+                   nrepresentatives_for_thread_offset.begin() + 1);
 
   // get the total number of representatives
   int64_t nrepresentatives =
@@ -178,8 +178,7 @@ static void representative_table_initialize(
             return std::fabs(n - nrm) < 1e-6;
           });
           representative_norm_index.atomic_or_element(
-              local_rep_idx,
-              (uint64_t)std::distance(norms.begin(), it2));
+              local_rep_idx, (uint64_t)std::distance(norms.begin(), it2));
           ++local_rep_idx;
         }
       }
