@@ -85,15 +85,24 @@ function(generate_instantiation_files ABSOLUTE_SOURCE_FILE SOURCE_ROOT INCLUDE_R
   get_filename_component(HEADER_FILENAME "${HEADER_INCL_PATH}" NAME)
 
   ######################
-  # Split into lines, working around CMake's semicolon-as-list-separator
-  set(_SEMICOLON "__CMAKE_SEMICOLON__")
-  set(_BACKSLASH  "__CMAKE_BACKSLASH__")
-  set(_LINESEP    "__CMAKE_LINESEP__")
+  # Split into lines, working around CMake's semicolon-as-list-separator.
+  # We also encode '[' and ']' because CMake's list parser treats an unmatched
+  # '[' as a bracket that swallows subsequent ';' separators (e.g. the comment
+  # "// Thread t writes to the contiguous range [rep_offset[t], rep_offset[t+1])."
+  # contains an outer '[' closed by ')' not ']', which would merge all later
+  # list elements into one giant element).
+  set(_SEMICOLON     "__CMAKE_SEMICOLON__")
+  set(_BACKSLASH     "__CMAKE_BACKSLASH__")
+  set(_LINESEP       "__CMAKE_LINESEP__")
+  set(_OPENBRACKET   "__CMAKE_OPENBRACKET__")
+  set(_CLOSEBRACKET  "__CMAKE_CLOSEBRACKET__")
 
-  string(REPLACE ";"    "${_SEMICOLON}" FILE_CONTENTS "${FILE_CONTENTS}")
-  string(REPLACE "\\"   "${_BACKSLASH}" FILE_CONTENTS "${FILE_CONTENTS}")
-  string(REPLACE "\r\n" "\n"            FILE_CONTENTS "${FILE_CONTENTS}")
-  string(REPLACE "\n"   "${_LINESEP}"   FILE_CONTENTS "${FILE_CONTENTS}")
+  string(REPLACE ";"    "${_SEMICOLON}"    FILE_CONTENTS "${FILE_CONTENTS}")
+  string(REPLACE "\\"   "${_BACKSLASH}"    FILE_CONTENTS "${FILE_CONTENTS}")
+  string(REPLACE "["    "${_OPENBRACKET}"  FILE_CONTENTS "${FILE_CONTENTS}")
+  string(REPLACE "]"    "${_CLOSEBRACKET}" FILE_CONTENTS "${FILE_CONTENTS}")
+  string(REPLACE "\r\n" "\n"               FILE_CONTENTS "${FILE_CONTENTS}")
+  string(REPLACE "\n"   "${_LINESEP}"      FILE_CONTENTS "${FILE_CONTENTS}")
   string(REPLACE "${_LINESEP}" ";" LINES "${FILE_CONTENTS}")
 
   set(GROUP_NAME "")
@@ -101,8 +110,10 @@ function(generate_instantiation_files ABSOLUTE_SOURCE_FILE SOURCE_ROOT INCLUDE_R
   set(PREAMBLE "")
 
   foreach(LINE IN LISTS LINES)
-    string(REPLACE "${_BACKSLASH}" "\\" LINE "${LINE}")
-    string(REPLACE "${_SEMICOLON}" ";" LINE "${LINE}")
+    string(REPLACE "${_BACKSLASH}"    "\\" LINE "${LINE}")
+    string(REPLACE "${_SEMICOLON}"    ";"  LINE "${LINE}")
+    string(REPLACE "${_OPENBRACKET}"  "["  LINE "${LINE}")
+    string(REPLACE "${_CLOSEBRACKET}" "]"  LINE "${LINE}")
 
     # Detect BEGIN_INSTANTIATION_GROUP
     if(LINE MATCHES "//[ ]*BEGIN_INSTANTIATION_GROUP\\(([A-Za-z0-9_]+)\\)")
