@@ -1,0 +1,3 @@
+/home/t30/all/ge45hub/CLionProjects/xdiagAFM/build-canted/CMakeFiles/main.dir
+/home/t30/all/ge45hub/CLionProjects/xdiagAFM/build-canted/CMakeFiles/edit_cache.dir
+/home/t30/all/ge45hub/CLionProjects/xdiagAFM/build-canted/CMakeFiles/rebuild_cache.dir

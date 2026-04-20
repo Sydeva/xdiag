@@ -8,7 +8,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 
-from genlatC6 import (
+from cantedAFM.Latscripts.genlatC6 import (
     _build_site_lookup,
     _frac_mod_cell,
     build_torus,

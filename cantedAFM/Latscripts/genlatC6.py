@@ -302,6 +302,35 @@ def compute_nn_bonds(sites, TinvN, ncell):
     return bonds
 
 
+def compute_nnn_bonds_chiral(sites, TinvN, ncell, invert_chirality=False):
+    """
+    Directed next-nearest-neighbour bonds on each triangular sublattice.
+
+    Default orientation is anti-clockwise around elementary triangular
+    plaquettes and is identical on A and B sublattices. If
+    invert_chirality=True, every directed pair is reversed.
+    """
+    lookup = _build_site_lookup(sites, TinvN, ncell)
+    bonds = []
+
+    # CCW edges of the "up" triangle: n -> n+a1 -> n+a2 -> n
+    tri_edges = [
+        ((0, 0), (1, 0)),
+        ((1, 0), (0, 1)),
+        ((0, 1), (0, 0)),
+    ]
+
+    for n1, n2, sub in sites:
+        for (s1, s2), (t1, t2) in tri_edges:
+            key_i = (_frac_mod_cell((n1 + s1, n2 + s2), TinvN, ncell), sub)
+            key_j = (_frac_mod_cell((n1 + t1, n2 + t2), TinvN, ncell), sub)
+            i = lookup[key_i]
+            j = lookup[key_j]
+            bonds.append((j, i) if invert_chirality else (i, j))
+
+    return bonds
+
+
 def generate_all_translations(sites, cells, TinvN, ncell):
     """All Ncell translation permutations, indexed by displacement = cells[l]."""
     lookup = _build_site_lookup(sites, TinvN, ncell)
@@ -711,6 +740,7 @@ def write_toml(
     perm_ta2,
     perm_rot,
     coupling_name="J1",
+    invert_chirality=False,
 ):
     """Write an xdiag-compatible TOML file for the honeycomb C6 torus."""
     t1, t2 = T[:, 0], T[:, 1]
@@ -718,6 +748,9 @@ def write_toml(
     all_syms, sym_meta = build_sym_group(sites, cells, TinvN, ncell, nsite, perm_rot)
     irrep_sections = compute_irrep_sections(a, b, ncell, cells, all_syms, sym_meta)
     nn_bonds = compute_nn_bonds(sites, TinvN, ncell)
+    nnn_bonds = compute_nnn_bonds_chiral(
+        sites, TinvN, ncell, invert_chirality=invert_chirality
+    )
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write("# Hexagonal (honeycomb) lattice with C6 rotation symmetry\n")
@@ -731,10 +764,15 @@ def write_toml(
             f.write(f"  [{c[0]:.15f}, {c[1]:.15f}],\n")
         f.write("]\n\n")
 
-        f.write(f"# Nearest-neighbour Heisenberg interactions ({len(nn_bonds)} bonds)\n")
+        f.write(
+            "# Interactions: NN Heisenberg + chiral NNN DM "
+            f"({len(nn_bonds)} + {len(nnn_bonds)} bonds)\n"
+        )
         f.write("Interactions = [\n")
         for i, j in nn_bonds:
             f.write(f"  ['{coupling_name}', 'SdotS', {i}, {j}],\n")
+        for i, j in nnn_bonds:
+            f.write(f"  ['D', 'DM', {i}, {j}],\n")
         f.write("]\n\n")
 
         f.write("# Translation by primitive vector a1 = (1,0) in lattice coords\n")
@@ -785,6 +823,8 @@ def main():
                         help="Write xdiag-compatible TOML")
     parser.add_argument("--coupling-name", metavar="NAME", default="J1",
                         help="Coupling label for NN bonds in TOML (default: J1)")
+    parser.add_argument("--invert-chirality", action="store_true",
+                        help="Invert chirality of directed NNN DM bonds")
     parser.add_argument("--verify", action="store_true",
                         help="Run Schur-orthogonality self-test after computing irreps")
     args = parser.parse_args()
@@ -835,6 +875,7 @@ def main():
             perm_ta2,
             perm_rot,
             coupling_name=args.coupling_name,
+            invert_chirality=args.invert_chirality,
         )
 
     return cells, sites, T, ncell, nsite, perm_ta1, perm_ta2, perm_rot
