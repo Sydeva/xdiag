@@ -13,6 +13,7 @@
 #include <xdiag/basis/electron/apply/apply_number.hpp>
 #include <xdiag/basis/electron/apply/apply_number_number.hpp>
 #include <xdiag/basis/electron/apply/apply_raise_lower.hpp>
+#include <xdiag/basis/electron/apply/apply_cdagup_cdagup_cup_cup.hpp>
 #include <xdiag/basis/electron/apply/apply_szsz.hpp>
 #include <xdiag/basis/electron/apply/apply_u.hpp>
 
@@ -30,6 +31,12 @@ void apply_terms(OpSum const &ops, basis_t const &basis_in,
     } else if ((type == "Cdagup") || (type == "Cup") || (type == "Cdagdn") ||
                (type == "Cdn")) {
       apply_raise_lower<symmetric, coeff_t>(cpl, op, basis_in, basis_out, fill);
+    } else if (type == "CdagupCdagupCupCup") {
+      apply_cdagup_cdagup_cup_cup<symmetric, coeff_t>(cpl, op, basis_in,
+                                                      basis_out, fill);
+    } else if (type == "CdagupCdagupCupCupHC") {
+      apply_cdagup_cdagup_cup_cup_hc<symmetric, coeff_t>(
+          cpl, op, basis_in, basis_out, fill);
     } else if (type == "SzSz") {
       apply_szsz<symmetric, coeff_t>(cpl, op, basis_in, basis_out, fill);
     } else if (type == "Exchange") {

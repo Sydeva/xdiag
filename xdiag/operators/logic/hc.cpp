@@ -25,6 +25,10 @@ Op hc(Op const &op) try {
     return Op("Cdn", op.sites());
   } else if (type == "Cdn") {
     return Op("Cdagdn", op.sites());
+  } else if (type == "CdagupCdagupCupCup") {
+    return Op("CdagupCdagupCupCupHC", op.sites());
+  } else if (type == "CdagupCdagupCupCupHC") {
+    return Op("CdagupCdagupCupCup", op.sites());
   } else { // default: the type does not change
 
     if (op.hassites()) {

@@ -183,6 +183,9 @@ std::optional<int64_t> nup(Op const &op) try {
     return 1;
   } else if ((type == "S-") || (type == "Cup")) {
     return -1;
+  } else if ((type == "CdagupCdagupCupCup") ||
+             (type == "CdagupCdagupCupCupHC")) {
+    return 0;
   } else if (type == "Matrix") {
     Matrix mat = op.matrix();
     if (isreal(mat)) {

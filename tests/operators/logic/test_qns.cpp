@@ -7,6 +7,7 @@
 #include "../../blocks/electron/testcases_electron.hpp"
 #include <xdiag/algebra/matrix.hpp>
 #include <xdiag/io/read.hpp>
+#include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/order.hpp>
 #include <xdiag/operators/logic/qns.hpp>
 #include <xdiag/operators/logic/symmetrize.hpp>
@@ -60,6 +61,15 @@ TEST_CASE("qns", "[operators]") try {
   REQUIRE(*ndn(Op("Ndn", 0)) == 0);
   REQUIRE(*nup(Op("HubbardU")) == 0);
   REQUIRE(*ndn(Op("HubbardU")) == 0);
+
+  auto quartic = Op("CdagupCdagupCupCup", {0, 1, 2, 3});
+  auto quartic_hc = Op("CdagupCdagupCupCupHC", {0, 1, 2, 3});
+  REQUIRE(*nup(quartic) == 0);
+  REQUIRE(*ndn(quartic) == 0);
+  REQUIRE(*nup(quartic_hc) == 0);
+  REQUIRE(*ndn(quartic_hc) == 0);
+  REQUIRE(hc(quartic) == quartic_hc);
+  REQUIRE(hc(quartic_hc) == quartic);
 
   mat sx({{0., 0.5}, {0.5, 0.}});
   cx_mat sy(mat({{0., 0.}, {0., 0.}}), mat({{0., -0.5}, {0.5, 0.}}));

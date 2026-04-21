@@ -15,14 +15,16 @@ inline const std::vector<std::string> known_types = {
     "S-",    "ScalarChirality", "Hop",      "Hopup",      "Hopdn",  "Cdagup",
     "Cup",   "Cdagdn",          "Cdn",      "HubbardU",   "Ntot",   "Nup",
     "Ndn",   "Nupdn",           "NtotNtot", "NupdnNupdn", "tJSzSz", "tJSdotS",
-    "Matrix", "NupNdn", "NupNup", "NdnNdn", "NdnNup"};
+    "Matrix", "NupNdn", "NupNup", "NdnNdn", "NdnNup",
+    "CdagupCdagupCupCup", "CdagupCdagupCupCupHC"};
 
 inline const std::vector<std::string> real_types = {
     "Id",     "SdotS",    "Exchange",   "SzSz",   "Sz",     "S+",
     "S-",     "Hop",      "Hopup",      "Hopdn",  "Cdagup", "Cup",
     "Cdagdn", "Cdn",      "HubbardU",   "Ntot",   "Nup",    "Ndn",
     "Nupdn",  "NtotNtot", "NupdnNupdn", "tJSzSz", "tJSdotS",
-    "NupNdn", "NupNup", "NdnNdn", "NdnNup"};
+    "NupNdn", "NupNup", "NdnNdn", "NdnNup", "CdagupCdagupCupCup",
+    "CdagupCdagupCupCupHC"};
 inline const std::vector<std::string> cplx_types = {"ScalarChirality"};
 
 inline const std::map<std::string, int64_t> _nsites_of_type = {
@@ -54,7 +56,9 @@ inline const std::map<std::string, int64_t> _nsites_of_type = {
     {"NupNdn", 2},
     {"NupNup", 2},
     {"NdnNdn", 2},
-    {"NdnNup", 2}
+    {"NdnNup", 2},
+    {"CdagupCdagupCupCup", 4},
+    {"CdagupCdagupCupCupHC", 4}
 };
 
 bool is_known_type(std::string type);

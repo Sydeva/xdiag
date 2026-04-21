@@ -203,6 +203,41 @@ TEST_CASE("electron_raise_lower", "[electron]") try {
       }
     }
   }
+
+  for (int nsites = 4; nsites < 7; ++nsites) {
+    auto block = Electron(nsites);
+    auto r = random_state(block);
+
+    for (int i = 0; i < nsites; ++i) {
+      for (int j = 0; j < nsites; ++j) {
+        if (i == j) {
+          continue;
+        }
+        for (int k = 0; k < nsites; ++k) {
+          for (int l = 0; l < nsites; ++l) {
+            if (k == l) {
+              continue;
+            }
+
+            auto op = Op("CdagupCdagupCupCup", {i, j, k, l});
+            auto a = apply(op, r);
+            auto b = apply(Op("Cdagup", l),
+                           apply(Op("Cdagup", k),
+                                 apply(Op("Cup", j), apply(Op("Cup", i), r))));
+            REQUIRE(isapprox(a, b));
+
+            auto op_hc = Op("CdagupCdagupCupCupHC", {i, j, k, l});
+            auto ah = apply(op_hc, r);
+            auto bh = apply(
+                Op("Cdagup", i),
+                apply(Op("Cdagup", j),
+                      apply(Op("Cup", k), apply(Op("Cup", l), r))));
+            REQUIRE(isapprox(ah, bh));
+          }
+        }
+      }
+    }
+  }
 } catch (xdiag::Error const &e) {
   error_trace(e);
 }
