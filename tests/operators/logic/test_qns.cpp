@@ -71,6 +71,12 @@ TEST_CASE("qns", "[operators]") try {
   REQUIRE(hc(quartic) == quartic_hc);
   REQUIRE(hc(quartic_hc) == quartic);
 
+  // S+S+ and S-S- quantum numbers and hermitian conjugate
+  REQUIRE(*nup(Op("S+S+", {0, 1})) == 2);
+  REQUIRE(*nup(Op("S-S-", {0, 1})) == -2);
+  REQUIRE(hc(Op("S+S+", {0, 1})) == Op("S-S-", {0, 1}));
+  REQUIRE(hc(Op("S-S-", {0, 1})) == Op("S+S+", {0, 1}));
+
   mat sx({{0., 0.5}, {0.5, 0.}});
   cx_mat sy(mat({{0., 0.}, {0., 0.}}), mat({{0., -0.5}, {0.5, 0.}}));
   mat sz({{0.5, 0.0}, {0.0, -0.5}});

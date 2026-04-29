@@ -9,6 +9,7 @@
 #include <xdiag/basis/spinhalf/apply/apply_matrix.hpp>
 #include <xdiag/basis/spinhalf/apply/apply_scalar_chirality.hpp>
 #include <xdiag/basis/spinhalf/apply/apply_spsm.hpp>
+#include <xdiag/basis/spinhalf/apply/apply_spsp_smsm.hpp>
 #include <xdiag/basis/spinhalf/apply/apply_sz.hpp>
 #include <xdiag/basis/spinhalf/apply/apply_szsz.hpp>
 
@@ -42,6 +43,9 @@ void apply_terms(OpSum const &ops, basis_t const &basis_in,
     } else if (type == "ScalarChirality") {
       spinhalf::apply_scalar_chirality<coeff_t, symmetric>(cpl, op, basis_in,
                                                            basis_out, fill);
+    } else if ((type == "S+S+") || (type == "S-S-")) {
+      spinhalf::apply_spsp_smsm<coeff_t, symmetric>(cpl, op, basis_in,
+                                                    basis_out, fill);
     } else if (type == "Matrix") {
       spinhalf::apply_matrix<coeff_t, symmetric>(cpl, op, basis_in, basis_out,
                                                  fill);

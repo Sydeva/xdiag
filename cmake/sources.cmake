@@ -109,6 +109,7 @@ set(XDIAG_SOURCES
   operators/logic/valid.cpp
   operators/logic/types.cpp
   operators/logic/symmetrize.cpp
+  operators/logic/fourier.cpp
   operators/logic/real.cpp
   operators/logic/hc.cpp
   operators/logic/isapprox.cpp

@@ -31,6 +31,7 @@
 #include <xdiag/io/read.hpp>
 #include <xdiag/operators/coupling.hpp>
 #include <xdiag/operators/logic/block.hpp>
+#include <xdiag/operators/logic/fourier.hpp>
 #include <xdiag/operators/logic/hc.hpp>
 #include <xdiag/operators/logic/isapprox.hpp>
 #include <xdiag/operators/logic/qns.hpp>

@@ -40,6 +40,7 @@ set(XDIAG_TEST_SOURCES
   operators/test_opsum.cpp
   operators/test_non_branching_op.cpp
   operators/logic/test_symmetrize.cpp
+  operators/logic/test_fourier.cpp
   operators/logic/test_permute.cpp
   operators/logic/test_order.cpp 
   operators/logic/test_isapprox.cpp
@@ -50,6 +51,7 @@ set(XDIAG_TEST_SOURCES
   blocks/spinhalf/test_spinhalf_symmetric.cpp
   blocks/spinhalf/test_spinhalf_symmetric_matrix.cpp
   blocks/spinhalf/test_spinhalf_symmetric_apply.cpp
+  blocks/spinhalf/test_spinhalf_spsp_smsm.cpp
   blocks/spinhalf/test_kitaev_gamma.cpp
 
   blocks/tj/test_tj_matrix.cpp

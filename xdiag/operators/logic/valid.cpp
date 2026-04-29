@@ -44,14 +44,19 @@ void check_valid(Op const &op) try {
       auto const &sites = op.sites();
       if (sites[0] == sites[1]) {
         XDIAG_THROW(fmt::format("Op of type \"{}\" requires i != j for "
-                                "sites {i,j,k,l}, got Op:\n{}",
+                                "sites {{i,j,k,l}}, got Op:\n{}",
                                 op.type(), to_string(op)));
       }
       if (sites[2] == sites[3]) {
         XDIAG_THROW(fmt::format("Op of type \"{}\" requires k != l for "
-                                "sites {i,j,k,l}, got Op:\n{}",
+                                "sites {{i,j,k,l}}, got Op:\n{}",
                                 op.type(), to_string(op)));
       }
+    } else if ((type == "S+S+") || (type == "S-S-")) {
+      must_not_have_matrix(op);
+      must_have_sites(op);
+      must_have_nsites(op, 2);
+      must_have_disjoint_sites(op);
     } else if ((type == "HubbardU") || (type == "Id")) {
       must_not_have_matrix(op);
       must_not_have_sites(op);

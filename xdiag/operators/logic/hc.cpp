@@ -29,6 +29,10 @@ Op hc(Op const &op) try {
     return Op("CdagupCdagupCupCupHC", op.sites());
   } else if (type == "CdagupCdagupCupCupHC") {
     return Op("CdagupCdagupCupCup", op.sites());
+  } else if (type == "S+S+") {
+    return Op("S-S-", op.sites());
+  } else if (type == "S-S-") {
+    return Op("S+S+", op.sites());
   } else { // default: the type does not change
 
     if (op.hassites()) {
