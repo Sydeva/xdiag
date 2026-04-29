@@ -33,6 +33,10 @@ cd /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM
 python3 plot_heisenberg_spectrum.py HeisenbergZeemanSzvar24.outfile.txt --n-lowest 5
 ```
 
+Build/rebuild instructions (including selecting `GSwPG/main.cpp` vs `GSwPG/mainani.cpp`) are in:
+
+- `/home/t30/all/ge45hub/CLionProjects/xdiagAFM/build-canted-native/README.md`
+
 ## Headless run (save to file)
 
 ```bash

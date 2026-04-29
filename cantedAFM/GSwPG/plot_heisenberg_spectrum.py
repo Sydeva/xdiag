@@ -161,6 +161,8 @@ def sz_sort_key(value: str) -> Tuple[int, float | str]:
 
 def sz_distance_label(sz_value: str, nsites: int) -> str:
     """Format |Sz - Nsites/2| for axis labels, with compact integer output."""
+    if nsites == 0:
+        return sz_value
     try:
         distance = (float(sz_value) - 0.5 * nsites)
     except ValueError:
@@ -333,7 +335,7 @@ def main() -> None:
         "--nsites",
         type=int,
         default=24,
-        help="Number of lattice sites N used for |Sz - N/2| axis labels.",
+        help="Number of lattice sites N used for |Sz - N/2| axis labels. Use 0 to show raw Sz values.",
     )
     args = parser.parse_args()
 
@@ -343,8 +345,8 @@ def main() -> None:
         raise ValueError("--degeneracy-tol must be non-negative.")
     if args.jitter_width < 0.0:
         raise ValueError("--jitter-width must be non-negative.")
-    if args.nsites <= 0:
-        raise ValueError("--nsites must be a positive integer.")
+    if args.nsites < 0:
+        raise ValueError("--nsites must be a non-negative integer.")
 
     momentum_order = ["Gamma", "K", "M"]
 
