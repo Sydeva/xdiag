@@ -84,7 +84,8 @@ Key/naming conventions
 
 Usage
 -----
-    python genlatC6.py [a [b]] [--toml FILE] [--verify]
+    python genlatC6.py [a [b]] [--toml FILE] [--verify] [--pointgroup true|false] \
+        [--coupling-name J1] [--pairflip true|false] [--pairflip-coupling-name Jpm]
 
     Defaults: a=3, b=0  (Ncell=9, Nsite=18  hexagonal torus)
 
@@ -93,6 +94,8 @@ Examples
     python genlatC6.py 2 1 --toml honeycomb.6.toml   # Nsite=6, K+K' at Γ
     python genlatC6.py 3 0 --toml honeycomb.18.toml  # Nsite=18
     python genlatC6.py 4 2 --toml honeycomb.24.toml  # Nsite=24, K+K'+M
+    python genlatC6.py 4 2 --toml honeycomb.24.T.toml --pointgroup false
+    python genlatC6.py 4 2 --toml honeycomb.24.no_pairflip.toml --pairflip false
 """
 
 import argparse
@@ -302,13 +305,12 @@ def compute_nn_bonds(sites, TinvN, ncell):
     return bonds
 
 
-def compute_nnn_bonds_chiral(sites, TinvN, ncell, invert_chirality=False):
+def compute_nnn_bonds_chiral(sites, TinvN, ncell):
     """
     Directed next-nearest-neighbour bonds on each triangular sublattice.
 
     Default orientation is anti-clockwise around elementary triangular
     plaquettes and is identical on A and B sublattices. If
-    invert_chirality=True, every directed pair is reversed.
     """
     lookup = _build_site_lookup(sites, TinvN, ncell)
     bonds = []
@@ -326,7 +328,7 @@ def compute_nnn_bonds_chiral(sites, TinvN, ncell, invert_chirality=False):
             key_j = (_frac_mod_cell((n1 + t1, n2 + t2), TinvN, ncell), sub)
             i = lookup[key_i]
             j = lookup[key_j]
-            bonds.append((j, i) if invert_chirality else (i, j))
+            bonds.append((j, i) if sub else (i, j))
 
     return bonds
 
@@ -358,11 +360,12 @@ def _rotation_powers(perm_rot, nsite, order):
     return powers
 
 
-def build_sym_group(sites, cells, TinvN, ncell, nsite, perm_rot):
+def build_sym_group(sites, cells, TinvN, ncell, nsite, perm_rot, pointgroup=True):
     """
-    Build the full T_{Ncell} × C6 symmetry set with per-element metadata.
+    Build the symmetry set with per-element metadata.
 
     Ordering: block k = 0..5 (rotation power), then all Ncell translations.
+    If pointgroup=False, keep only the translation block k = 0.
     Duplicate permutations (e.g. when C6 acts with order < 6 on a small cluster)
     are silently dropped; first occurrence wins.
 
@@ -374,7 +377,7 @@ def build_sym_group(sites, cells, TinvN, ncell, nsite, perm_rot):
         l ∈ {0,...,Ncell-1} — translation index (displacement = cells[l])
     """
     all_trans = generate_all_translations(sites, cells, TinvN, ncell)
-    rot_powers = _rotation_powers(perm_rot, nsite, 6)
+    rot_powers = _rotation_powers(perm_rot, nsite, 6) if pointgroup else [list(range(nsite))]
 
     all_syms = []
     sym_meta = []
@@ -509,7 +512,7 @@ def _chars_for_section(cells, sym_meta, allowed, q1, q2, rot_char_fn):
     return chars
 
 
-def compute_irrep_sections(a, b, ncell, cells, all_syms, sym_meta):
+def compute_irrep_sections(a, b, ncell, cells, all_syms, sym_meta, pointgroup=True):
     """
     Compute xdiag-style irrep sections for all momentum orbits.
 
@@ -540,6 +543,42 @@ def compute_irrep_sections(a, b, ncell, cells, all_syms, sym_meta):
     allowed_c3 = _allowed_indices(sym_meta, {0, 2, 4})
     allowed_c2 = _allowed_indices(sym_meta, {0, 3})
     allowed_c1 = _allowed_indices(sym_meta, {0})
+
+    if not pointgroup:
+        # Translation-only mode: one C1 section per momentum, while keeping
+        # familiar high-symmetry labels (Gamma, K, Kp, M1/M2/M3).
+        m_points = sorted(
+            [(fq1, fq2) for fq1, fq2, *_ in momenta if _is_m_point(fq1, fq2, ncell)]
+        )
+        m_labels = {fq: f"M{idx + 1}" for idx, fq in enumerate(m_points)}
+        x_count = 0
+        sections = []
+
+        for fq1, fq2, q1, q2, kx, ky in momenta:
+            fq = (fq1, fq2)
+            if fq == (0, 0):
+                base = "Gamma"
+            elif _is_k_point(fq1, fq2, ncell):
+                base = "K"
+            elif _is_kp_point(fq1, fq2, ncell):
+                base = "Kp"
+            elif fq in m_labels:
+                base = m_labels[fq]
+            else:
+                base = "X" if x_count == 0 else f"X{x_count}"
+                x_count += 1
+
+            sections.append({
+                "name": f"{base}.C1.A",
+                "characters": _chars_for_section(
+                    cells, sym_meta, allowed_c1, q1, q2,
+                    rot_char_fn=lambda _k: 1.0 + 0j,
+                ),
+                "allowed_symmetries": allowed_c1,
+                "momentum": [kx, ky],
+            })
+
+        return sections
 
     # ---- first pass: Γ, K, K' ----
     for fq1, fq2, q1, q2, kx, ky in momenta:
@@ -739,21 +778,28 @@ def write_toml(
     perm_ta1,
     perm_ta2,
     perm_rot,
+    pointgroup=True,
     coupling_name="J1",
-    invert_chirality=False,
+    pairflip=True,
+    pairflip_coupling_name="Jpm",
 ):
     """Write an xdiag-compatible TOML file for the honeycomb C6 torus."""
     t1, t2 = T[:, 0], T[:, 1]
 
-    all_syms, sym_meta = build_sym_group(sites, cells, TinvN, ncell, nsite, perm_rot)
-    irrep_sections = compute_irrep_sections(a, b, ncell, cells, all_syms, sym_meta)
+    all_syms, sym_meta = build_sym_group(
+        sites, cells, TinvN, ncell, nsite, perm_rot, pointgroup=pointgroup
+    )
+    irrep_sections = compute_irrep_sections(
+        a, b, ncell, cells, all_syms, sym_meta, pointgroup=pointgroup
+    )
     nn_bonds = compute_nn_bonds(sites, TinvN, ncell)
     nnn_bonds = compute_nnn_bonds_chiral(
-        sites, TinvN, ncell, invert_chirality=invert_chirality
+        sites, TinvN, ncell
     )
 
     with open(filename, "w", encoding="utf-8") as f:
-        f.write("# Hexagonal (honeycomb) lattice with C6 rotation symmetry\n")
+        mode = "T_{Ncell} x C6" if pointgroup else "T_{Ncell}"
+        f.write(f"# Hexagonal (honeycomb) lattice with {mode} symmetry\n")
         f.write(f"# Parameters: a={a}, b={b}, Ncell={ncell}, Nsite={nsite}\n")
         f.write(f"# Torus vectors: t1=({t1[0]},{t1[1]}) lat, t2=({t2[0]},{t2[1]}) lat\n")
         f.write("# Generated by genlatC6.py\n\n")
@@ -764,15 +810,22 @@ def write_toml(
             f.write(f"  [{c[0]:.15f}, {c[1]:.15f}],\n")
         f.write("]\n\n")
 
+        nn_terms_per_bond = 3 if pairflip else 1
+        nn_terms = nn_terms_per_bond * len(nn_bonds)
+        total_terms = nn_terms + len(nnn_bonds)
+        nn_label = "NN [SdotS, S+S+, S-S-]" if pairflip else "NN [SdotS]"
         f.write(
-            "# Interactions: NN Heisenberg + chiral NNN DM "
-            f"({len(nn_bonds)} + {len(nnn_bonds)} bonds)\n"
+            f"# Interactions: {nn_label} + chiral NNN DM "
+            f"({nn_terms} + {len(nnn_bonds)} = {total_terms} terms)\n"
         )
         f.write("Interactions = [\n")
         for i, j in nn_bonds:
             f.write(f"  ['{coupling_name}', 'SdotS', {i}, {j}],\n")
+            if pairflip:
+                f.write(f"  ['{pairflip_coupling_name}', 'S+S+', {i}, {j}],\n")
+                f.write(f"  ['{pairflip_coupling_name}', 'S-S-', {i}, {j}],\n")
         for i, j in nnn_bonds:
-            f.write(f"  ['D', 'DM', {i}, {j}],\n")
+            f.write(f"  ['D', 'Exchange', {i}, {j}],\n")
         f.write("]\n\n")
 
         f.write("# Translation by primitive vector a1 = (1,0) in lattice coords\n")
@@ -780,10 +833,14 @@ def write_toml(
         f.write("# Translation by primitive vector a2 = (0,1) in lattice coords\n")
         f.write(f"Translation_a2 = {perm_ta2}\n\n")
 
-        f.write("# 60-degree CCW rotation about hexagon centre (C6 generator)\n")
-        f.write(f"Rotation_C6 = {perm_rot}\n\n")
+        if pointgroup:
+            f.write("# 60-degree CCW rotation about hexagon centre (C6 generator)\n")
+            f.write(f"Rotation_C6 = {perm_rot}\n\n")
 
-        f.write(f"# Full T_{{Ncell}} × C6 symmetry group ({len(all_syms)} elements)\n")
+        if pointgroup:
+            f.write(f"# Full T_{{Ncell}} x C6 symmetry group ({len(all_syms)} elements)\n")
+        else:
+            f.write(f"# Translation symmetry group T_{{Ncell}} ({len(all_syms)} elements)\n")
         f.write("Symmetries = [\n")
         for sym in all_syms:
             f.write(f"  {sym},\n")
@@ -811,6 +868,18 @@ def write_toml(
 # ---------------------------------------------------------------------------
 
 def main():
+    def _parse_bool(value):
+        if isinstance(value, bool):
+            return value
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "t", "yes", "y", "on"}:
+            return True
+        if lowered in {"0", "false", "f", "no", "n", "off"}:
+            return False
+        raise argparse.ArgumentTypeError(
+            f"Invalid boolean value '{value}'. Use true/false."
+        )
+
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -823,10 +892,32 @@ def main():
                         help="Write xdiag-compatible TOML")
     parser.add_argument("--coupling-name", metavar="NAME", default="J1",
                         help="Coupling label for NN bonds in TOML (default: J1)")
+    parser.add_argument(
+        "--pairflip",
+        nargs="?",
+        const=True,
+        default=True,
+        type=_parse_bool,
+        help="Include NN S+S+ and S-S- pair-flip terms in TOML (default: true). Use '--pairflip false' to omit them.",
+    )
+    parser.add_argument(
+        "--pairflip-coupling-name",
+        metavar="NAME",
+        default="Jpm",
+        help="Coupling label for NN S+S+ and S-S- bonds in TOML (default: Jpm)",
+    )
     parser.add_argument("--invert-chirality", action="store_true",
                         help="Invert chirality of directed NNN DM bonds")
     parser.add_argument("--verify", action="store_true",
                         help="Run Schur-orthogonality self-test after computing irreps")
+    parser.add_argument(
+        "--pointgroup",
+        nargs="?",
+        const=True,
+        default=True,
+        type=_parse_bool,
+        help="Include point-group (C6) symmetry (default: true). Use '--pointgroup false' for translations only.",
+    )
     args = parser.parse_args()
 
     a, b = args.a, args.b
@@ -839,20 +930,28 @@ def main():
     verify_perm(perm_ta1, "Translation a1")
     verify_perm(perm_ta2, "Translation a2")
     verify_perm(perm_rot, "Rotation C6")
-    verify_c6(perm_rot, nsite)
+    if args.pointgroup:
+        verify_c6(perm_rot, nsite)
 
     print_lattice_info(sites, T, ncell, nsite, a, b)
     print("\n# Translation by a1 = (1,0) [lattice]:")
     print(f"  perm_ta1 = {perm_ta1}")
     print("\n# Translation by a2 = (0,1) [lattice]:")
     print(f"  perm_ta2 = {perm_ta2}")
-    print("\n# 60-degree CCW rotation (C6):")
-    print(f"  perm_rot = {perm_rot}")
-    print("\n# Verification: R6^6 = identity OK")
+    if args.pointgroup:
+        print("\n# 60-degree CCW rotation (C6):")
+        print(f"  perm_rot = {perm_rot}")
+        print("\n# Verification: R6^6 = identity OK")
+    else:
+        print("\n# Point-group symmetry disabled: using translations only")
 
     if args.verify or args.toml:
-        all_syms, sym_meta = build_sym_group(sites, cells, TinvN, ncell, nsite, perm_rot)
-        irrep_sections = compute_irrep_sections(a, b, ncell, cells, all_syms, sym_meta)
+        all_syms, sym_meta = build_sym_group(
+            sites, cells, TinvN, ncell, nsite, perm_rot, pointgroup=args.pointgroup
+        )
+        irrep_sections = compute_irrep_sections(
+            a, b, ncell, cells, all_syms, sym_meta, pointgroup=args.pointgroup
+        )
         section_names = [s["name"] for s in irrep_sections]
         print(f"\n# Irrep sections ({len(irrep_sections)}): {section_names}")
 
@@ -874,8 +973,11 @@ def main():
             perm_ta1,
             perm_ta2,
             perm_rot,
+            pointgroup=args.pointgroup,
             coupling_name=args.coupling_name,
-            invert_chirality=args.invert_chirality,
+            pairflip=args.pairflip,
+            pairflip_coupling_name=args.pairflip_coupling_name,
+
         )
 
     return cells, sites, T, ncell, nsite, perm_ta1, perm_ta2, perm_rot

@@ -7,11 +7,13 @@ import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.patches import FancyArrowPatch
 
-from cantedAFM.Latscripts.genlatC6 import (
+from genlatC6 import (
     _build_site_lookup,
     _frac_mod_cell,
     build_torus,
+    compute_nnn_bonds_chiral,
     compute_nn_bonds,
     compute_rotation_perm,
     enumerate_momenta,
@@ -62,6 +64,68 @@ def _display_coords(coords, T, mode):
     return disp
 
 
+def _select_periodic_image_near_anchor(anchor, coord, t1, t2, search_radius=2, tol=1e-10):
+    """Choose the periodic image of ``coord`` closest to ``anchor``."""
+    basis = np.column_stack((t1, t2))
+    coeff = np.linalg.solve(basis, anchor - coord)
+    center = np.rint(coeff).astype(int)
+
+    candidates = []
+    for dm in range(-search_radius, search_radius + 1):
+        for dn in range(-search_radius, search_radius + 1):
+            m = int(center[0] + dm)
+            n = int(center[1] + dn)
+            image = coord + m * t1 + n * t2
+            delta = image - anchor
+            norm2 = float(np.dot(delta, delta))
+            candidates.append((norm2, float(image[0]), float(image[1]), m, n, image))
+
+    best_norm2 = min(item[0] for item in candidates)
+    finalists = [item for item in candidates if item[0] <= best_norm2 + tol]
+    finalists.sort(key=lambda item: (round(item[1], 12), round(item[2], 12), item[3], item[4]))
+    return finalists[0][5]
+
+
+def _bond_segment_coords(coords, i, j, T):
+    """Return bond endpoints with the target wrapped to its nearest periodic image."""
+    t1, t2 = _torus_vectors_cart(T)
+    start = coords[i]
+    end = _select_periodic_image_near_anchor(start, coords[j], t1, t2)
+    return np.array([start, end])
+
+
+def _add_directed_bond_arrow(
+    ax,
+    start,
+    end,
+    *,
+    color,
+    linewidth=1.0,
+    linestyle="--",
+    alpha=0.8,
+    zorder=1.5,
+    shrink_a=8,
+    shrink_b=8,
+    mutation_scale=10,
+):
+    """Draw a directed bond arrow from ``start`` to ``end`` in data coordinates."""
+    arrow = FancyArrowPatch(
+        posA=tuple(start),
+        posB=tuple(end),
+        arrowstyle="-|>",
+        mutation_scale=mutation_scale,
+        shrinkA=shrink_a,
+        shrinkB=shrink_b,
+        linewidth=linewidth,
+        linestyle=linestyle,
+        color=color,
+        alpha=alpha,
+        zorder=zorder,
+    )
+    ax.add_patch(arrow)
+    return arrow
+
+
 def _classify_high_symmetry(fq1, fq2, ncell):
     if (fq1, fq2) == (0, 0):
         return "Gamma"
@@ -85,6 +149,7 @@ def plot_real_space(
     b,
     show_indices=False,
     show_bonds=True,
+    show_nnn_bonds=True,
     show_rotation_labels=False,
     display_coordinates="canonical",
 ):
@@ -95,11 +160,38 @@ def plot_real_space(
     fig, ax = plt.subplots(figsize=(7.5, 7.0))
 
     if show_bonds:
-        bonds = compute_nn_bonds(sites, t_inv_n, ncell)
-        for i, j in bonds:
-            xi, yi = coords[i]
-            xj, yj = coords[j]
+        nn_bonds = compute_nn_bonds(sites, t_inv_n, ncell)
+        for i, j in nn_bonds:
+            (xi, yi), (xj, yj) = _bond_segment_coords(coords, i, j, T)
             ax.plot([xi, xj], [yi, yj], color="0.75", linewidth=1.0, zorder=1)
+
+        if show_nnn_bonds:
+            nnn_bonds = compute_nnn_bonds_chiral(sites, t_inv_n, ncell)
+            for i, j in nnn_bonds:
+                segment = _bond_segment_coords(coords, i, j, T)
+                _add_directed_bond_arrow(
+                    ax,
+                    segment[0],
+                    segment[1],
+                    color="#2ca02c",
+                    linewidth=1.0,
+                    linestyle="--",
+                    alpha=0.8,
+                    zorder=1.5,
+                )
+
+            ax.plot([], [], color="0.75", linewidth=1.0, label="NN bonds")
+            ax.plot(
+                [],
+                [],
+                color="#2ca02c",
+                linewidth=1.0,
+                linestyle="--",
+                alpha=0.8,
+                label="NNN bonds (i→j)",
+            )
+        else:
+            ax.plot([], [], color="0.75", linewidth=1.0, label="NN bonds")
 
     is_a = np.array([site[2] == 0 for site in sites])
     ax.scatter(coords[is_a, 0], coords[is_a, 1], s=45, c="#1f77b4", label="A", zorder=3)
@@ -239,15 +331,17 @@ def main():
     parser.add_argument("--show-indices", action="store_true",
                         help="Annotate site indices in real-space plot")
     parser.add_argument("--show-bonds", dest="show_bonds", action="store_true",
-                        help="Display nearest-neighbor bonds in real-space plot (default)")
+                        help="Display bonds in real-space plot (default: NN + NNN)")
     parser.add_argument("--no-show-bonds", dest="show_bonds", action="store_false",
-                        help="Hide nearest-neighbor bonds in real-space plot")
+                        help="Hide all bonds in real-space plot")
+    parser.add_argument("--no-show-nnn-bonds", dest="show_nnn_bonds", action="store_false",
+                        help="Hide next-nearest-neighbor bonds while keeping NN bonds")
     parser.add_argument("--show-rotation-labels", action="store_true",
                         help="Overlay lookup and rotated site indices in different colors")
     parser.add_argument("--display-coordinates", choices=["canonical", "wigner-seitz"],
                         default="canonical",
                         help="Real-space coordinate representatives to plot (default: canonical)")
-    parser.set_defaults(show_bonds=True)
+    parser.set_defaults(show_bonds=True, show_nnn_bonds=True)
     parser.add_argument("--save", metavar="FILE", default=None,
                         help="Save figure to FILE (png/pdf/...) instead of only showing it")
     parser.add_argument("--dpi", type=int, default=160,
@@ -262,6 +356,7 @@ def main():
             args.b,
             show_indices=args.show_indices,
             show_bonds=args.show_bonds,
+            show_nnn_bonds=args.show_nnn_bonds,
             show_rotation_labels=args.show_rotation_labels,
             display_coordinates=args.display_coordinates,
         )

@@ -69,28 +69,28 @@ include CMakeFiles/main.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/main.dir/flags.make
 
-CMakeFiles/main.dir/main.cpp.o: CMakeFiles/main.dir/flags.make
-CMakeFiles/main.dir/main.cpp.o: /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/main.cpp
-CMakeFiles/main.dir/main.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/t30/all/ge45hub/CLionProjects/xdiagAFM/build-canted/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/main.cpp.o -MF CMakeFiles/main.dir/main.cpp.o.d -o CMakeFiles/main.dir/main.cpp.o -c /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/main.cpp
+CMakeFiles/main.dir/GSwPG/main.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/GSwPG/main.cpp.o: /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/GSwPG/main.cpp
+CMakeFiles/main.dir/GSwPG/main.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/t30/all/ge45hub/CLionProjects/xdiagAFM/build-canted/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/GSwPG/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/GSwPG/main.cpp.o -MF CMakeFiles/main.dir/GSwPG/main.cpp.o.d -o CMakeFiles/main.dir/GSwPG/main.cpp.o -c /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/GSwPG/main.cpp
 
-CMakeFiles/main.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/main.cpp > CMakeFiles/main.dir/main.cpp.i
+CMakeFiles/main.dir/GSwPG/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/GSwPG/main.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/GSwPG/main.cpp > CMakeFiles/main.dir/GSwPG/main.cpp.i
 
-CMakeFiles/main.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/main.cpp -o CMakeFiles/main.dir/main.cpp.s
+CMakeFiles/main.dir/GSwPG/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/GSwPG/main.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/t30/all/ge45hub/CLionProjects/xdiagAFM/cantedAFM/GSwPG/main.cpp -o CMakeFiles/main.dir/GSwPG/main.cpp.s
 
 # Object files for target main
 main_OBJECTS = \
-"CMakeFiles/main.dir/main.cpp.o"
+"CMakeFiles/main.dir/GSwPG/main.cpp.o"
 
 # External object files for target main
 main_EXTERNAL_OBJECTS =
 
-main: CMakeFiles/main.dir/main.cpp.o
+main: CMakeFiles/main.dir/GSwPG/main.cpp.o
 main: CMakeFiles/main.dir/build.make
 main: /home/t30/all/ge45hub/CLionProjects/xdiagAFM/install/lib/libxdiag.a
 main: /usr/lib/gcc/x86_64-linux-gnu/13/libgomp.so

@@ -8,7 +8,7 @@ build
 build_julia_wrapper.sh
 *.prof
 *.prof.pdf
-*/build/*
+cantedAFM/buildobsolote/*
 install
 julia/products
 julia/build_tarballs.jl

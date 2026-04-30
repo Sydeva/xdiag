@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/xdiag.iml" filepath="$PROJECT_DIR$/.idea/xdiag.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/xdiagAFM.iml" filepath="$PROJECT_DIR$/.idea/xdiagAFM.iml" />
     </modules>
   </component>
 </project>
